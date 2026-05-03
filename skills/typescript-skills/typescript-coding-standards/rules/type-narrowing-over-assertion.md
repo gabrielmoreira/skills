@@ -52,7 +52,7 @@ Avoid:
 - Relying on `// @ts-ignore` or `// @ts-expect-error` to mask real type gaps.
 
 Exceptions:
-- Test doubles and mocks: allowed when building a partial fake for a complex interface, but prefer typed builders or `Partial<T>` wrappers that make the incompleteness explicit and keep assertions at the test boundary.
+- Test doubles and mocks: use a typed builder, `Partial<T>`, `Pick<T, K>`, or a small typed mini-interface that captures only the methods used. Raw `as any as T` or `as T` is **not allowed in tests** even for one-off mocks of large vendor types like Stripe — narrow the dependency at the call site to the smallest interface the production code actually needs (e.g. accept `Pick<Stripe, "paymentIntents">` instead of `Stripe`), then mock that.
 - Framework or library types that are genuinely wrong or incomplete: allowed with a `// SAFETY:` comment explaining why the assertion is needed and what guards exist above it.
 - Performance-critical paths where the compiler cannot narrow but the value is guaranteed by construction: allowed with a `// SAFETY:` comment and a test proving the invariant.
 
@@ -83,15 +83,20 @@ Bad: forcing an unknown response.
 const data = await response.json() as OrderResponse;
 ```
 
-Good: type guard reusable across boundaries.
+Bypass rebuttal — "the schema is stable, we've never had a failure":
+Stability of the file is not the same as stability of the *parser*. The day the schema does change, every callsite that trusted the cast breaks silently. A 5-line manual parser costs less than one debugging session of "why is this field undefined now?". The hard-gate stands; the choice is between manual parser, type guard, and schema lib — not between parser and `as`.
+
+Good: type guard reusable across boundaries, with a tiny helper that contains the structural check.
 
 ```ts
+function hasField<K extends string>(obj: object, key: K): obj is Record<K, unknown> {
+  return key in obj;
+}
 function isOrderResponse(raw: unknown): raw is OrderResponse {
   if (typeof raw !== "object" || raw === null) return false;
-  const obj = raw as Record<string, unknown>;
-  return typeof obj.orderId === "string"
-    && typeof obj.status === "string"
-    && typeof obj.total === "number";
+  return hasField(raw, "orderId") && typeof raw.orderId === "string"
+    && hasField(raw, "status") && typeof raw.status === "string"
+    && hasField(raw, "total") && typeof raw.total === "number";
 }
 
 // usage at boundary
@@ -139,6 +144,29 @@ function makeTestUser(overrides: Partial<User> = {}): User {
 
 // instead of: const user = { id: "test-id" } as User;
 const user = makeTestUser({ name: "Custom" });
+```
+
+Mocking large vendor types in tests — narrow the dependency at the call site, then mock the narrow type:
+
+```ts
+// production: accept the smallest interface the code actually needs
+type StripePaymentClient = Pick<Stripe, "paymentIntents">;
+
+export function makeChargeService({ stripe }: { stripe: StripePaymentClient }) {
+  return async (input: ChargeInput) => stripe.paymentIntents.create({ /* ... */ });
+}
+
+// test: typed mock matches the narrow interface, no `as any`
+const fakeStripe: StripePaymentClient = {
+  paymentIntents: {
+    create: vi.fn().mockResolvedValue({ id: "pi_123", status: "succeeded" }),
+  } as Stripe.PaymentIntentsResource,
+};
+const charge = makeChargeService({ stripe: fakeStripe });
+```
+
+Bypass rebuttal — "Stripe has 200 methods and I only need one":
+That is the signal to narrow the dependency, not to escape the type system. `Pick<Stripe, "paymentIntents">` or a custom `StripePaymentClient` interface gives you exactly one method while keeping every other type safety. `as any as Stripe` silences 199 future API changes you have no idea about.
 
 Good: `satisfies` preserves the literal type while verifying the contract.
 

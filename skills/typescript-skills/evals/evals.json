@@ -1,0 +1,239 @@
+{
+  "skill_name": "typescript-skills",
+  "description": "Adversarial behavioral evals. Prompts are realistic, ambiguous, sometimes carry red herrings, and never name the expected skill. With-skill agents must locate the right rule from realistic developer prose.",
+  "design_notes": [
+    "No prompt names the target skill, file, or rule.",
+    "Several prompts present the wrong cause as plausible — agents must not be steered.",
+    "Several prompts are silent on a specific aspect (gap detection — agent should not invent a rule).",
+    "Several prompts try to bypass hard-gates with reasonable-sounding justifications.",
+    "Several prompts mix concerns; the agent must pick the primary one and mention secondaries.",
+    "Scoring 0-3: 0 wrong direction, 1 right area but missed canonical decision, 2 right primary + correct decision, 3 right primary + correct decision + cites Verify or hard-gate."
+  ],
+  "evals": [
+    {
+      "id": "ambiguous-localhost-pr-comment",
+      "category": "router-disambiguation",
+      "prompt": "Hey, I'm reviewing a PR. The author added `const apiBaseUrl = process.env.API_BASE_URL ?? 'http://localhost:3000';` in `src/clients/billing.ts`. They argue it's fine because every dev needs to test locally and CI sets the env var anyway. What's your take?",
+      "expected_primary": "typescript-security",
+      "expected_secondary": ["typescript-configs"],
+      "assertions": [
+        "Rejects the localhost fallback as a hard-gate violation",
+        "Names the production-correctness criterion (would prod still be correct if the var is missing?)",
+        "Routes the question to the secrets/credentials/endpoints lifecycle, not to general defaults",
+        "Does NOT accept the 'CI sets it anyway' justification",
+        "Mentions that local dev should provide the value through explicit local config, not a code default"
+      ],
+      "red_herrings": ["dev convenience justification", "CI safety net argument"]
+    },
+    {
+      "id": "ambiguous-stripe-shape-vs-webhook",
+      "category": "router-disambiguation",
+      "prompt": "Our webhook handler receives Stripe events. Right now `handleStripeWebhook(req)` does `const event = req.body as Stripe.Event` and then `if (event.type === 'payment_intent.succeeded')`. Where's the problem?",
+      "expected_primary": "typescript-boundaries",
+      "expected_secondary": ["typescript-coding-standards"],
+      "assertions": [
+        "Identifies TWO problems: raw transport input AND vendor SDK type leakage",
+        "Says req.body is raw input that needs parsing/validation at the boundary",
+        "Says Stripe.Event should be translated to a local event model, not used directly in handler logic",
+        "Names the `as` cast as a separate hard-gate concern",
+        "Demarcates the two concerns rather than collapsing them"
+      ],
+      "red_herrings": ["framing the issue purely as 'we trust Stripe so it's fine'"]
+    },
+    {
+      "id": "subtle-feature-flag-creep",
+      "category": "behavior",
+      "prompt": "We're rolling out a new pricing engine. PR 1 added `if (process.env.NEW_PRICING === 'true')` in the cart service. PR 2 added the same check in the checkout service. Now PR 3 wants to add it in the email service for tax calculation. Should I approve PR 3?",
+      "expected_primary": "typescript-configs",
+      "expected_secondary": [],
+      "assertions": [
+        "Says no, do not approve PR 3 as written",
+        "Explains the issue is the SCATTERED check pattern, not PR 3 in isolation",
+        "Recommends parsing the flag once into a named typed decision",
+        "Suggests the decision flows inward as typed config to all three callers",
+        "Mentions the existing two callsites should be migrated as part of the cleanup"
+      ],
+      "red_herrings": ["framing it as 'just one more callsite'"]
+    },
+    {
+      "id": "tempting-as-cast-with-justification",
+      "category": "hard-gate-bypass-attempt",
+      "prompt": "I have `const config = JSON.parse(fs.readFileSync('config.json', 'utf8')) as AppConfig;`. The file is checked into the repo, schema is stable, and we've never had it fail in 3 years. Do I really need to add zod just for this?",
+      "expected_primary": "typescript-coding-standards",
+      "expected_secondary": ["typescript-configs"],
+      "assertions": [
+        "Hard-fails the `as AppConfig`",
+        "Does NOT accept '3 years without failure' as a justification",
+        "Does NOT require zod specifically; suggests type guard, manual parser, or schema lib",
+        "Distinguishes the hard-gate (no `as`) from the tool choice (zod vs manual)",
+        "Mentions failure shape becomes important when the file's schema does change"
+      ],
+      "red_herrings": ["stability appeal", "tool-choice deflection"]
+    },
+    {
+      "id": "long-handler-with-blank-lines",
+      "category": "router-disambiguation",
+      "prompt": "Code review feedback says my handler is too long. It's 80 lines with three blank-line-separated blocks: input parsing, business call, response formatting. Should I just remove the blanks, add comment headers, or extract functions?",
+      "expected_primary": "typescript-coding-standards",
+      "expected_secondary": [],
+      "assertions": [
+        "Recommends comment labels first as a discovery step",
+        "Then extract by responsibility once labels feel like real names",
+        "Does NOT prescribe blank-line removal as the fix",
+        "Mentions the three blocks (parse / business / format) probably ARE separate responsibilities",
+        "Names the extracted helpers with specific names, not generic ones"
+      ],
+      "red_herrings": ["all three options framed as equally valid in the prompt"]
+    },
+    {
+      "id": "mocked-test-with-as-any",
+      "category": "hard-gate-bypass-attempt",
+      "prompt": "In a unit test I have `const fakeStripe = { paymentIntents: { create: vi.fn().mockResolvedValue({ id: 'pi_123', status: 'succeeded' }) } } as any as Stripe;`. The Stripe type has 200+ methods and I only need one for this test. Is this acceptable in test code?",
+      "expected_primary": "typescript-coding-standards",
+      "expected_secondary": ["typescript-testing"],
+      "assertions": [
+        "Acknowledges the test-code exception exists but does not bless `as any as Stripe`",
+        "Recommends a typed builder or `Partial<Stripe>` wrapper that makes the partiality explicit",
+        "Mentions the test should depend on a narrow capability, not the full Stripe shape",
+        "Suggests injecting a smaller fake interface the production code already uses",
+        "Does NOT recommend just leaving the cast in place because 'it's tests'"
+      ],
+      "red_herrings": ["'just tests' justification", "'200 methods' practicality appeal"]
+    },
+    {
+      "id": "request-scoped-vs-singleton",
+      "category": "behavior",
+      "prompt": "Our `getCurrentUser()` reads a JWT from a module-level `currentRequest` variable that we set at the start of each request via middleware. It works but feels wrong. What pattern should we use?",
+      "expected_primary": "typescript-composition",
+      "expected_secondary": [],
+      "assertions": [
+        "Identifies the module-level mutable state as the smell",
+        "Recommends passing request-scoped capability inward (request-scoped factory or capability)",
+        "Mentions tests cannot isolate request state with the current design",
+        "Does NOT recommend AsyncLocalStorage as the first answer (escalation, not start)",
+        "Connects the pattern to dependency scope decisions"
+      ],
+      "red_herrings": ["none — the user already says it feels wrong"]
+    },
+    {
+      "id": "silent-on-async-control",
+      "category": "gap-detection",
+      "prompt": "I have an array of 500 user IDs and need to fetch each user's profile from a downstream API and aggregate. Right now it's `Promise.all(ids.map(fetchProfile))` and we're getting rate-limited. What does our standards say?",
+      "expected_primary": "typescript-skills",
+      "expected_secondary": [],
+      "assertions": [
+        "Acknowledges the standards do NOT yet have a canonical async-control / bounded-concurrency rule",
+        "Refers to the roadmap (Phase 1 high-priority gap: async control and cancellation)",
+        "Does not invent a rule; gives general guidance honestly",
+        "Suggests bounded concurrency as the standard fix without claiming it is in the tree",
+        "Does NOT pretend a rule exists when it doesn't"
+      ],
+      "red_herrings": ["pressure to give a definitive 'rule' answer"]
+    },
+    {
+      "id": "config-shape-too-small-to-care",
+      "category": "progressive-complexity",
+      "prompt": "I'm writing a 50-line CLI script that reads `EMAIL_API_KEY` and sends one email. A coworker says I should set up zod, contextual configs, and a composition root. Is that overkill?",
+      "expected_primary": "typescript-configs",
+      "expected_secondary": ["typescript-composition"],
+      "assertions": [
+        "Says yes, it's overkill at this scale",
+        "Recommends a one-line manual parser",
+        "Does NOT recommend zod, contextual configs, or composition root for a 50-line CLI",
+        "Mentions when it WOULD be time to escalate (modes, multiple modules, conditional fields)",
+        "Defends the agent's right to start small and earn complexity"
+      ],
+      "red_herrings": ["coworker authority appeal"]
+    },
+    {
+      "id": "cross-cutting-secret-in-log",
+      "category": "router-disambiguation",
+      "prompt": "On startup, we log the parsed config so ops can see what's loaded. The DB password ends up in the log because we just `logger.info('config loaded', { config })`. The fix seems obvious but where's the canonical rule? Configs? Security? Logging?",
+      "expected_primary": "typescript-security",
+      "expected_secondary": ["typescript-observability"],
+      "assertions": [
+        "Routes the canonical answer to security (redaction)",
+        "Mentions observability as the secondary concern (meaningful structured log shape)",
+        "Says replace the broad object dump with allowlisted safe fields",
+        "Does NOT route to configs as the primary owner",
+        "Mentions the password should not be in the typed config in the first place if it's a secret"
+      ],
+      "red_herrings": ["agent might pick configs because the artifact IS config"]
+    },
+    {
+      "id": "test-imports-bootstrap",
+      "category": "behavior",
+      "prompt": "My Lambda handler test does `vi.resetModules(); const { resolveCreateNoteUsecase } = await import('../bootstrap/request')` to get a fresh instance per test. The tests pass and isolation works. Is this fine?",
+      "expected_primary": "typescript-testing",
+      "expected_secondary": ["typescript-composition"],
+      "assertions": [
+        "Distinguishes handler behavior tests (bad pattern here) from bootstrap memoization tests (acceptable)",
+        "Recommends testing the handler factory directly with explicit fake deps",
+        "Says the dynamic import + resetModules is appropriate ONLY when testing bootstrap infra itself",
+        "Mentions the test should not need to know bootstrap exists",
+        "Does NOT bless the pattern just because tests pass"
+      ],
+      "red_herrings": ["'tests pass and isolation works' framing"]
+    },
+    {
+      "id": "make-vs-class-with-shared-state",
+      "category": "behavior",
+      "prompt": "I'm building a rate limiter. It needs to track recent request timestamps per user, expose `tryAcquire(userId)` and `getStats()`. Multiple call sites will use it. Do I make it a class with private fields or a function returning an object?",
+      "expected_primary": "typescript-coding-standards",
+      "expected_secondary": ["typescript-composition"],
+      "assertions": [
+        "Recommends `makeRateLimiter()` returning `{ tryAcquire, getStats }` with closure-private state",
+        "Does NOT default to a class",
+        "Mentions class is appropriate when lifecycle / protocol / identity / measured pressure earns it",
+        "Connects to composition (how it's assembled) and dependency scope (app-singleton or per-tenant)",
+        "Mentions tests can supply fake dependencies through the make factory args"
+      ],
+      "red_herrings": ["framing class as the obvious choice for stateful objects"]
+    },
+    {
+      "id": "provider-default-stage",
+      "category": "hard-gate-bypass-attempt",
+      "prompt": "Our config does `const queueUrl = stage === 'prod' ? 'sqs://prod-queue' : 'sqs://staging-queue'`. The URLs are public AWS endpoints, not secrets. Is this OK?",
+      "expected_primary": "typescript-configs",
+      "expected_secondary": ["typescript-security"],
+      "assertions": [
+        "Identifies TWO problems: stage as proxy for behavior decision, AND code-defaulted resource identity",
+        "Says queue URL should be an explicit env input, even though it's not a secret",
+        "Says resource identity should not be reconstructed from stage strings in app code",
+        "Mentions the named-decision pattern instead of stage-conditional",
+        "Acknowledges that 'not a secret' does not exempt environment-specific coordinates"
+      ],
+      "red_herrings": ["'not a secret' justification", "'public AWS endpoint' justification"]
+    },
+    {
+      "id": "log-streaming-question",
+      "category": "behavior",
+      "prompt": "Our containerized Node.js service writes logs to `/var/log/app.log` via Winston's file transport, and a sidecar ships them to our log aggregator. Is this the right architecture?",
+      "expected_primary": "typescript-observability",
+      "expected_secondary": [],
+      "assertions": [
+        "Says no, write structured logs to stdout/stderr; let infra route",
+        "References the Twelve-Factor logs principle",
+        "Mentions the application should not own log shipping, file rotation, or transport",
+        "Says the sidecar can read stdout via the container runtime",
+        "Does NOT recommend keeping the file transport for safety"
+      ],
+      "red_herrings": ["framing existing setup as defensible because it works"]
+    },
+    {
+      "id": "naming-collision-between-rules",
+      "category": "router-disambiguation",
+      "prompt": "I have a domain type called `WebhookPayload` in our `payments` module. It's used by 3 services. A code reviewer says the name is wrong because webhook is a transport detail, not a domain concept. Which rule applies?",
+      "expected_primary": "typescript-boundaries",
+      "expected_secondary": ["typescript-coding-standards"],
+      "assertions": [
+        "Routes to the boundaries-local naming rule, not the general naming rule",
+        "Says the name leaks transport vocabulary into the domain",
+        "Suggests a domain-meaningful name like `PaymentNotification` or `PaymentEvent`",
+        "Acknowledges the demarcation: provider/transport-derived names belong to boundaries",
+        "Does NOT just say 'rename it' without identifying the underlying rule"
+      ],
+      "red_herrings": ["the agent might pick general naming because 'naming' is the surface concern"]
+    }
+  ]
+}

@@ -8,12 +8,12 @@ references: [Ports and Adapters (Hexagonal Architecture), Anti-Corruption Layer 
 
 # Provider Containment
 
-Decision: Keep provider, SDK, generated, transport, request, and response shapes at the edge when their names or semantics are not the application's local meaning.
+Decision: Keep provider, SDK, generated, and external API client shapes at the edge when their names or semantics are not the application's local meaning. Owns vendor/SDK/generated types only — for HTTP request/response/transport/env-like raw input, see `rules/raw-input-to-internal-model.md`.
 
 Use when:
-- Business logic imports provider, SDK, generated, request, or response types.
+- Business logic imports provider, SDK, or generated types.
 - Provider enum/status/field names require provider docs to understand.
-- Provider shape contains fields the application should not expose inward.
+- Provider SDK shape contains fields the application should not expose inward.
 - The app needs a smaller local view of a larger external shape.
 
 Start here:

@@ -8,26 +8,24 @@ references: [Parse don't validate, Twelve-Factor III (Config)]
 
 # Parse and Expose Config
 
-Decision: Parse unknown config once at the boundary, then expose typed contextual config objects rather than raw values or a god app config.
+Decision: Parse unknown config once at the boundary into typed values. Owns parsing mechanics (raw → typed, requiredness, schema, failure shape) — for module-slice shape and AppConfig avoidance, see `rules/contextual-config.md`.
 
 Use when:
 - Code reads `process.env`, CLI args, raw config files, or untyped runtime values.
 - A config value is claimed with `!`, `as`, `Number(...)` without validation, or string truthiness.
 - Feature modules read env directly.
-- Feature modules accept broad `AppConfig` but use only a small slice.
 - Config object names mirror provider/env names instead of module/app meaning.
 
 Start here:
-- Simple script: one small manual parser and one local config object.
-- Medium app: parse raw values once, then pass module/feature configs such as `EmailConfig` or `StorageConfig`.
-- Large app: root parsing plus module config factories; pass only contextual config inward.
-- Framework-shaped app: respect the framework's config entrypoint, then adapt raw/framework config into contextual module config before owned feature logic.
+- Read raw values once at a parser boundary; do not let `process.env` reach behavior modules.
+- Return a typed object; never expose raw strings or untyped values to callers.
+- Parse strings into the right type deliberately (booleans, numbers, URLs, durations, arrays, enums).
 
 Escalate when:
 - More than a few fields need typed parsing.
 - Modes make fields conditionally required.
 - Failure shape must be consistent across the app.
-- Multiple modules need different config slices.
+- Different parts of the config need different parsing strategies (manual vs schema, sync vs deferred).
 - Tests become noisy because modules require unrelated config fields.
 - Framework-level config objects are being passed through feature modules unchanged.
 - Legacy env reads are scattered across behavior modules.
@@ -36,10 +34,8 @@ Complexity ladder:
 1. Manual parser in one config boundary.
 2. Framework entrypoint/parser when the framework owns config loading.
 3. Schema parser for typed shape and consistent failure reporting.
-4. Contextual module config such as `EmailConfig`, `BillingConfig`, or `StorageConfig`.
-5. Module-local config factory for feature-specific policy/defaults.
-6. Composition-root runtime config for service-wide facts only.
-7. Migration seam for scattered legacy env reads.
+4. Schema with discriminated unions when modes make fields conditionally required.
+5. Migration seam for scattered legacy env reads.
 
 Do:
 - Collect raw values in one boundary module.
@@ -54,12 +50,10 @@ Avoid:
 - Using non-null assertions or casts as validation.
 - Using `||` when `0`, `false`, or empty string are valid values; use `??` for missingness.
 - Exporting raw env maps as application config.
-- Passing a full `AppConfig` into modules that need only one contextual slice.
+- Returning a `Record<string, string>` of env values without parsing.
 
 Exceptions:
 - Tests for the config-reading boundary may set env if they restore it.
-- A small script or single-file tool may use one local config object until real module boundaries appear.
-- A composition root may hold root runtime config while assembling dependencies, but should pass contextual config inward.
 - Legacy migration may introduce a seam before full parsing; see `migration.md`.
 - Framework config providers/modules may be the raw source boundary; they should not force feature modules to consume a broad framework config shape.
 
@@ -71,7 +65,7 @@ Preferred flow:
 5. Verify resources or load secrets later in bootstrap/composition.
 6. Pass ready config and dependencies inward.
 
-Do not hide env loading, secret loading, or remote verification inside a pure config builder.
+For parser purity (no I/O, no network, no secret fetch), see `rules/validation-vs-verification.md`. For secret-loading timing, see `../typescript-security/rules/secrets-lifecycle.md`.
 
 File layout when earned:
 
@@ -104,27 +98,27 @@ export function parseEmailConfig(env: NodeJS.ProcessEnv): EmailConfig {
 }
 ```
 
-Medium/large app: parse once, project contextual config.
+Multi-field parser with deliberate string-to-typed conversions:
 
 ```ts
-type RuntimeConfig = {
-  stage: "dev" | "prod";
-  email: EmailConfig;
-  billing: BillingConfig;
+type EmailConfig = {
+  apiKey: string;
+  timeoutMs: number;
+  retryCount: number;
+  enabledRegions: string[];
 };
 
-type EmailConfig = { apiKey: string; timeoutMs: number };
-
-type BillingConfig = { apiKey: string };
-
-export function parseRuntimeConfig(env: NodeJS.ProcessEnv): RuntimeConfig {
-  return {
-    stage: parseStage(env.APP_STAGE),
-    email: parseEmailConfig(env),
-    billing: parseBillingConfig(env),
-  };
+export function parseEmailConfig(env: NodeJS.ProcessEnv): EmailConfig {
+  const apiKey = env.EMAIL_API_KEY;
+  if (!apiKey) throw new Error("EMAIL_API_KEY is required");
+  const timeoutMs = parsePositiveInt(env.EMAIL_TIMEOUT_MS, 5000, "EMAIL_TIMEOUT_MS");
+  const retryCount = parsePositiveInt(env.EMAIL_RETRY_COUNT, 3, "EMAIL_RETRY_COUNT");
+  const enabledRegions = (env.EMAIL_ENABLED_REGIONS ?? "us-east-1").split(",").filter(Boolean);
+  return { apiKey, timeoutMs, retryCount, enabledRegions };
 }
 ```
+
+For root-level shape and module-slice projection, see `rules/contextual-config.md`.
 
 Framework-shaped app: adapt at the framework boundary.
 
@@ -156,4 +150,3 @@ Verify:
 - Test parsed values, requiredness, defaults, and failure shape.
 - Check returned config type is what callers use, not raw env shape.
 - Check feature modules accept contextual config, not unrelated app-wide or framework-wide config.
-- Check pure config builders do not hide env loading, secret loading, or remote verification.

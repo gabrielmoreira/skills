@@ -39,6 +39,7 @@ Do:
 - Include branch decisions that explain which path executed when that matters operationally.
 - Keep fields low-cardinality unless high-cardinality identifiers are explicitly safe and needed.
 - Coordinate with `typescript-security/rules/redaction.md` before logging sensitive context.
+- Write structured logs to stdout/stderr and let the runtime/infra route them (Twelve-Factor XI). Do not embed log shipping, file rotation, or transport in the application; that belongs to the runtime/platform.
 
 Avoid:
 - `logger.info("here")`, `logger.error(error)`, or `console.log(payload)` without context.

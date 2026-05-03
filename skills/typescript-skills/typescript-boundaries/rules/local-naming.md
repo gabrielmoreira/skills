@@ -8,7 +8,7 @@ references: [Ubiquitous Language (DDD), Bounded Context (DDD)]
 
 # Local Naming
 
-Decision: Name internal models by local meaning, not by the current provider's vocabulary, unless provider traceability is the local meaning.
+Decision: Name internal models by local meaning, not by the current provider's vocabulary, unless provider traceability is the local meaning. Owns provider-derived naming at boundary translation — for general naming choices in owned code, see `../typescript-coding-standards/rules/naming-and-semantic-center.md`.
 
 Use when:
 - A provider field/status appears in an internal type name.

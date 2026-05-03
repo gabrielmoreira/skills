@@ -11,7 +11,7 @@ This file keeps routing authority in one place without a separate manifest. Each
 | Naming by reader need, semantic center | `typescript-coding-standards` | `rules/naming-and-semantic-center.md` |
 | Full cutovers and staged migration exceptions | `typescript-coding-standards` | `rules/cutovers.md` |
 | Type narrowing over assertion (`!`, `as`, `as unknown as`, `@ts-ignore`) | `typescript-coding-standards` | `rules/type-narrowing-over-assertion.md` |
-| Vertical discipline, blank lines, comment labels, extraction triggers | `typescript-coding-standards` | `rules/vertical-discipline.md` |
+| Vertical discipline: blank lines, comment labels, extraction progression | `typescript-coding-standards` | `rules/vertical-discipline.md` |
 | Provider, SDK, API, generated types | `typescript-boundaries` | `rules/provider-containment.md` |
 | Raw input vs internal model | `typescript-boundaries` | `rules/raw-input-to-internal-model.md` |
 | Earned boundary mapping | `typescript-boundaries` | `rules/earned-mapping.md` |
@@ -22,12 +22,12 @@ This file keeps routing authority in one place without a separate manifest. Each
 | Config parsing and typed exposure | `typescript-configs` | `rules/parse-and-expose-config.md` |
 | Contextual module/feature config vs god app config | `typescript-configs` | `rules/contextual-config.md` |
 | Config validation vs dependency verification | `typescript-configs` | `rules/validation-vs-verification.md` |
-| Production-safe defaults and ownership | `typescript-configs` | `rules/defaults-and-ownership.md` |
+| Production-safe behavior defaults (timeouts, retries, limits) and config ownership boundaries | `typescript-configs` | `rules/defaults-and-ownership.md` |
 | Feature flags, modes, and named behavior decisions | `typescript-configs` | `rules/feature-decisions.md` |
 | Config migration from legacy env reads | `typescript-configs` | `rules/migration.md` |
 | Meaningful logging and branch/outcome diagnostics | `typescript-observability` | `rules/meaningful-logging.md` |
 | Tracing, OpenTelemetry, X-Ray, telemetry adapters | `typescript-observability` | `rules/tracing-boundary.md` |
-| Secrets, endpoints, URL/IP/token fallbacks, and secret sources | `typescript-security` | `rules/secrets-lifecycle.md` |
+| Secrets, environment-specific coordinates, URL/host/IP/endpoint/token/credential fallbacks, and secret sources | `typescript-security` | `rules/secrets-lifecycle.md` |
 | Crypto mode/config choices | `typescript-security` | `rules/crypto-choices.md` |
 | Redaction in errors/logs | `typescript-security` | `rules/redaction.md` |
 | Local test style, behavior-first names, validation scope | `typescript-testing` | `rules/local-test-style.md` |

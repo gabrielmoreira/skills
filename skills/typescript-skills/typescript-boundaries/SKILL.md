@@ -22,6 +22,10 @@ Use this skill when external shapes meet owned code. The goal is to keep foreign
 - Mapping external semantics into local meanings.
 - Local names for provider-derived concepts.
 
+## Demarcation
+
+`provider-containment.md` owns vendor SDK / generated / external API client types. `raw-input-to-internal-model.md` owns HTTP request/response/transport shapes, env-like input, webhook payloads, CLI args, untyped JSON. When in doubt: is the type defined by us or by an external runtime contract?
+
 ## Does Not Own
 
 - Choosing which provider/client to instantiate: use `../typescript-composition/SKILL.md`.

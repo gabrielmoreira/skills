@@ -1,8 +1,6 @@
 # Roadmap
 
-Current state: 8 bundles, 27 canonical rules, 5 references. Evals 12/12 score 3/3. Two conflicts corrected, six redundancies mapped.
-
-This roadmap lists coverage gaps, improvements to existing rules, and alignment with recognized best practices. Items are ordered by priority within each phase.
+This roadmap lists coverage gaps, improvements to existing rules, and alignment with recognized best practices. For current tree state (counts of rules, references, evals), see `references/review-notes.md`. Items are ordered by priority within each phase.
 
 ---
 
@@ -151,7 +149,7 @@ Action: add rule in `typescript-composition` or `typescript-async`:
 ### 3.2 Twelve-Factor alignment (alignment: adequate)
 
 Specific gaps:
-- **Log streaming**: meaningful-logging teaches structured logs but does not say "log to stdout, let infra route". Add guidance in `meaningful-logging.md`.
+- **Log streaming**: resolved. `meaningful-logging.md` Do-list now states: write structured logs to stdout/stderr; runtime/infra routes them (Twelve-Factor XI).
 - **Dev/prod parity**: defaults-and-ownership prohibits dev defaults but does not mention parity explicitly. Consider a note in `review-notes.md` or `defaults-and-ownership.md`.
 - **Port binding / concurrency**: out of immediate scope; framework-shaped apps already cover partially.
 
@@ -165,9 +163,9 @@ Specific gaps:
 
 ### 3.4 Testing Trophy alignment (alignment: adequate)
 
-Specific gap:
-- The tree does not prescribe unit/integration/e2e proportions. `local-test-style.md` says "prefer coverage in this order: unit, integration, e2e" which diverges from the Testing Trophy (integration-heavy).
-- Action: revise `local-test-style.md` to say "start from the seam that matches the behavior, not from a fixed proportion" and remove the ordering prescription. The right seam depends on what changed.
+Status: resolved.
+- The tree does not prescribe unit/integration/e2e proportions. `local-test-style.md` previously preferred "unit, integration, e2e/API-driven" which diverged from the Testing Trophy.
+- Resolved: `local-test-style.md` now says "Choose the test seam by what behavior changed; do not impose a fixed unit/integration/e2e proportion." The seam depends on the change.
 
 ### 3.5 TypeScript Handbook alignment (alignment: adequate)
 

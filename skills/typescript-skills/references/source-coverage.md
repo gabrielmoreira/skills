@@ -1,6 +1,6 @@
 # Source Coverage
 
-This file maps the analyzed source docs from `C:/Users/Gabriel/.agents/skills/typescript-skills` to the simplified tree. Use it during migration to confirm no rule was silently dropped.
+This file maps the analyzed source docs from the original `~/.agents/skills/typescript-skills` tree to the simplified tree. Use it during migration to confirm no rule was silently dropped.
 
 ## Root References
 

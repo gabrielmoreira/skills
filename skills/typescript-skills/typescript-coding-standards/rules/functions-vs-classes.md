@@ -96,6 +96,8 @@ class ReceiptStream {
 }
 ```
 
+For when a `makeXxx` factory should be assembled at the composition root vs constructed per-call, see `../typescript-composition/rules/ready-instance-vs-factory.md`.
+
 Verify:
 - State what an instance represents beyond a bag of functions.
 - Check whether closure-private state would be simpler than class-private state.

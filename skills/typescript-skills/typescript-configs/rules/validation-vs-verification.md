@@ -93,6 +93,8 @@ export function parseQueueConfig(env: NodeJS.ProcessEnv): QueueConfig {
 }
 ```
 
+When stage-conditional logic appears (`stage === "prod" ? ... : ...` selecting resources), do not reach for it. Stage is not a behavior decision — see `rules/feature-decisions.md`. The right shape is one explicit env input per environment-specific resource (e.g. `ORDER_QUEUE_URL` set per stage), and a named decision parsed once when behavior really differs.
+
 Verify:
 - Parser tests run without external resources.
 - Startup/integration tests cover dependency verification separately.

@@ -8,7 +8,7 @@ references: [Ubiquitous Language (DDD), Intention-Revealing Names (Clean Code)]
 
 # Naming and Semantic Center
 
-Decision: Name code by what the reader needs to understand at the callsite, and keep the important decision visible.
+Decision: Name code by what the reader needs to understand at the callsite, and keep the important decision visible. Owns general naming in owned code — for renaming concepts that come from providers/SDKs at the boundary, see `../typescript-boundaries/rules/local-naming.md`.
 
 Use when:
 - A name describes implementation instead of meaning.

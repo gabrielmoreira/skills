@@ -3,111 +3,147 @@ id: typescript-coding-standards.vertical-discipline
 owner: typescript-coding-standards
 canonical: true
 severity: default
-references: [Newspaper Metaphor (Clean Code), Extract Method, Template Method (GoF)]
+references: [Newspaper Metaphor (Clean Code), Extract Method (Fowler), Single Level of Abstraction Principle (SLAP), Template Method (GoF)]
 ---
 
 # Vertical Discipline
 
-Decision: Minimize vertical noise inside functions. Blank lines between blocks often signal extraction opportunities. When a function must stay unified, replace blank separators with short comment labels.
+Decision: When a function needs visual structure to be readable, walk a small ladder — comment labels first, then extraction by responsibility, then template method. Blank lines are not a defect on their own; they often point to where extraction is hiding.
 
 Use when:
-- A function has blank lines separating logical blocks.
-- A method requires scrolling to read fully.
-- Code reviewers or agents add blank lines to "organize" a long function.
-- A function body grows past roughly 25-30 lines with visual gaps.
+- A function has visually distinct blocks (validation / persist / notify, parse / decide / emit, fetch / transform / return).
+- A function does not fit on one screen and is hard to scan.
+- Reviewers add headings, blank lines, or comment labels to "organize" a long function.
+- The same block recurs in two or more functions.
+- One function mixes levels of abstraction (high-level orchestration next to low-level field plucking).
 
 Start here:
-- Remove blank lines between tightly related statements.
-- If removal makes intent unclear, add a short comment label on the line where the blank was.
+- Read the function as one unit. If you can summarize it in one sentence and it fits on a screen, leave it alone.
+- If blank-line groups exist and each group has a real name, label the groups inline with `// validate`, `// persist`, `// notify`. Comment labels are the cheapest way to test "is this really one thing or many?"
+- If the labels feel forced or each label maps to one obvious helper, that is the signal to extract.
 
 Escalate when:
-- Two or more blank-separated blocks have distinct responsibilities.
-- The function body exceeds one screen (~40-50 lines) even after removing blanks.
-- A block repeats across callers.
+- Two or more labeled blocks have distinct responsibilities and the names would be specific (`validateOrderInput`, `persistOrder`, `notifyOrderProcessed`).
+- A block calls more than 2-3 collaborators or repeats across callers.
+- The orchestration is the only top-level concern; the steps belong elsewhere.
+- The function still needs scrolling after labels.
 
 Complexity ladder:
-1. Remove blank lines; code reads fine without them.
-2. Replace blank line with a short comment label (`// validate`, `// persist`, `// notify`).
-3. Extract a named function for the block — template method when the skeleton is the interesting part.
-4. Compose via small functions called in sequence when the orchestration is the only top-level concern.
+1. Single small function with blank-line groups — leave it alone if it fits and reads.
+2. Add comment labels (`// validate`, `// persist`, `// notify`) to test whether the groups are really separate responsibilities.
+3. If labels point to clear names, extract one helper per labeled block (Extract Method).
+4. Compose the top-level function from helpers at one level of abstraction (template method / SLAP).
+5. Move helpers behind a module boundary when they grow their own contracts.
 
 Do:
-- Keep functions readable without scrolling when practical.
-- Use comment labels instead of blank lines when separation is needed inside a function.
-- Extract when comment labels reveal distinct responsibilities that repeat or grow.
-- Prefer template method or composed calls when the skeleton of the algorithm is the design, not the steps.
+- Use comment labels as a discovery tool — they cost nothing and reveal extraction candidates.
+- Extract by responsibility and naming clarity, not by visual gap or line count.
+- Use early return to flatten nested conditionals before deciding to extract.
+- Keep one level of abstraction per function: orchestrators orchestrate, doers do.
+- Let blank lines exist where they aid readability — they are not a defect.
 
 Avoid:
-- Blank lines as visual "breathing room" inside short functions.
-- Large functions held together by blank-line separation instead of extraction.
-- Extracting trivially small blocks just to avoid all blank lines — extraction must earn itself.
-- Deep nesting to avoid extraction; flatten with early return and then extract.
+- Extracting trivially small blocks just to shorten a function.
+- Hiding orchestration inside a deep call chain when reading top-down would be clearer.
+- Treating blank-line removal as a goal in itself.
+- Replacing a clear blank-line block with a vague `// section` comment that adds no information.
+- Naming extracted helpers `processStep1`, `doWork`, `handleIt`.
 
 Exceptions:
 - Top-level module structure (between imports, between exported declarations) uses blank lines normally.
-- Test files may use blank lines between Given/When/Then when it improves scan readability, but prefer comment labels.
-- A function with 2-3 lines per block and no scrolling pressure does not need extraction.
+- Test files commonly use blank lines between Given/When/Then; that is fine when scanning is the priority.
+- A short function with 2-3 lines per visual group needs no extraction; the structure is the design.
 
 Example:
 
-Before — blank lines as separators:
+Step 1 — original function with blank-line groups:
 
 ```ts
 async function processOrder(input: OrderInput, deps: OrderDeps) {
-  const validated = validateOrder(input);
+  if (!input.email) throw new MissingEmailError(input.id);
+  if (input.items.length === 0) throw new EmptyCartError(input.id);
+  const normalized = { ...input, email: input.email.toLowerCase() };
 
-  const saved = await deps.db.save(validated);
+  const saved = await deps.db.transaction(async (tx) => {
+    const order = await tx.orders.insert(normalized);
+    await tx.items.insertMany(order.id, normalized.items);
+    return order;
+  });
 
-  await deps.mailer.send(saved.email, formatReceipt(saved));
-
-  await deps.audit.record("order-processed", { orderId: saved.id });
-
-  return saved;
-}
-```
-
-After — no blanks needed, it reads fine:
-
-```ts
-async function processOrder(input: OrderInput, deps: OrderDeps) {
-  const validated = validateOrder(input);
-  const saved = await deps.db.save(validated);
   await deps.mailer.send(saved.email, formatReceipt(saved));
   await deps.audit.record("order-processed", { orderId: saved.id });
   return saved;
 }
 ```
 
-When a longer function needs visual structure — comment labels instead of blank lines:
+Step 2 — label the groups with comment labels. The labels are a discovery tool:
 
 ```ts
 async function processOrder(input: OrderInput, deps: OrderDeps) {
   // validate
-  const validated = validateOrder(input);
-  if (!validated.email) throw new MissingEmailError(input.id);
+  if (!input.email) throw new MissingEmailError(input.id);
+  if (input.items.length === 0) throw new EmptyCartError(input.id);
+  const normalized = { ...input, email: input.email.toLowerCase() };
   // persist
-  const saved = await deps.db.save(validated);
-  const receipt = formatReceipt(saved);
+  const saved = await deps.db.transaction(async (tx) => {
+    const order = await tx.orders.insert(normalized);
+    await tx.items.insertMany(order.id, normalized.items);
+    return order;
+  });
   // notify
-  await deps.mailer.send(saved.email, receipt);
+  await deps.mailer.send(saved.email, formatReceipt(saved));
   await deps.audit.record("order-processed", { orderId: saved.id });
   return saved;
 }
 ```
 
-When comment labels reveal extractable responsibilities — template method:
+Step 3 — labels turned out to be real responsibilities; extract one helper per label:
 
 ```ts
 async function processOrder(input: OrderInput, deps: OrderDeps) {
-  const validated = validateAndPrepare(input);
+  const validated = validateOrderInput(input);
   const saved = await persistOrder(validated, deps.db);
   await notifyOrderProcessed(saved, deps);
   return saved;
 }
+
+function validateOrderInput(input: OrderInput): NormalizedOrder {
+  if (!input.email) throw new MissingEmailError(input.id);
+  if (input.items.length === 0) throw new EmptyCartError(input.id);
+  return { ...input, email: input.email.toLowerCase() };
+}
+
+async function persistOrder(order: NormalizedOrder, db: DB) {
+  return db.transaction(async (tx) => {
+    const saved = await tx.orders.insert(order);
+    await tx.items.insertMany(saved.id, order.items);
+    return saved;
+  });
+}
+
+async function notifyOrderProcessed(order: SavedOrder, deps: NotifyDeps) {
+  await deps.mailer.send(order.email, formatReceipt(order));
+  await deps.audit.record("order-processed", { orderId: order.id });
+}
+```
+
+When extraction does not earn itself — short function with internal blank-line groups stays as-is:
+
+```ts
+function buildEmailHeaders(message: Message) {
+  const headers = new Headers();
+  headers.set("from", message.from);
+  headers.set("to", message.to.join(","));
+
+  if (message.replyTo) headers.set("reply-to", message.replyTo);
+  if (message.inReplyTo) headers.set("in-reply-to", message.inReplyTo);
+
+  return headers;
+}
 ```
 
 Verify:
-- Check functions for unnecessary blank lines between tightly related statements.
-- Check long functions with blank separators for extraction opportunities.
-- Check that remaining blank-line separators are replaced with comment labels when the function stays unified.
-- Check the function fits on one screen or close to it.
+- Did comment labels feel natural, or forced? Forced labels usually mean the function is fine as one unit.
+- Does each extracted helper have a name that says what it does, not how?
+- Are orchestration and low-level steps at different levels of abstraction in the file?
+- Did the function shrink because responsibilities moved out, or only because lines disappeared? Only the first is real.

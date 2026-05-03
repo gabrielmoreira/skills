@@ -18,12 +18,14 @@ const email = user.contact.email;
 
 ```ts
 // reusable type guard — the narrowing primitive
+function hasField<K extends string>(o: object, k: K): o is Record<K, unknown> {
+  return k in o;
+}
 function isOrderResponse(raw: unknown): raw is OrderResponse {
   if (typeof raw !== "object" || raw === null) return false;
-  const obj = raw as Record<string, unknown>;
-  return typeof obj.orderId === "string"
-    && typeof obj.status === "string"
-    && typeof obj.total === "number";
+  return hasField(raw, "orderId") && typeof raw.orderId === "string"
+    && hasField(raw, "status") && typeof raw.status === "string"
+    && hasField(raw, "total") && typeof raw.total === "number";
 }
 
 // throwing parser composes on top
@@ -256,46 +258,45 @@ export { processPaymentV2 as processPayment };
 
 ## Vertical Discipline
 
-Minimize blank lines inside functions. Comment labels replace blank separators. Extract when labels reveal distinct responsibilities.
+Comment labels first, then extract by responsibility. Blank lines that group real things are fine.
 
 ```ts
-// compact — no blanks needed
+// step 1 — blank-line groups
 async function processOrder(input: OrderInput, deps: OrderDeps) {
   const validated = validateOrder(input);
+
   const saved = await deps.db.save(validated);
+
   await deps.mailer.send(saved.email, formatReceipt(saved));
-  await deps.audit.record("order-processed", { orderId: saved.id });
   return saved;
 }
 ```
 
 ```ts
-// comment labels when visual structure is needed
+// step 2 — comment labels make groups explicit (discovery)
 async function processOrder(input: OrderInput, deps: OrderDeps) {
   // validate
   const validated = validateOrder(input);
   if (!validated.email) throw new MissingEmailError(input.id);
   // persist
   const saved = await deps.db.save(validated);
-  const receipt = formatReceipt(saved);
   // notify
-  await deps.mailer.send(saved.email, receipt);
-  await deps.audit.record("order-processed", { orderId: saved.id });
+  await deps.mailer.send(saved.email, formatReceipt(saved));
   return saved;
 }
 ```
 
 ```ts
-// template method when labels reveal extractable blocks
+// step 3 — labels point to clear names; extract
 async function processOrder(input: OrderInput, deps: OrderDeps) {
-  const validated = validateAndPrepare(input);
+  const validated = validateOrderInput(input);
   const saved = await persistOrder(validated, deps.db);
   await notifyOrderProcessed(saved, deps);
   return saved;
 }
 ```
 
-Blank lines ok between top-level declarations. Fit method on one screen when practical.
+Short functions with internal blank-line groups stay as-is. Helpers like `processStep1`, `doWork`, `handleIt` are signs the extraction is wrong.
 ---
 
 ## Composition Root
@@ -329,68 +330,20 @@ export const emailSenderProvider = {
 
 No `process.env` reads or provider selection inside behavior modules.
 
-Advanced: layered resolve — Clean Architecture Composition Root, lazy and tiered by scope.
+Advanced (lazy, tiered scope) — see `references/patterns/layered-resolve.md`:
 
 ```ts
-// runtime.ts — app singletons
 export const resolveEnv = memoizeSingleton((): RuntimeEnv => getPlatformProcessEnv());
-export const resolveBaseLogger = memoizeSingleton(
-  (): Logger => loggerFactory({ serviceName: resolveEnv().SERVICE_NAME ?? "my-app" }),
-);
-```
-
-```ts
-// application.ts — app infra singletons
 export const resolveNotesStorage = memoizeSingleton(
-  (): NotesStorageCapability =>
-    notesStorageCapabilityFactory({
-      driver: mongoNotesProviderFactory({
-        resolveCollection: async () => resolveDatabase().collection("notes"),
-      }),
-    }),
+  (): NotesStorageCapability => notesStorageCapabilityFactory({ /* ... */ }),
 );
-```
-
-```ts
-// request.ts — request-scoped via memoizeByReference
 export const resolveCreateNoteUsecase = memoizeByReference(
   (request: HostRequest) =>
     createNoteUsecaseFactory({ notesStorage: resolveNotesStorage(request) }),
 );
 ```
 
-```ts
-// server.ts — middleware projects request-scoped capabilities
-export const resolveContextMiddleware = memoizeSingleton(() =>
-  function contextMiddleware(req: Request, _res: Response, next: NextFunction) {
-    req.appContext = {
-      createNote: resolveCreateNoteUsecase(req),
-      listNotes: resolveListNotesUsecase(req),
-    };
-    next();
-  },
-);
-```
-
-Tiers map to rings: runtime (infra/framework) → application (adapters satisfy ports) → request (use cases with scoped deps). Only the outermost ring knows all adapters and ports.
-
-Lambda variant — same tiers, handler file is the edge:
-
-```ts
-// handler factory — testable, no bootstrap import in tests
-export function createNoteLambdaHandlerFactory({
-  createNoteUsecase, currentUserId,
-}: CreateNoteLambdaHandlerDeps) {
-  return async function handleCreateNote(event: CreateNoteEvent) {
-    const input = parseCreateNoteBody(event.body);
-    const result = await createNoteUsecase({ ...input, createdByUserId: currentUserId });
-    return { statusCode: 201, body: JSON.stringify(result) };
-  };
-}
-// Lambda entrypoint — one line
-export const handler = async (event: any, context?: any) =>
-  resolveCreateNoteLambdaHandler()(event, context);
-```
+Tiers: runtime (infra/framework) → application (adapters → ports) → request (use cases). One-way reference direction. Lambda variant uses `{ event, awsContext }` as the request reference.
 
 ---
 

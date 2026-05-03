@@ -27,7 +27,8 @@ Default for non-trivial apps: avoid a god `AppConfig` flowing everywhere. Parse 
 | `process.env`, raw config strings, `!`, `as`, untyped config | `rules/parse-and-expose-config.md` |
 | broad `AppConfig` passed into feature modules or tests | `rules/contextual-config.md` |
 | schema does network/file/cloud checks | `rules/validation-vs-verification.md` |
-| default value, fallback, dev default, URL/IP/token fallback, global config owner question | `rules/defaults-and-ownership.md` |
+| default value, fallback, dev default, global config owner question, production-safe behavior tuning | `rules/defaults-and-ownership.md` |
+| URL, host, IP, endpoint, token, credential, secret-bearing fallback | `../typescript-security/rules/secrets-lifecycle.md` |
 | feature flag, mode, stage-derived behavior decision, repeated raw flag check | `rules/feature-decisions.md` |
 | legacy env reads or risky config refactor | `rules/migration.md` |
 

@@ -16,7 +16,7 @@ Use this skill for local design quality in owned TypeScript code: names, abstrac
 | confusing name, leaked implementation word, hidden important branch | `rules/naming-and-semantic-center.md` |
 | old and new implementations coexisting | `rules/cutovers.md` |
 | `!`, `as`, `as unknown as`, `as any`, `@ts-ignore`, non-null assertion, forced type | `rules/type-narrowing-over-assertion.md` |
-| blank lines inside functions, long methods, scrolling, visual block separation | `rules/vertical-discipline.md` |
+| blank-line groups in a function, comment labels, long function, mixed levels of abstraction, extraction question | `rules/vertical-discipline.md` |
 
 ## Owns
 
@@ -26,7 +26,7 @@ Use this skill for local design quality in owned TypeScript code: names, abstrac
 - Clean cutover policy.
 - Type narrowing over assertion as hard gate.
 
-- Vertical discipline, blank-line removal, comment labels, and extraction triggers.
+- Vertical discipline: comment labels first, then extraction by responsibility.
 ## Does Not Own
 
 - Provider/SDK model translation: use `../typescript-boundaries/SKILL.md`.

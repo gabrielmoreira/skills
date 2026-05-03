@@ -93,7 +93,7 @@ function makeRequestDeps(app: AppDeps, ctx: RequestContext) {
 ```
 
 
-Advanced: layered resolve with explicit scope tiers. See `composition-root.md` for the full pattern: `runtime.ts` (app singletons) → `application.ts` (app infra) → `request.ts` (request-scoped via `memoizeByReference`). Each tier only references tiers above it. Tests prove scope contract: same request = same instance, different requests = different instances.
+For lazy/tiered scope (app singletons → app infra → request-scoped via `memoizeByReference`), see `references/patterns/layered-resolve.md`. Reference material; escalate from the canonical default in `composition-root.md` only when scope tiers earn it.
 Verify:
 - State the dependency scope in one phrase.
 - Check whether dependency input includes tenant/user/request/transaction data.

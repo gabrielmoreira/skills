@@ -15,6 +15,15 @@ This simplified tree is a clean-cut draft, not yet installed into `~/.agents/ski
 - Config guidance now includes named feature decisions, explicit resource pointers, file-layout escalation when earned, and stable runtime assumptions during ordinary changes.
 - Hard language is reserved for safety/correctness gates. Design preferences use defaults plus exceptions and escalation criteria.
 
+
+## Eval Status
+
+- Last run: 2026-05-03, iteration 2.
+- With-skill mean: 2.87/3 (96%) over 15 adversarial behavioral evals; baseline 1.73/3 (58%); lift +17 pts (+38pp).
+- Hard-gates passing: 5/5 (localhost-fallback, as-cast, secret-in-log, stage-default, mock-as-any).
+- Structural invariants: 21/21 passing (`evals/check-invariants.mjs`).
+- Workspace JSONs are not committed (regenerate via subagent runs against `evals/evals.json`); see `evals/README.md`.
+
 ## Known Follow-ups
 
 - Run eval scenarios before promotion.

@@ -39,6 +39,8 @@ Progressive-design scenarios also require the agent to pick the correct rung: st
 | Secret ARN appears in config and logs include config object | `typescript-security` | `typescript-configs` for pointer parsing |
 | Code adds OpenTelemetry/X-Ray imports inside a service module | `typescript-observability` | `typescript-composition` for bootstrap/lifecycle |
 
+| Agent describes a "mapper" or "transform" task without naming a skill | `typescript-boundaries` | — |
+| Agent describes adding a "translator" between provider responses and domain | `typescript-boundaries` | `typescript-coding-standards` for naming |
 ## Bundle Pressure Scenarios
 
 ### Coding Standards
@@ -73,6 +75,12 @@ Progressive-design scenarios also require the agent to pick the correct rung: st
 - Agent scatters `process.env.USE_X === "true"` checks through handlers or services. Expected: parse once into a named feature decision and pass typed decision inward.
 - Agent validates mode-specific requiredness only in a raw env schema with cross-field refinements. Expected: build final config object first, then validate that contract.
 - Agent reconstructs bucket/table/queue/resource names from stage inside application code. Expected: pass explicit resource pointers through typed config unless preserving an entrenched convention.
+- Agent reads `typescript-configs` for a localhost URL fallback question. Expected: routed to `typescript-security/rules/secrets-lifecycle.md`; `defaults-and-ownership.md` does not own URL/IP/token fallbacks.
+- Agent reads `defaults-and-ownership.md` looking for token/credential fallback guidance. Expected: rule defers to `secrets-lifecycle.md` and lists security-bearing values as out of scope.
+- Agent treats request/body/query parsing as `provider-containment.md` territory. Expected: routed to `raw-input-to-internal-model.md`; provider-containment owns vendor SDK/generated types only.
+- Agent treats Stripe SDK type containment as `raw-input-to-internal-model.md` territory. Expected: routed to `provider-containment.md`; raw-input owns HTTP transport/env-like input only.
+- Agent looks for general naming guidance in `local-naming.md`. Expected: routed to `naming-and-semantic-center.md`; local-naming covers provider-derived names only.
+- Agent looks for "long function" or "split function" guidance in `naming-and-semantic-center.md`. Expected: routed to `vertical-discipline.md` (locality and extraction).
 
 ### Security
 
@@ -131,3 +139,18 @@ Progressive-design scenarios also require the agent to pick the correct rung: st
 - Each canonical rule has `Decision`, `Use when`, `Start here`, `Escalate when`, `Complexity ladder`, `Do`, `Avoid`, `Exceptions`, `Example`, and `Verify` when the rule changes with scale.
 - Hard-gate scenarios include concrete verification.
 - Any recurring rationalization is addressed in the smallest owning rule.
+
+## Regression Invariants (programmatic)
+
+These invariants are checked by `evals/check-invariants.mjs`. Any failure blocks promotion.
+
+- Root router triggers include keywords for every bundle: provider, mapper, transform, env, config, secret, credential, log, trace, test.
+- No rule outside `typescript-security/` defines code defaults for URL, host, IP, token, password, API key, credential, secret, DSN, or connection string.
+- `provider-containment.md` Use-when does not include "request body", "query", "headers", "webhook", "transport".
+- `raw-input-to-internal-model.md` Use-when does not include "SDK", "provider", "generated".
+- Every canonical rule has frontmatter with `id`, `owner`, `canonical`, `severity`, `references`.
+- Every canonical rule contains `Decision:`, `Use when:`, `Do:`, `Avoid:`, `Verify:` sections.
+- All code fences are balanced.
+- `references/ownership.md` lists exactly one canonical owner per topic; no topic is owned twice.
+- Root router includes the `mapper`/`transform` keyword set on the boundaries row.
+- `local-test-style.md` does not contain the phrase "unit, integration, e2e" as a prescribed ordering.

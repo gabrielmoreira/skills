@@ -14,7 +14,7 @@ Default: open one primary skill first. Add secondary skills only when the task c
 | If the task involves... | Open |
 | --- | --- |
 | naming, abstractions, classes, cutovers, local reasoning, `!`, `as`, forced types | `typescript-coding-standards/SKILL.md` |
-| provider, SDK, API, request, response, or generated types entering owned code | `typescript-boundaries/SKILL.md` |
+| provider, SDK, API, request, response, generated types, mapper, mapping, transform, translator, anti-corruption layer | `typescript-boundaries/SKILL.md` |
 | dependency construction, factories, lifecycle, singletons, runtime selection | `typescript-composition/SKILL.md` |
 | env, config parsing, defaults, typed config exposure, config migration | `typescript-configs/SKILL.md` |
 | logging, tracing, OpenTelemetry, X-Ray, actionable diagnostics, branch observability | `typescript-observability/SKILL.md` |
@@ -35,6 +35,9 @@ Default: open one primary skill first. Add secondary skills only when the task c
 | Local model name comes from provider data | `typescript-boundaries` | `typescript-coding-standards` |
 | Factory or singleton choice affects tests | `typescript-composition` | `typescript-testing` |
 | OpenTelemetry/X-Ray setup or exporter lifecycle | `typescript-observability` | `typescript-composition` for construction/lifecycle |
+| `as` cast on `JSON.parse`, env, or unknown response | `typescript-coding-standards` (hard-gate: no assertion) | `typescript-configs` for the parser shape, `typescript-boundaries` if the data is HTTP/transport |
+| `localhost` / `sandbox` / `test-token` fallback in code | `typescript-security` | `typescript-configs` only for non-secret behavior defaults |
+| Stage-conditional resource selection (`stage === "prod" ? ... : ...`) | `typescript-configs` (`feature-decisions.md`) | `typescript-configs` (`validation-vs-verification.md`) for the explicit pointer |
 
 ## Router Rule
 

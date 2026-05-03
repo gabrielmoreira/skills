@@ -27,10 +27,10 @@ Escalate when:
 - A shared runtime/library change has representative consumers.
 - The existing style is actively hiding the behavior under test.
 
-Complexity ladder:
-1. Focused unit/behavior test in local style.
-2. Boundary/contract test for handler, resolver, datasource, config, or composition root.
-3. Integration/API-driven test only when the changed behavior crosses process or framework boundaries.
+Complexity ladder (smaller seam first; the right seam depends on what changed, not on a fixed proportion):
+1. Focused behavior test at the seam closest to the change, in local style.
+2. Contract/boundary test for handler, resolver, datasource, config, or composition root when the change is at that boundary.
+3. Integration test when the changed behavior only manifests across process or framework boundaries.
 4. Representative consumer test for shared libraries or shared runtime behavior.
 5. E2E/browser/API suite only when the package already uses it or the task explicitly needs it.
 
@@ -39,7 +39,7 @@ Do:
 - Use `// Given`, `// When`, `// Then` sections when they improve readability.
 - Use shorter `// When` + `// Then` or combined `// Given When` when setup is trivial.
 - Treat coverage targets as guidance, not a reason for brittle tests.
-- Prefer coverage in this order when practical: unit, integration, e2e/API-driven.
+- Choose the test seam by what behavior changed; do not impose a fixed unit/integration/e2e proportion.
 - Respect local package reality when existing tests are weaker than the ideal.
 
 Avoid:

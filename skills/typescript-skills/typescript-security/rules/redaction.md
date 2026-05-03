@@ -12,6 +12,8 @@ Decision: Redact sensitive values before logging, formatting, rethrowing, serial
 
 This rule owns data safety in logs/errors. For deciding what is meaningful to log or trace, use `../typescript-observability/SKILL.md`.
 
+First line of defense is keeping secret values out of the typed config object in the first place — the config should hold a *pointer* (ARN, secret name, env var name) and secrets should be resolved later, on demand. Redaction is the second line of defense for when the secret unavoidably enters memory. See `rules/secrets-lifecycle.md`.
+
 Use when:
 - Code logs config, headers, auth objects, env, request bodies, provider responses, credentials, tokens, keys, or connection strings.
 - Errors include raw input or config context.
@@ -73,4 +75,5 @@ Verify:
 - Search for broad stringification/logging near sensitive objects.
 - Confirm tests fail if a representative token/key/password appears in output.
 - Check error paths, not only success paths.
+- Check whether the secret should have been excluded from the in-memory config object in the first place; redaction is the second line of defense, not the first. If the typed config carries the secret value (not a pointer), fix that before adding redaction.
 - Check meaningful logging/tracing still has enough safe context after redaction.
