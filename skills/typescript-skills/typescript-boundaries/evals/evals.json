@@ -1,0 +1,35 @@
+{
+  "skill_name": "typescript-boundaries",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "My business logic takes Stripe SDK types directly. Should I keep that or map them first?",
+      "expected_output": "Moves provider SDK types to the edge and introduces a local model for business code.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I have a request DTO with optional fields, but my use case really needs a smaller required input. How should I model that?",
+      "expected_output": "Separates raw input from the internal model and keeps validation near the edge.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Provider names are leaking too far into my app. How should I rename things so local meaning stays clear?",
+      "expected_output": "Names local models by local meaning instead of blindly copying provider vocabulary.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "We keep adding tiny mapper layers. How do I know if a new boundary mapper is actually worth it?",
+      "expected_output": "Uses the earned-mapping rule and avoids ceremonial adapters.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "An Express request object is reaching domain behavior directly. Is that still a boundary problem even if the fields look simple?",
+      "expected_output": "Keeps host concerns at the edge and parses a smaller local input before behavior code runs.",
+      "files": []
+    }
+  ]
+}

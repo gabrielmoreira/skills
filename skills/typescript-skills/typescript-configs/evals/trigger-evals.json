@@ -1,0 +1,12 @@
+[
+  {"query":"I only have PORT and DATABASE_URL in this TypeScript service. Should I just parse env directly?","should_trigger":true},
+  {"query":"A feature flag changes whether a queue URL is required. Where should I validate this config?","should_trigger":true},
+  {"query":"Our config includes TLS cert paths and secret ARNs. Should we verify those while parsing config?","should_trigger":true},
+  {"query":"I need help deciding where defaults should live in my app config.","should_trigger":true},
+  {"query":"This module imports a giant app config just to read one topic ARN. Should I narrow that contract?","should_trigger":true},
+  {"query":"Can you refactor this use case so it stops building its own dependencies?","should_trigger":false},
+  {"query":"Stripe DTO names are leaking into my domain model. How should I map them?","should_trigger":false},
+  {"query":"Should I write a characterization test before refactoring this parser?","should_trigger":false},
+  {"query":"We load a secret from Secrets Manager after startup. Is that config parsing or later resolution?","should_trigger":true},
+  {"query":"This secret ARN is configured correctly, but I need advice on redaction and secret loading policy.","should_trigger":false}
+]

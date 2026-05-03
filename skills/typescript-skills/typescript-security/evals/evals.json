@@ -1,0 +1,41 @@
+{
+  "skill_name": "typescript-security",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Our config stores a Secrets Manager ARN. Should the config object carry the actual secret value too?",
+      "expected_output": "Keeps the secret source in config and loads the secret value later.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Should I fetch a secret while parsing config, or later in startup?",
+      "expected_output": "Parses the secret source first and moves the fetch to a later startup step.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "A startup failure currently logs the whole config object, including secret pointers. Is that acceptable?",
+      "expected_output": "Redacts sensitive values and avoids blind config logging.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "We want a default KMS key ARN so local tests are easier. Is that a safe default?",
+      "expected_output": "Rejects test-secret defaults and prefers explicit sensitive config.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "Our encryption mode is hidden behind a boolean called SECURE_MODE. Is that clear enough?",
+      "expected_output": "Makes crypto-relevant modes explicit instead of hiding them behind vague booleans.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "We logged a secret ARN in a startup error. It was not the secret value, only the pointer. Is that still a problem?",
+      "expected_output": "Treats secret pointers as sensitive enough to redact or narrow before logging.",
+      "files": []
+    }
+  ]
+}

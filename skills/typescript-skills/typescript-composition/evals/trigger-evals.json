@@ -1,0 +1,11 @@
+[
+  {"query":"My use case reads env and picks a provider. Should that stay there?","should_trigger":true},
+  {"query":"Where should the composition root live in this TypeScript app?","should_trigger":true},
+  {"query":"Should I inject a factory or a ready client into this use case?","should_trigger":true},
+  {"query":"We cache a client inside a feature module. Is that okay?","should_trigger":true},
+  {"query":"A request-scoped dependency is being created inside the use case itself. Is that a scope smell?","should_trigger":true},
+  {"query":"How should I validate app config when one flag changes what is required?","should_trigger":false},
+  {"query":"Provider enums are leaking into domain code. What boundary should I use?","should_trigger":false},
+  {"query":"This test keeps checking helper names instead of behavior. Is that okay?","should_trigger":false},
+  {"query":"I want runtime choices visible in one place instead of spread across handlers.","should_trigger":true}
+]

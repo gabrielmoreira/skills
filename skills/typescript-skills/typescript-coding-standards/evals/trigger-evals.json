@@ -1,0 +1,10 @@
+[
+  {"query":"I want to add a new UserService wrapper, but it mostly forwards to one repo. Is that a good abstraction?","should_trigger":true},
+  {"query":"One action now takes five files to understand because it moves through thin layers. Is that a smell?","should_trigger":true},
+  {"query":"We introduced a new boundary but kept the legacy path around too. Should both stay live?","should_trigger":true},
+  {"query":"This name is generic and I cannot tell what the module really does. How should I rename it?","should_trigger":true},
+  {"query":"Should I fetch a secret during config parsing or later?","should_trigger":false},
+  {"query":"Should this module own its own config or should app config own it?","should_trigger":false},
+  {"query":"I need a characterization test before refactoring current behavior.","should_trigger":false},
+  {"query":"Would a class here earn its place, or should this stay as functions?","should_trigger":true}
+]

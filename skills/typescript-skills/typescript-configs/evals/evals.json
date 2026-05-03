@@ -1,0 +1,35 @@
+{
+  "skill_name": "typescript-configs",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have a small TypeScript service and only need PORT and DATABASE_URL. Should I parse env directly or build a config object first?",
+      "expected_output": "Recommends the simple env-first path and points to the relevant rule.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "My notifications feature only needs a queue URL when NOTIFICATIONS_ENABLED is true. How should I model and validate this config?",
+      "expected_output": "Recommends config-first validation and explains why the flag changes the boundary.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Our app stores TLS cert paths and secret ARNs in config. Should we check those resources while parsing config?",
+      "expected_output": "Separates shape parsing from later verification of external resources.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "We have a retry default in both the schema and the factory. Which one should own it?",
+      "expected_output": "Pushes toward a single owner for the default and explains why duplicated defaults drift.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "This module only needs one SNS topic value, but it currently imports a giant app config object. What should we change?",
+      "expected_output": "Moves the module toward a smaller validated config slice instead of a giant shared config bag.",
+      "files": []
+    }
+  ]
+}
