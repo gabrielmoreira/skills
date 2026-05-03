@@ -95,6 +95,21 @@ Progressive-design scenarios also require the agent to pick the correct rung: st
 - Agent imports OpenTelemetry or X-Ray SDK directly inside business logic. Expected: move vendor setup to observability adapter/bootstrap and pass a small observability capability inward.
 - Agent creates spans with dynamic names or sensitive/high-cardinality attributes. Expected: stable span names, safe bounded attributes, span events for branch decisions.
 
+
+### Error Handling
+
+- Agent returns `null` or throws custom `Error` subclasses ad hoc for a parser with 3 distinct failure modes. Expected: follow the project decision; class-based projects throw `AppError` subclasses, Result-based projects return a discriminated union. No mixed style inside one package.
+- Agent retries a `BusinessError` / validation failure. Expected: reject; retryability is a classification concern, and caller-fault errors are not retried.
+- Agent boundary returns raw `error.message` from Stripe/DB/Mongo to the client. Expected: translate once at the edge to an owned error shape with stable `code` and `errorId`.
+- Agent adds error classes without `code` / `errorId` / `timestamp`. Expected: use base error class metadata from `error-shape-and-metadata.md`.
+
+### Async
+
+- Agent sees three independent sequential `await`s. Expected: `Promise.all`.
+- Agent sees 5000 IDs in `Promise.all` with 429s. Expected: bounded concurrency + honor `Retry-After`; no serial-only \"fix\".
+- Agent writes `fetch()` in a React effect without `AbortController`. Expected: add signal and abort on cleanup; stale fetch races are a bug.
+- Agent adds `for (let i=0; i<3; i++) { try/catch sleep }` retry loop. Expected: exponential backoff + full jitter + attempt cap + abort awareness; retryability decided by error classification.
+- Agent adds a server with no SIGTERM handler. Expected: process-lifecycle rule with drain, readiness flip, hard deadline, observability flush.
 ### Testing
 
 - Agent asserts helper name, private field, or dependency graph snapshot. Expected: test caller-visible behavior unless structure is the contract.

@@ -1,6 +1,6 @@
 ---
 name: typescript-skills
-description: Use when working on TypeScript code and needing to choose the smallest focused TypeScript skill for coding standards, boundaries, composition, configs, observability, security, or testing.
+description: Use when working on TypeScript code and needing to choose the smallest focused TypeScript skill for coding standards, boundaries, composition, configs, async control, error handling, observability, security, or testing.
 ---
 
 # TypeScript Skills Router
@@ -20,6 +20,8 @@ Default: open one primary skill first. Add secondary skills only when the task c
 | logging, tracing, OpenTelemetry, X-Ray, actionable diagnostics, branch observability | `typescript-observability/SKILL.md` |
 | secrets, crypto choices, redaction, credentials, secret sources | `typescript-security/SKILL.md` |
 | tests, characterization, boundary contracts, brittle assertions, config tests | `typescript-testing/SKILL.md` |
+| throw vs return, Result type, retryable, error classification, error contract, custom Error subclass | `typescript-error-handling/SKILL.md` |
+| `Promise.all`, sequential awaits, bounded concurrency, AbortSignal, cleanup, SIGTERM, graceful shutdown | `typescript-async/SKILL.md` |
 
 ## Tie-breakers
 
@@ -38,6 +40,16 @@ Default: open one primary skill first. Add secondary skills only when the task c
 | `as` cast on `JSON.parse`, env, or unknown response | `typescript-coding-standards` (hard-gate: no assertion) | `typescript-configs` for the parser shape, `typescript-boundaries` if the data is HTTP/transport |
 | `localhost` / `sandbox` / `test-token` fallback in code | `typescript-security` | `typescript-configs` only for non-secret behavior defaults |
 | Stage-conditional resource selection (`stage === "prod" ? ... : ...`) | `typescript-configs` (`feature-decisions.md`) | `typescript-configs` (`validation-vs-verification.md`) for the explicit pointer |
+| Function may fail and caller has multiple branches | `typescript-error-handling` (`throw-vs-result.md`) | `typescript-error-handling` (`error-shape-and-metadata.md`) for metadata consistency |
+| Retry loop retries everything including 4xx | `typescript-error-handling` (`error-classification.md`) | `typescript-async` for the retry mechanism |
+| Handler returns library/SDK error shape directly to client | `typescript-error-handling` (`error-boundary-contract.md`) | `typescript-boundaries` for the inbound side |
+| Sequential `await`s where independent ops would parallelize | `typescript-async` (`parallel-and-dependencies.md`) | — |
+| 500 IDs in `Promise.all` causing rate-limit | `typescript-async` (`parallel-and-dependencies.md` — bounded concurrency) | — |
+| `fetch` without `signal:` and caller may walk away | `typescript-async` (`cancellation-and-abort.md`) | — |
+| Resource leaks on error, missing `finally`/`using` | `typescript-async` (`cleanup-and-teardown.md`) | — |
+| SIGTERM/SIGKILL kills mid-request, no graceful shutdown, swallowed `unhandledRejection` | `typescript-async` (`process-lifecycle.md`) | `typescript-observability` for flush before exit |
+| Missing `errorId`, no stable `code`, support cannot correlate response to logs | `typescript-error-handling` (`error-shape-and-metadata.md`) | `typescript-observability` for log shape |
+| Retry loop with constant sleep / no jitter / no Retry-After | `typescript-async` (`retry-and-backoff.md`) | `typescript-error-handling` for retryable classification |
 
 ## Router Rule
 

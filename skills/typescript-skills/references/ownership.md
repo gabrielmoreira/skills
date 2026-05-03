@@ -12,6 +12,9 @@ This file keeps routing authority in one place without a separate manifest. Each
 | Full cutovers and staged migration exceptions | `typescript-coding-standards` | `rules/cutovers.md` |
 | Type narrowing over assertion (`!`, `as`, `as unknown as`, `@ts-ignore`) | `typescript-coding-standards` | `rules/type-narrowing-over-assertion.md` |
 | Vertical discipline: blank lines, comment labels, extraction progression | `typescript-coding-standards` | `rules/vertical-discipline.md` |
+| Branded and opaque types, nominal typing for domain primitives | `typescript-coding-standards` | `rules/branded-and-opaque-types.md` |
+| Exhaustive narrowing of discriminated unions, `assertNever` | `typescript-coding-standards` | `rules/exhaustive-narrowing.md` |
+| Generics, conditional types, mapped types | `typescript-coding-standards` | `rules/generics-and-conditional-types.md` |
 | Provider, SDK, API, generated types | `typescript-boundaries` | `rules/provider-containment.md` |
 | Raw input vs internal model | `typescript-boundaries` | `rules/raw-input-to-internal-model.md` |
 | Earned boundary mapping | `typescript-boundaries` | `rules/earned-mapping.md` |
@@ -34,6 +37,15 @@ This file keeps routing authority in one place without a separate manifest. Each
 | Contract tests and characterization | `typescript-testing` | `rules/contracts-and-characterization.md` |
 | Config injection in tests | `typescript-testing` | `rules/config-in-tests.md` |
 | Composition-root smoke tests | `typescript-testing` | `rules/composition-root-tests.md` |
+| Throw vs Result vs union return | `typescript-error-handling` | `rules/throw-vs-result.md` |
+| Error classification (caller/system, retryable/non-retryable) | `typescript-error-handling` | `rules/error-classification.md` |
+| Error contract at module/API boundary | `typescript-error-handling` | `rules/error-boundary-contract.md` |
+| Error shape + metadata (`errorId`, `timestamp`, `code`, `cause`, RFC 7807 / Problem Details) | `typescript-error-handling` | `rules/error-shape-and-metadata.md` |
+| Retry mechanism: backoff, jitter, `Retry-After`, attempt cap, idempotency key | `typescript-async` | `rules/retry-and-backoff.md` |
+| Parallel vs sequential, dependency-based parallelization, bounded concurrency | `typescript-async` | `rules/parallel-and-dependencies.md` |
+| Cancellation via AbortSignal, abort propagation, AbortController on unmount | `typescript-async` | `rules/cancellation-and-abort.md` |
+| Resource cleanup, `finally`, `using`, dispose semantics | `typescript-async` | `rules/cleanup-and-teardown.md` |
+| Process lifecycle: SIGTERM, graceful shutdown, unhandledRejection, drain | `typescript-async` | `rules/process-lifecycle.md` |
 
 ## Cross-reference Policy
 

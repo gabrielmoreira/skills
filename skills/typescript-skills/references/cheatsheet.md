@@ -825,3 +825,170 @@ it("returns different usecases for different request references", () => {
 });
 ```
 No `expect(container.registrations).toMatchSnapshot()`.
+
+---
+
+## Throw vs Result
+
+Pick one project default. Pure parsers may still return `Result` in a class-based project.
+
+```ts
+type ParseOrderResult =
+  | { ok: true; value: Order }
+  | { ok: false; error: { kind: "missing_field" | "wrong_type"; field: string } };
+
+function parseOrder(raw: unknown): ParseOrderResult { /* ... */ }
+
+const parsed = parseOrder(input);
+if (!parsed.ok) {
+  switch (parsed.error.kind) {
+    case "missing_field": return badRequest(`missing ${parsed.error.field}`);
+    case "wrong_type":    return badRequest(`wrong type for ${parsed.error.field}`);
+  }
+}
+```
+
+No `return null` for multiple distinct failures.
+
+---
+
+## Error Classification
+
+Boundary and retry read classification, not concrete subclasses.
+
+```ts
+abstract class BusinessError extends AppError {}
+abstract class InfraError extends AppError {
+  abstract readonly retryable: boolean;
+}
+
+if (e instanceof InfraError && e.retryable) return retryLater();
+if (e instanceof BusinessError) return badRequest(e.message);
+```
+
+Wrap third-party errors at the adapter boundary.
+
+---
+
+## Error Boundary Contract
+
+Translate once per boundary. Vendor error shapes never reach callers.
+
+```ts
+function translate(e: unknown) {
+  if (e instanceof ValidationError) return { status: 400, body: { code: e.code, errorId: e.errorId, details: e.fieldErrors } };
+  if (e instanceof BusinessError)   return { status: 400, body: { code: e.code, errorId: e.errorId, message: e.message } };
+  if (e instanceof InfraError)      return { status: e.retryable ? 503 : 500, body: { code: e.code, errorId: e.errorId, message: "internal error" } };
+  return { status: 500, body: { code: "internal_error", errorId: ulid(), message: "internal error" } };
+}
+```
+
+Response shape is yours: stable `code`, `errorId`, sanitized `message`.
+
+---
+
+## Error Shape and Metadata
+
+Every error carries stable `code`, per-occurrence `errorId`, `timestamp`, and `cause`.
+
+```ts
+abstract class AppError extends Error {
+  abstract readonly code: string;
+  readonly errorId = ulid();
+  readonly timestamp = new Date();
+
+  toLogShape() {
+    return {
+      code: this.code,
+      errorId: this.errorId,
+      timestamp: this.timestamp.toISOString(),
+      cause: this.cause,
+    };
+  }
+}
+```
+
+Log the full shape; respond with sanitized fields only.
+
+---
+
+## Retry and Backoff
+
+Retry only classified retryable failures. Use bounded attempts, backoff, jitter, and `Retry-After`.
+
+```ts
+async function withRetry<T>(fn: () => Promise<T>, signal?: AbortSignal): Promise<T> {
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    signal?.throwIfAborted();
+    try { return await fn(); }
+    catch (e) {
+      if (!(e instanceof InfraError) || !e.retryable) throw e;
+      if (attempt === 3) throw e;
+      await sleep(Math.random() * 200 * 2 ** (attempt - 1), signal);
+    }
+  }
+  throw new Error("unreachable");
+}
+```
+
+For writes, pair retries with idempotency keys.
+
+---
+
+## Branded and Opaque Types
+
+Use brands for same-shape primitives with different meaning.
+
+```ts
+type Brand<K, T> = K & { readonly __brand: T };
+
+type UserId = Brand<string, "UserId">;
+type OrderId = Brand<string, "OrderId">;
+
+// SAFETY: purely nominal identity brand.
+function asUserId(value: string): UserId { return value as UserId; }
+
+function archiveOrder(orderId: OrderId) {}
+archiveOrder(asUserId("u_123")); // ts error
+```
+
+One constructor per brand. No downstream `as UserId` casts.
+
+---
+
+## Exhaustive Narrowing
+
+Discriminated unions should fail to compile when a new variant is added.
+
+```ts
+function assertNever(x: never): never {
+  throw new Error(`unreachable: ${JSON.stringify(x)}`);
+}
+
+function statusLabel(status: Status): string {
+  switch (status.kind) {
+    case "loading": return "Loading";
+    case "error":   return status.message;
+    case "ready":   return "Ready";
+    default:         return assertNever(status);
+  }
+}
+```
+
+No `default: return null` and never `as never` to silence the compiler.
+
+---
+
+## Generics and Conditional Types
+
+Concrete first. Generic when the second caller appears or the API is truly shared.
+
+```ts
+function findById<T extends { id: string }>(items: T[], id: string): T | undefined {
+  return items.find((item) => item.id === id);
+}
+
+type AwaitedValue<T> = T extends Promise<infer U> ? U : T;
+```
+
+Use the smallest honest constraint. Prefer built-ins (`Pick`, `Omit`, `Partial`, `Awaited`) before inventing your own.

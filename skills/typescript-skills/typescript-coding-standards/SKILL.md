@@ -17,6 +17,9 @@ Use this skill for local design quality in owned TypeScript code: names, abstrac
 | old and new implementations coexisting | `rules/cutovers.md` |
 | `!`, `as`, `as unknown as`, `as any`, `@ts-ignore`, non-null assertion, forced type | `rules/type-narrowing-over-assertion.md` |
 | blank-line groups in a function, comment labels, long function, mixed levels of abstraction, extraction question | `rules/vertical-discipline.md` |
+| same-shape primitives mixed (UserId vs OrderId), validated value losing its proof | `rules/branded-and-opaque-types.md` |
+| switch on union without `default: never`, "what if a new variant is added", silent fallback | `rules/exhaustive-narrowing.md` |
+| function copy-pasted per type, generic with `any`, conditional/mapped type question | `rules/generics-and-conditional-types.md` |
 
 ## Owns
 
@@ -25,6 +28,9 @@ Use this skill for local design quality in owned TypeScript code: names, abstrac
 - Names in owned code.
 - Clean cutover policy.
 - Type narrowing over assertion as hard gate.
+- Branded types and nominal typing for domain primitives.
+- Exhaustive narrowing of discriminated unions.
+- Generics, conditional types, and mapped types — when each earns itself.
 
 - Vertical discipline: comment labels first, then extraction by responsibility.
 ## Does Not Own

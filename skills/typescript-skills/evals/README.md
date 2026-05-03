@@ -21,7 +21,7 @@ For each prompt in `evals.json`:
 
 1. Spawn one subagent with the skill tree available (with-skill arm) and one without (baseline arm). Same prompt, same JSON output format.
 2. An LLM grader subagent reads each response and scores it against the `assertions` array (0-3 per the rubric below).
-3. Aggregate per-eval and across all 15 prompts. Compare with-skill vs baseline.
+3. Aggregate per-eval and across all 25 prompts. Compare with-skill vs baseline.
 
 Recommended N=1 for an iteration check, N=3 if you want variance bands. Promotion threshold: with-skill mean ≥ 2.5/3, hard-gates 3/3.
 
@@ -46,13 +46,15 @@ typescript-skills-workspace/
 
 ## What `evals.json` contains
 
-15 adversarial prompts across three categories:
+25 adversarial prompts across five categories:
 
 - **router-disambiguation** — prompts ambiguous between 2-3 skills; agent must pick the correct primary
 - **behavior** — prompts where the agent must apply a specific rule
 - **hard-gate-bypass-attempt** — prompts with plausible-sounding justifications for hard-gate violations; agent must refuse and explain why
 - **progressive-complexity** — prompts where the smallest correct answer is the right one
 - **gap-detection** — prompts about areas the tree does not cover; agent must say so honestly
+- **error-handling** — prompts about class-vs-Result, retryability, metadata, and boundary translation
+- **async** — prompts about parallelization, cancellation, backoff, and process lifecycle
 
 Design rules (enforced by `INV-21`):
 

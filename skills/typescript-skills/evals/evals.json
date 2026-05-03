@@ -234,6 +234,153 @@
         "Does NOT just say 'rename it' without identifying the underlying rule"
       ],
       "red_herrings": ["the agent might pick general naming because 'naming' is the surface concern"]
+    },
+    {
+      "id": "throw-vs-return-result",
+      "category": "behavior",
+      "prompt": "I'm writing a `parseOrder(raw)` function that can fail in three ways: missing required field, wrong type for a field, or unknown extra fields. Should it throw, return null, or something else?",
+      "expected_primary": "typescript-error-handling",
+      "expected_secondary": [],
+      "assertions": [
+        "Says return a discriminated union / Result, not throw, when there are multiple distinct failure modes",
+        "Names the discriminant field (kind/ok) and how the caller branches on it",
+        "Does NOT recommend `return null` for multiple failure modes",
+        "Does NOT recommend throwing different Error subclasses as the primary fix when Result is cleaner",
+        "Mentions that the caller can switch over the error variant"
+      ],
+      "red_herrings": ["throwing custom Error subclasses as the obvious choice"]
+    },
+    {
+      "id": "retry-everything",
+      "category": "behavior",
+      "prompt": "Our payment service wraps every downstream call in `for (let i = 0; i < 3; i++) { try { return await call() } catch (e) { await sleep(i * 1000) } }`. Sometimes a 400 'card declined' gets retried 3 times. What's wrong?",
+      "expected_primary": "typescript-error-handling",
+      "expected_secondary": ["typescript-async"],
+      "assertions": [
+        "Identifies that the retry loop retries everything, including caller-fault errors",
+        "Recommends classifying errors before retrying (retryable vs non-retryable)",
+        "Distinguishes caller fault (don't retry) from transient infra (do retry)",
+        "Does NOT just suggest 'reduce retries to 1' as the fix",
+        "Mentions the classification responsibility belongs to the boundary that knows the error semantics"
+      ],
+      "red_herrings": ["framing the issue as 'too many retries' rather than 'wrong errors retried'"]
+    },
+    {
+      "id": "leaked-library-error-shape",
+      "category": "behavior",
+      "prompt": "A user reported a 500 from our API with body `{ message: 'no such customer: cus_xxx' }`. That message came straight from the Stripe SDK. Our handler is `try { ... } catch (e) { res.status(500).json({ message: e.message }) }`. Where's the problem?",
+      "expected_primary": "typescript-error-handling",
+      "expected_secondary": ["typescript-security"],
+      "assertions": [
+        "Identifies that vendor error shape is leaking past the boundary",
+        "Recommends a single error translator at the edge that maps to an owned error contract",
+        "Says the response should have a stable `code` and a sanitized message",
+        "Mentions logging the original cause for ops while hiding internals from the caller",
+        "Does NOT suggest just changing the status code as the primary fix"
+      ],
+      "red_herrings": ["framing it as just a 500-vs-404 problem"]
+    },
+    {
+      "id": "sequential-independent-fetches",
+      "category": "behavior",
+      "prompt": "Our profile page handler does `const user = await fetchUser(id); const config = await fetchConfig(); const notifications = await fetchNotifications(id);`. P95 latency went up. The three fetches don't depend on each other. What's the fix?",
+      "expected_primary": "typescript-async",
+      "expected_secondary": [],
+      "assertions": [
+        "Recommends `Promise.all` for the three independent fetches",
+        "Names that sequential await with no value flow is a waterfall",
+        "Does NOT recommend caching as the primary fix for this latency",
+        "Mentions that partial dependencies (where some fetches need others) would use start-promise-then-await-late"
+      ],
+      "red_herrings": ["latency framing pushes toward caching/CDN answers"]
+    },
+    {
+      "id": "promise-all-rate-limited",
+      "category": "behavior",
+      "prompt": "We have a nightly job that fetches profile data for ~5000 users from a third-party API. We do `Promise.all(userIds.map(fetchProfile))`. Half the requests now fail with 429 since they tightened the limits. What should we do?",
+      "expected_primary": "typescript-async",
+      "expected_secondary": ["typescript-error-handling"],
+      "assertions": [
+        "Recommends bounded concurrency (p-limit, p-map, or batch-of-N), not unbounded Promise.all",
+        "Mentions honoring Retry-After and the documented rate limit",
+        "Does NOT recommend simply reducing parallelism to 1 (sequential) as the fix",
+        "Mentions classifying 429 as retryable so the retry layer behaves correctly"
+      ],
+      "red_herrings": ["serial-only as the simplest fix"]
+    },
+    {
+      "id": "fetch-without-abort",
+      "category": "behavior",
+      "prompt": "In a React component I do `useEffect(() => { fetch(`/api/users/${id}`).then(r => r.json()).then(setUser) }, [id])`. Sometimes the user state shows the wrong user briefly when navigating quickly. Why?",
+      "expected_primary": "typescript-async",
+      "expected_secondary": [],
+      "assertions": [
+        "Identifies the race condition: stale fetch resolves after a newer one and overwrites state",
+        "Recommends AbortController in the effect with abort on cleanup",
+        "Mentions that AbortError should not be treated as a real failure",
+        "Does NOT recommend just adding a state-check (like `if (currentId === id)`) as the primary fix"
+      ],
+      "red_herrings": ["the race-by-key trick is a tempting partial fix"]
+    },
+    {
+      "id": "sigterm-mid-request",
+      "category": "behavior",
+      "prompt": "Our Node.js HTTP server in Kubernetes occasionally returns 502 to clients during deploys. We did not set up any signal handler. What changes should we make?",
+      "expected_primary": "typescript-async",
+      "expected_secondary": ["typescript-observability"],
+      "assertions": [
+        "Recommends installing SIGTERM handler that drains in-flight, then exits",
+        "Says health/readiness probe should flip to 'not ready' before drain so the load balancer stops sending new requests",
+        "Mentions a hard deadline shorter than Kubernetes terminationGracePeriodSeconds (default 30s)",
+        "Mentions flushing observability before exit",
+        "Does NOT recommend just increasing terminationGracePeriodSeconds as the primary fix"
+      ],
+      "red_herrings": ["the 'just bump the grace period' answer"]
+    },
+    {
+      "id": "id-confusion",
+      "category": "behavior",
+      "prompt": "We had an incident where `archiveOrder(orderId)` was called with a `userId` value because both are `string`. The compiler said nothing. How do we prevent this class of bug?",
+      "expected_primary": "typescript-coding-standards",
+      "expected_secondary": [],
+      "assertions": [
+        "Recommends branded/opaque types for the IDs",
+        "Mentions a smart constructor (asUserId/asOrderId) that creates the branded value",
+        "Says downstream code should not cast into the brand",
+        "Does NOT recommend wrapping IDs in a class as the primary solution",
+        "Does NOT recommend runtime checks (regex on prefix) as the only fix without compile-time protection"
+      ],
+      "red_herrings": ["wrapping in classes / runtime regex checks"]
+    },
+    {
+      "id": "switch-without-never",
+      "category": "behavior",
+      "prompt": "We have `type Status = 'pending' | 'shipped' | 'delivered'` and a `switch (status)` in 12 places that maps to a label. Last week we added 'returned' to the union and only 7 of the 12 callsites were updated. The other 5 silently returned an empty string. How do we make this fail loudly next time?",
+      "expected_primary": "typescript-coding-standards",
+      "expected_secondary": [],
+      "assertions": [
+        "Recommends `default: assertNever(status)` (or equivalent unreachable) so the compiler errors when a variant is added",
+        "Explains that `as never` to silence the error defeats the purpose",
+        "Does NOT recommend just code review or tests as the primary fix",
+        "Mentions that a thrown runtime error is weaker than a compile-time error",
+        "Mentions extracting the unreachable helper once if multiple unions need it"
+      ],
+      "red_herrings": ["test coverage answer", "code-review-policy answer"]
+    },
+    {
+      "id": "overgeneric-helper",
+      "category": "progressive-complexity",
+      "prompt": "I'm writing a `findById(items, id)` helper for the first place that needed it. Should I make it `<T extends { id: string }>(items: T[], id: string): T | undefined` from day one, or wait?",
+      "expected_primary": "typescript-coding-standards",
+      "expected_secondary": [],
+      "assertions": [
+        "Says the generic with `extends { id: string }` is appropriate when there's a real chance of a second caller",
+        "Mentions that the constraint should be the minimum the body needs",
+        "Does NOT recommend `<T>` with no constraint (would force `any` in the body)",
+        "Does NOT recommend over-generic shapes like `<T extends object>` when `extends { id: string }` is more specific",
+        "Acknowledges that for one caller a concrete signature is also fine"
+      ],
+      "red_herrings": ["YAGNI taken too literally to refuse generics outright"]
     }
   ]
 }

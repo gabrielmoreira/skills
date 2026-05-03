@@ -55,6 +55,7 @@ Exceptions:
 - Test doubles and mocks: use a typed builder, `Partial<T>`, `Pick<T, K>`, or a small typed mini-interface that captures only the methods used. Raw `as any as T` or `as T` is **not allowed in tests** even for one-off mocks of large vendor types like Stripe — narrow the dependency at the call site to the smallest interface the production code actually needs (e.g. accept `Pick<Stripe, "paymentIntents">` instead of `Stripe`), then mock that.
 - Framework or library types that are genuinely wrong or incomplete: allowed with a `// SAFETY:` comment explaining why the assertion is needed and what guards exist above it.
 - Performance-critical paths where the compiler cannot narrow but the value is guaranteed by construction: allowed with a `// SAFETY:` comment and a test proving the invariant.
+- Branded-type smart constructors: `as Brand` is the canonical way to attach a phantom tag because the brand exists only for the compiler. Pair every such cast with a `// SAFETY:` comment that names the invariant (or "purely nominal" for identity brands like `UserId`). See `branded-and-opaque-types.md`.
 
 Example:
 

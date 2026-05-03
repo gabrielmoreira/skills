@@ -78,9 +78,12 @@ Pressure signals:
 - Provider containment teaches not to leak SDK types but does not cover ORM entities specifically.
 - Config validation-vs-verification separates parse from verify, but database connection is the most common verification.
 
-### 1.6 Type system design
+### 1.6 Type system design (status: resolved)
 
-Status: partial coverage (`type-narrowing-over-assertion` covers `!`/`as`/`as unknown as`/`satisfies`/`isX` guards).
+Resolved: positive type-system guidance now lives in `typescript-coding-standards`:
+- `rules/branded-and-opaque-types.md` — nominal typing for domain primitives
+- `rules/exhaustive-narrowing.md` — discriminated unions + `assertNever`
+- `rules/generics-and-conditional-types.md` — generics with minimum constraints, mapped + conditional types, `infer`
 Suggested bundle: additional rules inside `typescript-coding-standards`.
 
 Candidate rules:
@@ -138,9 +141,9 @@ Candidate rules:
 
 Areas where the current tree covers the topic but alignment with recognized practices can improve.
 
-### 3.1 Node.js runtime lifecycle (alignment: weak)
+### 3.1 Node.js runtime lifecycle (status: resolved)
 
-Problem: no rule covers graceful shutdown, SIGTERM handling, `unhandledRejection`, `uncaughtException`, or process lifecycle.
+Resolved: `typescript-async/rules/process-lifecycle.md` covers SIGTERM/SIGINT handlers, draining in-flight, ordered resource shutdown, hard deadline before SIGKILL, `unhandledRejection`/`uncaughtException` as fail-loud in production, and observability flush before exit.
 
 Action: add rule in `typescript-composition` or `typescript-async`:
 - `process-lifecycle.md` — SIGTERM handler in the composition root, connection/timer cleanup, `unhandledRejection` as hard fail in production, health check readiness during shutdown.
@@ -171,7 +174,7 @@ Status: resolved.
 
 Specific gaps:
 - **Strict mode**: no rule requires `strict: true` in tsconfig. Add in `type-narrowing-over-assertion.md` or future `tsconfig-discipline.md`.
-- **Exhaustiveness**: partially covered by discriminated union examples. An explicit rule (`exhaustive-narrowing.md`) would cover it better.
+- **Exhaustiveness**: resolved via `typescript-coding-standards/rules/exhaustive-narrowing.md`.
 
 ---
 
