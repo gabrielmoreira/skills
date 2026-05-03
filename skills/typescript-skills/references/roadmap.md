@@ -1,0 +1,255 @@
+# Roadmap
+
+Current state: 8 bundles, 27 canonical rules, 5 references. Evals 12/12 score 3/3. Two conflicts corrected, six redundancies mapped.
+
+This roadmap lists coverage gaps, improvements to existing rules, and alignment with recognized best practices. Items are ordered by priority within each phase.
+
+---
+
+## Phase 1 — High-priority gaps
+
+New bundles or rules covering areas with no canonical guidance today.
+
+### 1.1 Error handling strategy
+
+Status: no coverage.
+Suggested bundle: `typescript-error-handling`.
+
+Candidate rules:
+- `throw-vs-result.md` — when to throw, when to return Result/Either, when to use union return. Progressive: throw first, Result when caller needs to decide, never-throw boundary when contract requires it.
+- `error-classification.md` — retryable vs caller fault vs infra fault vs validation. Error cause chain (`{ cause }`). Custom error shapes at boundaries.
+- `error-boundary-contract.md` — what shape the caller sees. Failure as part of the public contract. Distinguish parse error from dependency error from domain error.
+
+Pressure signals:
+- `raw-input-to-internal-model` requires "distinguishable failure" but does not say how.
+- `validation-vs-verification` separates parse from verification but does not classify the errors.
+- Testing covers failure shape assertion but not the strategy of who creates the error.
+
+### 1.2 Async control and cancellation
+
+Status: no coverage.
+Suggested bundle: `typescript-async` or rules inside `typescript-coding-standards`.
+
+Candidate rules:
+- `concurrency-and-cancellation.md` — `Promise.all` vs serial, bounded concurrency (`p-limit`/semaphore), `AbortSignal` passed as capability. Progressive: serial first, parallelize when measured, cancel when caller/request can abort.
+- `cleanup-and-teardown.md` — finally, dispose, graceful shutdown, partial-failure rollback. `using` keyword when available.
+
+Pressure signals:
+- Observability covers trace propagation in async but not concurrency control.
+- Composition covers dependency lifecycle but not operation cleanup.
+
+### 1.3 Module and package surface design
+
+Status: no coverage.
+Suggested bundle: rules inside `typescript-coding-standards` or dedicated bundle `typescript-modules`.
+
+Candidate rules:
+- `package-surface.md` — barrel files, `index.ts` as explicit public API, re-export policy. Progressive: no barrel until external consumers exist, barrel earned when package boundary justifies it.
+- `circular-dependency-prevention.md` — dependency direction, layering, how to detect and break cycles.
+- `import-side-effects.md` — side-effect imports are boundaries; isolate them, do not hide inside pure modules.
+
+Pressure signals:
+- Cutovers mentions re-export cleanup but not package structure.
+- Composition assumes a clean dependency graph but does not teach how to maintain it.
+
+### 1.4 API contract design
+
+Status: no coverage.
+Suggested bundle: `typescript-api-contracts`.
+
+Candidate rules:
+- `error-shape-contract.md` — REST status codes and error body shape, GraphQL error extensions, stable error codes. Cross-link with error-handling.
+- `pagination-and-versioning.md` — cursor vs offset, backward compatibility, versioning strategy. Progressive: no versioning until a real breaking change, cursor when dataset grows.
+- `idempotency.md` — idempotency keys, retry safety, at-least-once semantics.
+
+Pressure signals:
+- Boundaries covers provider shapes entering the code, but not shapes the code itself exposes.
+- Testing mentions API seams but not the contract design.
+
+### 1.5 Database and ORM boundaries
+
+Status: no coverage.
+Suggested bundle: `typescript-persistence` or rules inside `typescript-boundaries`.
+
+Candidate rules:
+- `repository-boundary.md` — repository as boundary between domain and persistence. ORM entities do not leak into business logic. Progressive: direct query functions, repository module when queries grow, explicit transaction boundary when multi-step.
+- `migration-safety.md` — backward-compatible migrations, deploy-order awareness, data migration vs schema migration.
+- `query-discipline.md` — N+1 detection, DataLoader/batching for GraphQL, query builder vs raw SQL boundaries.
+
+Pressure signals:
+- Provider containment teaches not to leak SDK types but does not cover ORM entities specifically.
+- Config validation-vs-verification separates parse from verify, but database connection is the most common verification.
+
+### 1.6 Type system design
+
+Status: partial coverage (`type-narrowing-over-assertion` covers `!`/`as`/`as unknown as`/`satisfies`/`isX` guards).
+Suggested bundle: additional rules inside `typescript-coding-standards`.
+
+Candidate rules:
+- `generics-and-conditional-types.md` — when to use generics, when conditional types, when overloads. Progressive: concrete types first, generic when 2+ callers diverge, conditional type only when generic does not resolve.
+- `branded-and-opaque-types.md` — branded types for domain primitives (UserId, OrderId, EmailAddress). Progressive: plain string/number first, branded when confusion between primitives causes bugs.
+- `exhaustive-narrowing.md` — `satisfies`, exhaustive switch, `never` assertion. Discriminated unions as the primary tool.
+
+Pressure signals:
+- Type narrowing rule focuses on what not to do. Positive guidance on type design is missing.
+- Config and boundary rules use discriminated unions as examples but do not teach when to choose them.
+
+---
+
+## Phase 2 — Medium-priority gaps
+
+Smaller rules or areas that affect day-to-day agent work less frequently.
+
+### 2.1 Build and package system
+
+Candidate rules:
+- `esm-cjs-interop.md` — `package.json` exports, module resolution, dual publish.
+- `tree-shaking-safety.md` — side-effect annotations, barrel file cost, dead code.
+- `tsconfig-discipline.md` — strict mode, path aliases, composite projects.
+
+### 2.2 Monorepo and workspace boundaries
+
+Candidate rules:
+- `workspace-dependency-direction.md` — shared package ownership, cross-package import hygiene, internal vs published packages.
+- `coordinated-cutovers.md` — multi-package migration, versioning of internal shared packages.
+
+### 2.3 Performance, streaming, and memory
+
+Candidate rules:
+- `streaming-and-backpressure.md` — when to stream vs buffer, Node.js streams, backpressure.
+- `hot-path-discipline.md` — allocation awareness, lazy loading, batching.
+
+### 2.4 Code documentation and comment policy
+
+Candidate rules:
+- `comment-policy.md` — TSDoc/JSDoc for public API, invariant/rationale comments (`// SAFETY:`, `// WHY:`), stale comment cleanup.
+
+### 2.5 Dependency hygiene and supply chain
+
+Candidate rules:
+- `dependency-policy.md` — version pinning, lockfile discipline, audit, peer dependency boundaries, minimize transitive risk.
+
+### 2.6 CI/CD and delivery contracts
+
+Candidate rules:
+- `pipeline-contracts.md` — build/test/lint gates, artifact versioning, rollout checks, schema/config change safety.
+
+---
+
+## Phase 3 — Best practice alignment
+
+Areas where the current tree covers the topic but alignment with recognized practices can improve.
+
+### 3.1 Node.js runtime lifecycle (alignment: weak)
+
+Problem: no rule covers graceful shutdown, SIGTERM handling, `unhandledRejection`, `uncaughtException`, or process lifecycle.
+
+Action: add rule in `typescript-composition` or `typescript-async`:
+- `process-lifecycle.md` — SIGTERM handler in the composition root, connection/timer cleanup, `unhandledRejection` as hard fail in production, health check readiness during shutdown.
+- Cross-link with observability (flush traces/logs before exit).
+
+### 3.2 Twelve-Factor alignment (alignment: adequate)
+
+Specific gaps:
+- **Log streaming**: meaningful-logging teaches structured logs but does not say "log to stdout, let infra route". Add guidance in `meaningful-logging.md`.
+- **Dev/prod parity**: defaults-and-ownership prohibits dev defaults but does not mention parity explicitly. Consider a note in `review-notes.md` or `defaults-and-ownership.md`.
+- **Port binding / concurrency**: out of immediate scope; framework-shaped apps already cover partially.
+
+### 3.3 OWASP alignment (alignment: adequate)
+
+Specific gaps:
+- **Input validation / injection**: `raw-input-to-internal-model` parses inputs but does not mention injection prevention (SQL, NoSQL, command, SSRF). Add rule in `typescript-security`:
+  - `input-safety.md` — SSRF prevention, parameterized queries, command injection, allowlist over denylist.
+- **Authorization**: no rule covers authorization boundaries, RBAC/ABAC patterns, or permission checks. Candidate rule:
+  - `authorization-boundary.md` — authorization as a boundary concern, not hidden in business logic.
+
+### 3.4 Testing Trophy alignment (alignment: adequate)
+
+Specific gap:
+- The tree does not prescribe unit/integration/e2e proportions. `local-test-style.md` says "prefer coverage in this order: unit, integration, e2e" which diverges from the Testing Trophy (integration-heavy).
+- Action: revise `local-test-style.md` to say "start from the seam that matches the behavior, not from a fixed proportion" and remove the ordering prescription. The right seam depends on what changed.
+
+### 3.5 TypeScript Handbook alignment (alignment: adequate)
+
+Specific gaps:
+- **Strict mode**: no rule requires `strict: true` in tsconfig. Add in `type-narrowing-over-assertion.md` or future `tsconfig-discipline.md`.
+- **Exhaustiveness**: partially covered by discriminated union examples. An explicit rule (`exhaustive-narrowing.md`) would cover it better.
+
+---
+
+## Phase 4 — Improvements to existing rules
+
+Redundancies, ambiguities, and simplification opportunities in what already exists.
+
+### 4.1 High redundancy: parse-and-expose + contextual-config
+
+Problem: both teach "avoid AppConfig god object" with similar examples (`EmailConfig`, `BillingConfig`, `RuntimeConfig`).
+
+Options:
+- A) Move AppConfig avoidance guidance to `contextual-config.md` and narrow `parse-and-expose-config.md` to focus on parsing/typing/exposure. Parse-and-expose cross-links "see contextual-config for module slicing".
+- B) Merge both into one rule. Risk: rule becomes too large.
+
+Recommendation: option A. Parse-and-expose becomes smaller and more focused.
+
+### 4.2 High redundancy: defaults-and-ownership + secrets-lifecycle
+
+Problem: both prohibit localhost/sandbox/test-token defaults. Ownership.md assigns URL/IP/token fallbacks to security, but the configs router also sends those triggers to defaults-and-ownership.
+
+Options:
+- A) Defaults-and-ownership focuses on "defaults as production policy" (timeouts, retries, flags). Security owns URL/IP/credential/token/secret fallbacks completely. Defaults cross-links security for those.
+- B) Keep duplication and accept the maintenance cost.
+
+Recommendation: option A. Reduces conflict surface and aligns with ownership.md.
+
+### 4.3 Medium redundancy: parser purity repeated in 3 rules
+
+Problem: "do not fetch secrets in the parser" appears in `parse-and-expose-config`, `validation-vs-verification`, and `secrets-lifecycle`.
+
+Action: keep the main prohibition in `validation-vs-verification` (parser purity) and in `secrets-lifecycle` (secret timing). `Parse-and-expose-config` cross-links both instead of repeating.
+
+### 4.4 Medium redundancy: naming split coding-standards vs boundaries
+
+Problem: `naming-and-semantic-center` and `local-naming` cover similar ground on "name should reflect local meaning, not provider/framework vocabulary".
+
+Action: coding-standards owns naming in general. Boundaries `local-naming` focuses specifically on renaming concepts coming from providers/SDKs at the entry point. Add a demarcation sentence in each rule stating where the other's responsibility begins.
+
+### 4.5 Medium redundancy: migration reuses cutover + characterization
+
+Problem: `migration.md` repeats owner/removal-condition from `cutovers.md` and the characterization test pattern from `contracts-and-characterization.md`.
+
+Action: `migration.md` cross-links both instead of restating. Keep only config-specific migration guidance (seam introduction, runtime assumption stability, env-read centralization).
+
+### 4.6 Medium redundancy: provider-containment vs raw-input-to-internal-model
+
+Problem: ownership boundary between provider SDK shapes and raw transport input (request/body/query/header) is not crisp.
+
+Action: `provider-containment` owns SDK/API/generated types. `raw-input-to-internal-model` owns HTTP request/response/transport shapes, env-like input, and framework-provided objects. Add a demarcation line in the boundaries SKILL.md.
+
+### 4.7 Improvement: root router missing "mapper" keyword
+
+Problem: eval #12 noted that the root router does not mention "mapper" explicitly in triggers.
+
+Action: add "mapper, mapping, transform" to the boundaries line in the root router.
+
+### 4.8 Improvement: cross-link composition <-> coding-standards
+
+Problem: eval #10 noted that the `makeReceiptSender` pattern lives in composition but `functions-vs-classes` in coding-standards also teaches `makeXxx`. Cross-link could be more explicit.
+
+Action: add cross-link from `functions-vs-classes.md` to `composition/rules/ready-instance-vs-factory.md` and vice versa, one sentence each.
+
+### 4.9 Improvement: evaluation-plan.md does not cover new bundles
+
+Action: when each new bundle from Phase 1-2 is created, add router scenarios, bundle pressure scenarios, and progressive complexity scenarios to evaluation-plan.
+
+---
+
+## Promotion criteria
+
+Each roadmap item only advances to installed skills when:
+1. Rule written following `references/authoring-checklist.md`.
+2. Ownership updated in `references/ownership.md`.
+3. Router(s) updated — root and/or bundle SKILL.md.
+4. At least 2 eval scenarios added to `references/evaluation-plan.md`.
+5. Evals pass score 2+ (hard-gates score 3).
+6. Source coverage updated if rule came from external material.
+7. No conflict with existing rules (check conflict audit).

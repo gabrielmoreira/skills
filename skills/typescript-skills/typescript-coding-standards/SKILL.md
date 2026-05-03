@@ -1,68 +1,40 @@
 ---
 name: typescript-coding-standards
-description: Provides rules for TypeScript naming, earned abstractions, function-first design, semantic center visibility, local reasoning, and full cutovers. Use when code structure feels harder to change than it should be or when naming and layering are hiding responsibility.
+description: Use when TypeScript work involves naming, abstractions, classes, local reasoning, semantic centers, full cutovers, type assertions, or design cleanup.
 ---
 
 # TypeScript Coding Standards
 
-Use this skill when the problem is not syntax quality but structural clarity.
+Use this skill for local design quality in owned TypeScript code: names, abstractions, classes, semantic centers, and cutovers.
 
-This skill focuses on:
-- naming by reader need
-- earned abstractions
-- functions by default
-- semantic center visibility
-- local reasoning
-- full cutovers
+## Agent Quick Path
 
-## Symptom → Rule
-
-| Symptom | Open |
+| If you see... | Read |
 | --- | --- |
-| Names feel vague or too pattern-shaped | `rules/name-by-reader-need.md` |
-| A new wrapper or layer is being proposed | `rules/earn-abstractions.md` |
-| A stateless class feels suspicious | `rules/prefer-functions-unless-classes-earn-it.md` |
-| The app story is getting lost behind framework folders | `rules/keep-semantic-center-visible.md` |
-| One behavior now takes too many files to understand | `rules/preserve-local-reasoning.md` |
-| Old and new designs are both still live | `rules/do-full-cutovers.md` |
+| wrapper, base class, shared helper, interface, manager, adapter-like abstraction | `rules/abstraction-and-local-reasoning.md` |
+| class proposed for stateless behavior | `rules/functions-vs-classes.md` |
+| confusing name, leaked implementation word, hidden important branch | `rules/naming-and-semantic-center.md` |
+| old and new implementations coexisting | `rules/cutovers.md` |
+| `!`, `as`, `as unknown as`, `as any`, `@ts-ignore`, non-null assertion, forced type | `rules/type-narrowing-over-assertion.md` |
+| blank lines inside functions, long methods, scrolling, visual block separation | `rules/vertical-discipline.md` |
 
-## ✅ Pick a rule
+## Owns
 
-- `rules/name-by-reader-need.md`
-- `rules/earn-abstractions.md`
-- `rules/prefer-functions-unless-classes-earn-it.md`
-- `rules/keep-semantic-center-visible.md`
-- `rules/preserve-local-reasoning.md`
-- `rules/do-full-cutovers.md`
+- Abstraction cost and local reasoning.
+- Function vs class defaults.
+- Names in owned code.
+- Clean cutover policy.
+- Type narrowing over assertion as hard gate.
 
-## Start here if...
+- Vertical discipline, blank-line removal, comment labels, and extraction triggers.
+## Does Not Own
 
-### ...names feel vague or too pattern-shaped
-1. `rules/name-by-reader-need.md`
-2. `rules/keep-semantic-center-visible.md`
+- Provider/SDK model translation: use `../typescript-boundaries/SKILL.md`.
+- Dependency lifecycle and runtime selection: use `../typescript-composition/SKILL.md`.
+- Config parsing and defaults: use `../typescript-configs/SKILL.md`.
+- Tests for behavior/contracts: use `../typescript-testing/SKILL.md`.
+- Type guard and schema validation details beyond the assertion gate: use TypeScript handbook or schema library docs.
 
-### ...a new layer or wrapper is being proposed
-1. `rules/earn-abstractions.md`
-2. `rules/preserve-local-reasoning.md`
+## Default
 
-### ...the design is drifting toward ceremony
-1. `rules/prefer-functions-unless-classes-earn-it.md`
-2. `rules/do-full-cutovers.md`
-
-## What good looks like
-
-A healthy codebase has:
-- names that explain role and ownership
-- abstractions that protect something real
-- small enough local contexts for readers to follow behavior
-- old and new designs not living side by side for long
-
-## Snippets
-- `snippets/function-first-module.ts`
-- `snippets/earned-abstraction-example.ts`
-- `snippets/local-reasoning-example.ts`
-
-## References
-- `references/naming-guide.md`
-- `references/abstraction-guide.md`
-- `references/red-flags.md`
+Preserve local reasoning. Add structure only when it removes more confusion than it creates.

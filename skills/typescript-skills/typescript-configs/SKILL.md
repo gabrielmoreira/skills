@@ -1,101 +1,51 @@
 ---
 name: typescript-configs
-description: Provides rules for parsing and exposing TypeScript app config. Use when deciding whether to parse env first or build config first, how to handle defaults, how to pass config through the app, how to verify external resources later, and how to avoid `!` or `as` in config code.
-compatibility: Works best in TypeScript projects using plain objects or schema-based parsing such as Zod.
+description: Use when TypeScript work involves env values, config parsing, contextual config objects, config defaults, validation boundaries, or migration from legacy config reads.
 ---
 
 # TypeScript Configs
 
-Use this skill when a TypeScript app needs clearer config boundaries.
+Use this skill when unknown runtime values become typed application configuration.
 
-This skill stays focused on config itself:
-- where config comes from
-- where it gets validated
-- who owns defaults
-- how config moves through the app
-- what belongs in parsing vs later startup checks
+## Application Shape Model
 
-## Problem → Rule
+Config shape depends on app scale and framework pressure:
 
-| Problem | Open |
+| Application nature | Start with |
 | --- | --- |
-| The app is still tiny | `rules/start-simple.md` |
-| I do not know whether to validate env or final config | `rules/where-to-validate.md` |
-| Defaults feel hidden or duplicated | `rules/defaults-single-owner.md` |
-| Modules are reaching into `process.env` | `rules/exposure-validated-config.md` |
-| I do not know who should own config | `rules/modularity-global-vs-local.md` |
-| Config points to files, URLs, or AWS resources | `rules/parse-shapes-verify-later.md` |
-| TypeScript pressure is pushing me toward `!` or `as` | `rules/type-safety-parse-dont-assert.md` |
-| I am cleaning up legacy config code | `rules/migration-incremental.md` |
+| Simple script, single file, usually one maintainer | One small manual parser and one local config object is fine |
+| Medium app, multiple files/features, one person to small team | Contextual feature/module configs such as `EmailConfig`, `BillingConfig`, `StorageConfig` |
+| Large app, many modules/features, one or more teams | Root parsing plus module config factories; pass only contextual configs inward |
+| Framework-shaped app, such as Next.js, React Native/Expo, NestJS | Respect the framework's config/composition entrypoints, then project contextual configs at module/feature boundaries |
 
-## ✅ Pick a rule
+Default for non-trivial apps: avoid a god `AppConfig` flowing everywhere. Parse raw values at the boundary, then project the smallest contextual config each module needs. Framework conventions decide where parsing/assembly starts; they do not require feature modules to consume unrelated config.
 
-- `rules/start-simple.md`
-  - Start here when the app is still small.
+## Agent Quick Path
 
-- `rules/where-to-validate.md`
-  - Use this when deciding between env-first and config-first validation.
+| If you see... | Read |
+| --- | --- |
+| `process.env`, raw config strings, `!`, `as`, untyped config | `rules/parse-and-expose-config.md` |
+| broad `AppConfig` passed into feature modules or tests | `rules/contextual-config.md` |
+| schema does network/file/cloud checks | `rules/validation-vs-verification.md` |
+| default value, fallback, dev default, URL/IP/token fallback, global config owner question | `rules/defaults-and-ownership.md` |
+| feature flag, mode, stage-derived behavior decision, repeated raw flag check | `rules/feature-decisions.md` |
+| legacy env reads or risky config refactor | `rules/migration.md` |
 
-- `rules/defaults-single-owner.md`
-  - Use this when defaults feel hidden, duplicated, or too test-oriented.
+## Owns
 
-- `rules/exposure-validated-config.md`
-  - Use this when modules are reading `process.env` or reaching into a giant config bag.
+- Parsing unknown config into typed contextual objects.
+- Deciding simple/local/module/root config shape by application scale.
+- Requiredness, production-safe defaults, and config ownership.
+- Separation of shape validation from external dependency verification.
+- Feature flags and modes parsed into named behavior decisions.
+- Migration from scattered env reads.
 
-- `rules/modularity-global-vs-local.md`
-  - Use this when you are unsure between one global config and module-local config factories.
+## Does Not Own
 
-- `rules/parse-shapes-verify-later.md`
-  - Use this when config values point to files, URLs, AWS resources, or other external things.
+- Secret value fetching and redaction: use `../typescript-security/SKILL.md`.
+- Dependency construction from config: use `../typescript-composition/SKILL.md`.
+- Config contract tests: use `../typescript-testing/SKILL.md`.
 
-- `rules/type-safety-parse-dont-assert.md`
-  - Use this when config code is drifting toward `!`, `as`, or hand-written type guards.
+## Default
 
-- `rules/migration-incremental.md`
-  - Use this when you are cleaning up an existing codebase instead of starting fresh.
-
-## Start here if...
-
-### ...the service is simple
-1. `rules/start-simple.md`
-2. `rules/where-to-validate.md`
-3. `rules/type-safety-parse-dont-assert.md`
-
-### ...a flag or mode changes what is required
-1. `rules/where-to-validate.md`
-2. `rules/defaults-single-owner.md`
-3. `rules/exposure-validated-config.md`
-
-### ...config points to external resources
-1. `rules/parse-shapes-verify-later.md`
-2. `rules/exposure-validated-config.md`
-3. `rules/type-safety-parse-dont-assert.md`
-
-### ...you are refactoring legacy config code
-1. `rules/migration-incremental.md`
-2. `rules/where-to-validate.md`
-3. `rules/defaults-single-owner.md`
-
-## What good looks like
-
-A healthy config setup has:
-- one clear place where parsing happens
-- one owner for each default
-- no deep `process.env` reads in feature code
-- config types inferred from real validation
-- external resource checks kept separate from pure config parsing
-
-## Snippets
-
-- `snippets/parse-env-directly.ts`
-- `snippets/build-config-then-validate.ts`
-- `snippets/required-env-helper.ts`
-- `snippets/validated-config-slice.ts`
-- `snippets/verify-dependencies-after-parse.ts`
-
-## References
-
-- `references/config-theory.md`
-- `references/migration-playbook.md`
-- `references/naming-config-fields.md`
-- `references/gotchas.md`
+Parse unknown values once at the boundary. Pass contextual typed config inward. If a missing value would not be production-correct, require it. Keep app-wide config only for app-wide facts, and keep dependency verification separate from parsing.

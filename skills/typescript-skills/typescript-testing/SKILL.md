@@ -1,59 +1,35 @@
 ---
 name: typescript-testing
-description: Provides rules for testing TypeScript boundaries safely, including characterization tests, config contract tests, light composition-root tests, and avoiding brittle structure assertions. Use when refactoring boundaries or trying to make tests protect real behavior instead of internal spellings.
+description: Use when TypeScript work involves tests, local test style, behavior-first names, characterization before refactor, config tests, composition-root smoke tests, boundary contracts, or brittle structure assertions.
 ---
 
 # TypeScript Testing
 
-Use this skill when test pain is telling you something about structure.
+Use this skill when a TypeScript change needs tests that protect behavior without freezing incidental implementation details.
 
-This skill focuses on:
-- characterization before refactor
-- testing config and boundary contracts
-- light testing of composition roots
-- avoiding brittle assertions about internal structure
+## Agent Quick Path
 
-## Discipline note
+| If you see... | Read |
+| --- | --- |
+| new test, unfamiliar package style, test naming, Given/When/Then, coverage scope | `rules/local-test-style.md` |
+| refactor, brittle assertion, helper-name assertion, public contract question | `rules/contracts-and-characterization.md` |
+| tests reading or mutating `process.env` | `rules/config-in-tests.md` |
+| test around bootstrap/composition/root wiring | `rules/composition-root-tests.md` |
 
-Before making the test more complicated, ask:
-- am I protecting the real contract?
-- am I testing behavior or just internal spelling?
-- am I trying to refactor without first capturing current behavior?
+## Owns
 
-## ✅ Pick a rule
+- Local test style, behavior-first names, and validation scope.
+- Contract tests and behavior-first assertions.
+- Characterization before risky refactors.
+- Config injection and env mutation in tests.
+- Composition-root smoke tests.
 
-- `rules/characterize-before-refactor.md`
-- `rules/test-config-contracts.md`
-- `rules/test-composition-roots-lightly.md`
-- `rules/inject-config-in-tests.md`
-- `rules/avoid-brittle-structure-assertions.md`
+## Does Not Own
 
-## Start here if...
+- Config parser design: use `../typescript-configs/SKILL.md`.
+- Dependency lifecycle decisions: use `../typescript-composition/SKILL.md`.
+- Provider boundary design: use `../typescript-boundaries/SKILL.md`.
 
-### ...you are refactoring existing code
-1. `rules/characterize-before-refactor.md`
-2. `rules/test-config-contracts.md`
+## Default
 
-### ...tests are painful because config is hidden
-1. `rules/inject-config-in-tests.md`
-2. `rules/test-config-contracts.md`
-
-### ...you are testing wiring and boundaries
-1. `rules/test-composition-roots-lightly.md`
-2. `rules/avoid-brittle-structure-assertions.md`
-
-## What good looks like
-
-A healthy testing setup has:
-- characterization before risky refactors
-- contract tests around boundaries
-- light checks around composition roots
-- few assertions against internal file layout or helper names
-
-## Snippets
-- `snippets/characterization-test.ts`
-- `snippets/config-contract-test.ts`
-- `snippets/composition-root-smoke-test.ts`
-
-## References
-- `references/testing-boundaries-vs-internals.md`
+Test caller-visible behavior and boundary contracts. Start from the local test style, use behavior-first names, and characterize uncertain behavior before refactoring.

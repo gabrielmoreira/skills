@@ -1,37 +1,104 @@
 # Authoring Checklist
 
-Use this checklist before shipping or editing a bundle.
+Use this checklist when creating or editing a TypeScript skill rule.
 
-## Source quality
-- Is this grounded in real code, real incidents, or real review feedback?
-- Does this teach something the model would likely get wrong without the skill?
+## Required Rule Shape
 
-## SKILL.md
-- Is the `name` spec-compliant and matched to the directory?
-- Does the `description` say what the skill does and when to use it?
-- Is `SKILL.md` short and routing-focused?
-- Is there a quick-reference table when that would make routing faster?
+Every canonical rule should be operational: it must tell the agent what to choose, when to choose it, when to stop, and how to verify it.
 
-## Rules
-- Is each rule one real decision?
-- Does each rule start with `✅ Prefer` and `⚠️ Avoid`?
-- Are examples small enough to understand in one read?
-- Are red flags or gotchas included only when they earn their place?
+```md
+---
+id: bundle.rule-name
+owner: bundle-name
+canonical: true
+severity: hard-gate | default | advisory
+---
 
-## Snippets
-- Is the snippet copyable?
-- Is the snippet teaching faster than prose would?
-- Is it self-contained enough that a reader can reuse the pattern without guessing missing pieces?
+# Human-readable title
 
-## References
-- Are references one level deep from `SKILL.md`?
-- Did theory stay out of the rule unless truly needed?
+Decision: One sentence that chooses the default behavior.
 
-## Evaluation
-- Are there realistic should-trigger and should-not-trigger prompts?
-- Does it have at least one main content eval?
-- Did you inspect traces, not only final outputs?
+Use when:
+- Deterministic trigger
+- Deterministic trigger
 
-## Packaging
-- Would this directory make sense as a standalone skill bundle?
-- Are all paths portable with forward slashes?
+Start here:
+- Smallest honest solution for the first version.
+
+Escalate when:
+- Concrete pressure signal that proves the first version is no longer enough.
+
+Complexity ladder:
+1. First useful form.
+2. Next smallest stronger form.
+3. Higher form only after stronger pressure.
+
+Do:
+- Imperative rule
+- Imperative rule
+
+Avoid:
+- Concrete anti-pattern
+- Concrete anti-pattern
+
+Exceptions:
+- Allowed deviation and required evidence
+
+Example:
+- One small bad/good or start/escalate example when the rule affects code shape.
+
+Verify:
+- How to prove adherence
+```
+
+## Complexity Ladder Rule
+
+Minimalism is structure proportional to pressure, not refusal to abstract.
+
+For design rules where the right answer changes as a project grows, include:
+
+- `Start here`: the smallest correct design.
+- `Escalate when`: observable signals that the current form is no longer enough.
+- `Complexity ladder`: the next level, not the maximum framework.
+- `Example`: one small code shape that shows the first level and the escalation trigger.
+- `Application shape`: examples should make clear whether they target a simple script, medium modular app, large multi-team app, or framework-shaped app.
+
+This prevents two common agent failures:
+
+- over-engineering: jumping from direct code to framework/registry/adapter hierarchy;
+- under-engineering: hiding behind "simple" after repeated pressure appears.
+- framework-hostile abstraction: fighting Next.js, React Native/Expo, NestJS, or similar conventions instead of using their entrypoints as boundaries.
+
+## Style Rules
+
+- Keep `SKILL.md` files as routers, not essays.
+- Put long rationale in references only when it is still needed.
+- Use ASCII labels: `Decision`, `Use when`, `Start here`, `Escalate when`, `Complexity ladder`, `Do`, `Avoid`, `Exceptions`, `Example`, `Verify`.
+- Avoid emoji prefixes as required syntax.
+- Prefer one canonical good/bad or start/escalate example over repeated variants.
+- When examples depend on scale, label them as simple, medium, large, or framework-shaped.
+- Replace subjective terms with signals. Do not rely only on words like `earned`, `small`, `edge`, `clean`, or `real`.
+- If a rule has legitimate exceptions, write the exception. Do not phrase it as an absolute.
+- If a rule is a hard safety gate, say so directly and make verification concrete.
+- Respect framework conventions, but show where owned module boundaries begin behind the framework edge.
+
+## Rule Severity
+
+| Severity | Use for | Language |
+| --- | --- | --- |
+| `hard-gate` | Security, secrets, correctness claims, parsing unknown input before use | Direct prohibition and required verification |
+| `default` | Design preferences with real exceptions | Default plus escalation criteria |
+| `advisory` | Naming/rationale guidance that improves readability | Recommendation plus examples |
+
+## Before Adding a New Rule
+
+- Check `references/ownership.md` for the canonical owner.
+- Search existing rules for the same decision.
+- If an existing rule owns it, edit that rule instead of adding a parallel rule.
+- If the new topic crosses bundles, update root `SKILL.md` tie-breakers.
+
+## Before Promoting to Installed Skills
+
+- Add or update evaluation scenarios in `references/evaluation-plan.md`.
+- Run at least one routing scenario and one pressure scenario for the changed skill.
+- Record whether the agent opened the intended focused skill and applied the canonical rule.

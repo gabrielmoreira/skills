@@ -1,67 +1,35 @@
 ---
 name: typescript-composition
-description: Provides rules for TypeScript composition roots, dependency assembly, provider selection, lifecycle, and passing ready dependencies inward. Use when deciding where runtime decisions belong or when behavior code is starting to resolve its own dependencies.
+description: Use when TypeScript work involves dependency construction, composition roots, factories, lifecycle, scope, singletons, caching, or runtime provider selection.
 ---
 
 # TypeScript Composition
 
-Use this skill when behavior and assembly are starting to blur.
+Use this skill when code decides what dependencies exist, how long they live, or which runtime implementation is selected.
 
-This skill focuses on outer-layer wiring:
-- where runtime choices belong
-- how dependencies get assembled
-- when to use factories
-- where lifecycle and scope should live
+## Agent Quick Path
 
-## Symptom → Rule
-
-| Symptom | Open |
+| If you see... | Read |
 | --- | --- |
-| Behavior reads env or picks implementations | `rules/composition-root-owns-runtime-decisions.md` |
-| A use case is discovering what it needs | `rules/pass-ready-dependencies-inward.md` |
-| I am not sure whether to inject a factory | `rules/choose-factories-vs-ready-instances.md` |
-| Provider selection is repeated in feature code | `rules/keep-provider-selection-at-the-edge.md` |
-| Scope or caching leaks into operations | `rules/keep-lifecycle-and-scope-out-of-behavior.md` |
-| Convenience imports are becoming hidden wiring | `rules/avoid-hidden-singletons-in-app-logic.md` |
+| provider/client selected inside behavior code | `rules/composition-root.md` |
+| singleton, cache, pool, memoization, request scope | `rules/dependency-scope.md` |
+| question of ready dependency vs factory | `rules/ready-instance-vs-factory.md` |
+| logger/tracer/exporter lifecycle or provider setup | `../typescript-observability/SKILL.md` plus `rules/composition-root.md` |
 
-## ✅ Pick a rule
+## Owns
 
-- `rules/composition-root-owns-runtime-decisions.md`
-- `rules/pass-ready-dependencies-inward.md`
-- `rules/choose-factories-vs-ready-instances.md`
-- `rules/keep-provider-selection-at-the-edge.md`
-- `rules/keep-lifecycle-and-scope-out-of-behavior.md`
-- `rules/avoid-hidden-singletons-in-app-logic.md`
+- Composition roots and runtime decisions.
+- Dependency lifecycle and scope.
+- Ready dependency vs factory decisions.
+- Provider/client selection at startup or assembly time.
 
-## Start here if...
+## Does Not Own
 
-### ...runtime choices are leaking into behavior
-1. `rules/composition-root-owns-runtime-decisions.md`
-2. `rules/pass-ready-dependencies-inward.md`
+- Provider response/request type mapping: use `../typescript-boundaries/SKILL.md`.
+- Config parsing that feeds construction: use `../typescript-configs/SKILL.md`.
+- Composition-root tests: use `../typescript-testing/SKILL.md`.
+- Meaningful logging/tracing design: use `../typescript-observability/SKILL.md`.
 
-### ...you are unsure between injecting a factory or a ready dependency
-1. `rules/choose-factories-vs-ready-instances.md`
-2. `rules/keep-lifecycle-and-scope-out-of-behavior.md`
+## Default
 
-### ...provider selection is spread across feature code
-1. `rules/keep-provider-selection-at-the-edge.md`
-2. `rules/avoid-hidden-singletons-in-app-logic.md`
-
-## What good looks like
-
-A healthy composition setup has:
-- one visible composition root
-- runtime choices made outside behavior code
-- ready dependencies passed inward
-- lifecycle and scope owned at the edge
-
-## Snippets
-- `snippets/composition-root.ts`
-- `snippets/make-use-case.ts`
-- `snippets/provider-selection.ts`
-- `snippets/request-scope.ts`
-
-## References
-- `references/composition-vs-behavior.md`
-- `references/lifecycle-and-scope.md`
-- `references/red-flags.md`
+Assemble dependencies at the edge. Pass ready dependencies inward unless construction must vary at call time.
