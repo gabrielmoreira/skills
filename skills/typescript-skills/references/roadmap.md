@@ -8,21 +8,21 @@ This roadmap lists coverage gaps, improvements to existing rules, and alignment 
 
 New bundles or rules covering areas with no canonical guidance today.
 
-### 1.1 Error handling strategy
+### 1.1 Error handling strategy (status: resolved)
 
-Status: no coverage.
-Suggested bundle: `typescript-error-handling`.
+Resolved: canonical guidance now lives in `typescript-error-handling`.
 
-Candidate rules:
-- `throw-vs-result.md` — when to throw, when to return Result/Either, when to use union return. Progressive: throw first, Result when caller needs to decide, never-throw boundary when contract requires it.
-- `error-classification.md` — retryable vs caller fault vs infra fault vs validation. Error cause chain (`{ cause }`). Custom error shapes at boundaries.
-- `error-boundary-contract.md` — what shape the caller sees. Failure as part of the public contract. Distinguish parse error from dependency error from domain error.
+Canonical rules:
+- `define-app-error-semantics-early.md` — define a canonical app-owned error model, structured attachments, factories, and enrichment helpers before the codebase fragments.
+- `throw-vs-result.md` — choose one propagation style per package while reusing the same canonical error data.
+- `error-classification.md` — classify by semantic family and retry eligibility instead of technical origin alone.
+- `error-shape-and-metadata.md` — structure root semantic payload, internal attachments, retry/http extensions, and telemetry.
+- `error-boundary-contract.md` — project canonical internal errors into safe public boundary shapes with explicit redaction.
 
-Pressure signals:
-- `raw-input-to-internal-model` requires "distinguishable failure" but does not say how.
-- `validation-vs-verification` separates parse from verification but does not classify the errors.
-- Testing covers failure shape assertion but not the strategy of who creates the error.
-
+Pressure signals that motivated the bundle remain relevant:
+- `raw-input-to-internal-model` requires distinguishable failures but does not define app error semantics by itself.
+- `validation-vs-verification` separates parse from verification but does not own the full error contract.
+- Testing covers failure-shape assertions but does not own project-wide error semantics.
 ### 1.2 Async control and cancellation
 
 Status: no coverage.

@@ -830,21 +830,35 @@ No `expect(container.registrations).toMatchSnapshot()`.
 
 ## Throw vs Result
 
-Pick one project default. Pure parsers may still return `Result` in a class-based project.
+Pick one package default. Reuse the same canonical error data either way.
 
 ```ts
-type ParseOrderResult =
-  | { ok: true; value: Order }
-  | { ok: false; error: { kind: "missing_field" | "wrong_type"; field: string } };
+type AppErrorData = {
+  kind: "business" | "infra" | "security" | "validation";
+  code: string;
+  message: string;
+  details?: unknown;
+};
 
-function parseOrder(raw: unknown): ParseOrderResult { /* ... */ }
+type AppResult<T> =
+  | { ok: true; value: T }
+  | { ok: false; error: AppErrorData };
 
-const parsed = parseOrder(input);
-if (!parsed.ok) {
-  switch (parsed.error.kind) {
-    case "missing_field": return badRequest(`missing ${parsed.error.field}`);
-    case "wrong_type":    return badRequest(`wrong type for ${parsed.error.field}`);
-  }
+function orderNotFound(orderId: string): AppErrorData {
+  return {
+    kind: "business",
+    code: "order.not_found",
+    message: "order not found",
+    details: { orderId },
+  };
+}
+
+function fail(error: AppErrorData): AppResult<never> {
+  return { ok: false, error };
+}
+
+function throwError(error: AppErrorData): never {
+  throw new AppError(error);
 }
 ```
 
@@ -854,32 +868,54 @@ No `return null` for multiple distinct failures.
 
 ## Error Classification
 
-Boundary and retry read classification, not concrete subclasses.
+Classify by semantic family and explicit retry semantics. Boundary and retry read family-level meaning, not concrete subclasses.
 
 ```ts
-abstract class BusinessError extends AppError {}
-abstract class InfraError extends AppError {
-  abstract readonly retryable: boolean;
-}
+abstract class BusinessError extends AppError<AppErrorData> {}
 
-if (e instanceof InfraError && e.retryable) return retryLater();
-if (e instanceof BusinessError) return badRequest(e.message);
+abstract class InfraError extends AppError<AppErrorData> {}
+
+if (e instanceof InfraError && e.data.retry?.allowed) return retryLater();
+if (e instanceof BusinessError) return badRequest(e.data.message);
 ```
 
-Wrap third-party errors at the adapter boundary.
+Downstream origin alone does not decide classification.
 
 ---
 
 ## Error Boundary Contract
 
-Translate once per boundary. Vendor error shapes never reach callers.
+Translate once per boundary. Project your own outward shape. Keep `context` and `cause` internal by default.
 
 ```ts
 function translate(e: unknown) {
-  if (e instanceof ValidationError) return { status: 400, body: { code: e.code, errorId: e.errorId, details: e.fieldErrors } };
-  if (e instanceof BusinessError)   return { status: 400, body: { code: e.code, errorId: e.errorId, message: e.message } };
-  if (e instanceof InfraError)      return { status: e.retryable ? 503 : 500, body: { code: e.code, errorId: e.errorId, message: "internal error" } };
-  return { status: 500, body: { code: "internal_error", errorId: ulid(), message: "internal error" } };
+  if (e instanceof ValidationError) {
+    return {
+      status: e.data.http?.status ?? 400,
+      body: {
+        code: e.data.code,
+        errorId: e.data.telemetry?.errorId ?? ulid(),
+        message: e.data.message,
+        details: e.data.details,
+      },
+    };
+  }
+
+  if (e instanceof InfraError) {
+    return {
+      status: e.data.http?.status ?? (e.data.retry?.allowed ? 503 : 500),
+      body: {
+        code: e.data.code,
+        errorId: e.data.telemetry?.errorId ?? ulid(),
+        message: "internal error",
+      },
+    };
+  }
+
+  return {
+    status: 500,
+    body: { code: "internal_error", errorId: ulid(), message: "internal error" },
+  };
 }
 ```
 
@@ -889,32 +925,40 @@ Response shape is yours: stable `code`, `errorId`, sanitized `message`.
 
 ## Error Shape and Metadata
 
-Every error carries stable `code`, per-occurrence `errorId`, `timestamp`, and `cause`.
+Root = semantic contract. `context` and `cause` = internal attachments. `telemetry` carries correlation.
 
 ```ts
-abstract class AppError extends Error {
-  abstract readonly code: string;
-  readonly errorId = ulid();
-  readonly timestamp = new Date();
-
-  toLogShape() {
-    return {
-      code: this.code,
-      errorId: this.errorId,
-      timestamp: this.timestamp.toISOString(),
-      cause: this.cause,
-    };
-  }
-}
+type AppErrorData = {
+  kind: "business" | "infra" | "security" | "validation";
+  code: string;
+  message: string;
+  details?: unknown;
+  context?: {
+    service?: string;
+    operation?: string;
+    metadata?: Record<string, unknown>;
+  };
+  cause?: {
+    name?: string;
+    code?: string;
+    message?: string;
+    metadata?: Record<string, unknown>;
+  };
+  telemetry?: {
+    errorId?: string;
+    traceId?: string;
+    occurredAt?: string;
+  };
+};
 ```
 
-Log the full shape; respond with sanitized fields only.
+Keep root `details` distinct from `context.metadata` and `cause.metadata`.
 
 ---
 
 ## Retry and Backoff
 
-Retry only classified retryable failures. Use bounded attempts, backoff, jitter, and `Retry-After`.
+Retry only explicitly retryable failures. Use bounded attempts, backoff, jitter, and `Retry-After`.
 
 ```ts
 async function withRetry<T>(fn: () => Promise<T>, signal?: AbortSignal): Promise<T> {
@@ -922,7 +966,7 @@ async function withRetry<T>(fn: () => Promise<T>, signal?: AbortSignal): Promise
     signal?.throwIfAborted();
     try { return await fn(); }
     catch (e) {
-      if (!(e instanceof InfraError) || !e.retryable) throw e;
+      if (!(e instanceof InfraError) || !e.data.retry?.allowed) throw e;
       if (attempt === 3) throw e;
       await sleep(Math.random() * 200 * 2 ** (attempt - 1), signal);
     }

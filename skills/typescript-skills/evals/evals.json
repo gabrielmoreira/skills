@@ -245,7 +245,7 @@
         "Says return a discriminated union / Result, not throw, when there are multiple distinct failure modes",
         "Names the discriminant field (kind/ok) and how the caller branches on it",
         "Does NOT recommend `return null` for multiple failure modes",
-        "Does NOT recommend throwing different Error subclasses as the primary fix when Result is cleaner",
+        "Mentions that the package should still keep one canonical error model even if this parser returns Result",
         "Mentions that the caller can switch over the error variant"
       ],
       "red_herrings": ["throwing custom Error subclasses as the obvious choice"]
@@ -258,10 +258,10 @@
       "expected_secondary": ["typescript-async"],
       "assertions": [
         "Identifies that the retry loop retries everything, including caller-fault errors",
-        "Recommends classifying errors before retrying (retryable vs non-retryable)",
+        "Recommends classifying errors before retrying using explicit retry semantics, not raw transport heuristics alone",
         "Distinguishes caller fault (don't retry) from transient infra (do retry)",
         "Does NOT just suggest 'reduce retries to 1' as the fix",
-        "Mentions the classification responsibility belongs to the boundary that knows the error semantics"
+        "Mentions the classification responsibility belongs to the layer that knows the app's error semantics"
       ],
       "red_herrings": ["framing the issue as 'too many retries' rather than 'wrong errors retried'"]
     },
@@ -273,9 +273,9 @@
       "expected_secondary": ["typescript-security"],
       "assertions": [
         "Identifies that vendor error shape is leaking past the boundary",
-        "Recommends a single error translator at the edge that maps to an owned error contract",
+        "Recommends a single error translator at the edge that maps to an owned projected contract",
         "Says the response should have a stable `code` and a sanitized message",
-        "Mentions logging the original cause for ops while hiding internals from the caller",
+        "Mentions logging the richer internal cause for ops while hiding internals from the caller",
         "Does NOT suggest just changing the status code as the primary fix"
       ],
       "red_herrings": ["framing it as just a 500-vs-404 problem"]

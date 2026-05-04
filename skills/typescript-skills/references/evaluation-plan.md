@@ -98,10 +98,11 @@ Progressive-design scenarios also require the agent to pick the correct rung: st
 
 ### Error Handling
 
-- Agent returns `null` or throws custom `Error` subclasses ad hoc for a parser with 3 distinct failure modes. Expected: follow the project decision; class-based projects throw `AppError` subclasses, Result-based projects return a discriminated union. No mixed style inside one package.
-- Agent retries a `BusinessError` / validation failure. Expected: reject; retryability is a classification concern, and caller-fault errors are not retried.
-- Agent boundary returns raw `error.message` from Stripe/DB/Mongo to the client. Expected: translate once at the edge to an owned error shape with stable `code` and `errorId`.
-- Agent adds error classes without `code` / `errorId` / `timestamp`. Expected: use base error class metadata from `error-shape-and-metadata.md`.
+- Agent starts a new service with ad hoc error objects in different modules. Expected: define one canonical app-owned error model first, with root semantic fields and structured attachments, before arguing about throw vs Result.
+- Agent returns `null` or throws custom `Error` subclasses ad hoc for a parser with 3 distinct failure modes. Expected: follow the package propagation decision; class-based packages wrap canonical error data in family wrappers, Result-based packages return discriminated error data. No mixed style inside one package.
+- Agent retries a business or validation failure. Expected: reject; retry is an explicit classification/attachment concern, and caller-fault errors are not retried.
+- Agent boundary returns raw `error.message` from Stripe/DB/Mongo to the client. Expected: translate once at the edge to an owned projected shape with stable `code` and `errorId`; keep observed cause internal by default.
+- Agent adds new error fields directly on random subclasses instead of using root `details`, `context.metadata`, or `cause.metadata`. Expected: preserve the canonical shape and structured attachment boundaries.
 
 ### Async
 

@@ -37,10 +37,11 @@ This file keeps routing authority in one place without a separate manifest. Each
 | Contract tests and characterization | `typescript-testing` | `rules/contracts-and-characterization.md` |
 | Config injection in tests | `typescript-testing` | `rules/config-in-tests.md` |
 | Composition-root smoke tests | `typescript-testing` | `rules/composition-root-tests.md` |
+| App-level canonical error semantics and shared error contract | `typescript-error-handling` | `rules/define-app-error-semantics-early.md` |
 | Throw vs Result vs union return | `typescript-error-handling` | `rules/throw-vs-result.md` |
-| Error classification (caller/system, retryable/non-retryable) | `typescript-error-handling` | `rules/error-classification.md` |
-| Error contract at module/API boundary | `typescript-error-handling` | `rules/error-boundary-contract.md` |
-| Error shape + metadata (`errorId`, `timestamp`, `code`, `cause`, RFC 7807 / Problem Details) | `typescript-error-handling` | `rules/error-shape-and-metadata.md` |
+| Error classification (semantic family, retry eligibility) | `typescript-error-handling` | `rules/error-classification.md` |
+| Error contract at module/API boundary, projection, redaction defaults | `typescript-error-handling` | `rules/error-boundary-contract.md` |
+| Error shape + structured attachments (`code`, `details`, `context`, `cause`, `retry`, `http`, `telemetry`) | `typescript-error-handling` | `rules/error-shape-and-metadata.md` |
 | Retry mechanism: backoff, jitter, `Retry-After`, attempt cap, idempotency key | `typescript-async` | `rules/retry-and-backoff.md` |
 | Parallel vs sequential, dependency-based parallelization, bounded concurrency | `typescript-async` | `rules/parallel-and-dependencies.md` |
 | Cancellation via AbortSignal, abort propagation, AbortController on unmount | `typescript-async` | `rules/cancellation-and-abort.md` |

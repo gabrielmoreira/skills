@@ -8,73 +8,87 @@ references: [Anti-Corruption Layer (DDD), Hexagonal Architecture edge translatio
 
 # Error Boundary Contract
 
-Decision: At every boundary an error crosses (HTTP handler, Lambda, GraphQL formatter, RPC interceptor, library entrypoint), exactly one translator decides what shape the next layer sees. In a class-based project, the translator catches by `AppError` base classes and produces an owned error shape with `errorId`, `code`, and a sanitized message. Vendor and library error shapes never reach the caller.
+Decision: At every boundary an error crosses (HTTP handler, Lambda, GraphQL formatter, RPC interceptor, library entrypoint), exactly one translator decides what shape the next layer sees. The boundary always owns that outward shape. The canonical internal error shape and the public response shape are related, but they are not the same thing.
 
 Use when:
-- A handler returns the raw library error (`error.message`, `error.code`) to the client.
-- Different routes/handlers return different error shapes for the same logical failure.
+- A handler returns raw library error fields (`error.message`, `error.code`) to the caller.
+- Different routes or handlers return different shapes for the same logical failure.
 - A GraphQL resolver throws and the framework sends an unstructured error to the client.
 - A library is published and consumers receive throws from internal dependencies they never imported.
-- Domain code is doing HTTP status code mapping inside business logic.
-- A 500 response leaks an internal stack trace or DB column name.
+- Domain code is encoding HTTP status codes or protocol errors directly.
+- A 500 response leaks stack traces, DB column names, vendor messages, or internal paths.
 
 Start here:
 - Decide whose error shape callers see at the boundary. Always your own — never the dependency's.
-- Translate at exactly one place per boundary: route handler, lambda handler, GraphQL formatter, RPC server, library entrypoint.
-- The translator catches by **base class** (`AppError`, `BusinessError`, `InfraError`) or by the Result-error category — not by every concrete subclass.
-- Define a stable response shape (`code`, `errorId`, `message`, optional `details`) — see `error-shape-and-metadata.md`.
+- Translate exactly once per boundary: route handler, lambda handler, GraphQL formatter, RPC server, library entrypoint.
+- Translate by family-level wrapper or canonical error data (`kind`, `code`, `retry`), not by every concrete subclass.
+- Start public projection from the root contract: `code`, `message`, and safe parts of root `details`.
+- Treat `context` and `cause` as internal by default.
 
 Escalate when:
-- The boundary spans many handlers — extract a single translator (middleware, error formatter, response mapper).
-- Consumers need machine-readable errors — adopt RFC 7807 Problem Details or GraphQL error extensions.
-- Multiple boundaries share the same error contract — extract a shared error-translator module.
-- An incident reveals a leaked internal error or a missing `errorId`.
+- Many handlers share the same rules — extract one translator or formatter.
+- Consumers parse errors programmatically — define an RFC 7807 / Problem Details-compatible projection.
+- Multiple boundaries share the same outward contract — extract a shared boundary translator module.
+- An incident reveals leaked internal details or missing correlation identifiers.
 
 Complexity ladder:
-1. Single try/catch in the handler that maps known errors to status codes (one-off scripts).
-2. Centralized error middleware/handler that catches by `AppError` base class.
-3. Stable `{ code, errorId, message }` response shape returned by the boundary.
-4. RFC 7807 Problem Details when consumers parse errors programmatically.
-5. Per-domain error contracts when audiences differ (public API vs internal RPC).
+1. Single try/catch in a small handler.
+2. Centralized translator that catches by family wrapper or canonical error data.
+3. Stable outward shape such as `{ code, errorId, message }`.
+4. Explicit projection/redaction rules.
+5. RFC 7807 Problem Details or equivalent for machine-readable public APIs.
 
 Do:
-- Translate exactly once per boundary (HTTP route, Lambda handler, GraphQL formatter, RPC server, library entrypoint). The translator owns the response shape.
-- Translate by classification (`BusinessError` / `InfraError` / `ValidationError` — or the equivalent Result error `category`), not by concrete subclass.
-- Every response carries `code`, `errorId`, sanitized `message`. The matching log line carries the full `cause` chain.
-- Vendor / library / SDK error shapes never cross the boundary outward. Wrap or translate at the edge.
-- Domain code does not encode HTTP status / GraphQL error codes / RPC status — that lives in the translator.
+- Translate exactly once per boundary; the translator owns the outward shape.
+- Keep the app's canonical error data internal; project a narrower public shape.
+- Translate by family classification (`BusinessError`, `InfraError`, `ValidationError`, `SecurityError`) or equivalent canonical data fields.
+- Always include a stable `code`, correlation identifier, and sanitized message in outward errors.
+- Keep vendor and library error shapes behind the boundary.
+- Log the richer internal shape separately from the public response shape.
+- Make unknown errors produce a generic internal-error response with a fresh correlation identifier.
+
+Projection:
+- Projection adapts canonical error data to the needs of one boundary.
+- Projection does not redefine the error; it narrows and formats it.
+- Root fields are the first candidates for projection.
+- `details` may be projected when it is safe and genuinely useful to the caller.
+- `http.status` is a boundary concern, not the root contract.
+
+Redaction:
+- Redaction may omit, mask, summarize, or sanitize fields before they cross a boundary.
+- Treat `context` and `cause` as internal by default.
+- Do not project stack traces, raw vendor messages, raw headers, raw response bodies, request IDs from third parties, or arbitrary internal metadata unless the boundary explicitly requires them and the data is safe.
+- Coordinate with security/redaction guidance before logging or exposing anything that may carry secrets or PII.
 
 Do (Class-based — recommended default):
-- Match by `instanceof BusinessError` / `instanceof InfraError` / `instanceof ValidationError`, not on each concrete subclass.
-- Distinguish caller-actionable failures (4xx, "fix your request") from system failures (5xx, "we'll fix it").
-- Preserve `cause` for logs/telemetry while sanitizing the response — see `../typescript-security/rules/redaction.md` for what must not leak.
-- Cross-link with `../typescript-boundaries/rules/raw-input-to-internal-model.md` for the input side of the same boundary.
+- Match by family wrapper (`BusinessError`, `InfraError`, `ValidationError`, `SecurityError`), not by every concrete subclass.
+- Use canonical error data carried by the wrapper to decide status and body shape.
+- Preserve `cause` for logs and telemetry while sanitizing the public response.
 
 Do (Result-based):
-- The transport boundary unwraps the `Result` once and uses its `error.category` / `error.code` to map to status.
-- Same response shape as class-based: `{ code, errorId, message }`.
+- Unwrap the `Result` once at the transport boundary.
+- Map from the canonical error data to the outward shape in the same way the class-based translator would.
 
 Avoid:
-- Returning `error.message` from a third-party library directly to the API caller.
-- Letting unhandled exceptions reach the framework default handler in production (often leaks stack traces).
-- Per-handler error formatting copy-paste — extract a translator.
-- Mixing log shape and response shape — log objects for ops, response shape for callers.
-- Embedding HTTP status codes inside domain code (`throw new HttpError(404)` in a use case).
-- One generic `{ error: "Something went wrong" }` response for everything — caller cannot react.
-- Catching by every concrete subclass — explosion of `if (e instanceof FooError) ...`. Catch the base class.
+- Returning third-party `error.message` directly to callers.
+- Letting framework default handlers leak implementation details in production.
+- Copy-pasting formatting logic into every handler.
+- Mixing log shape and response shape.
+- Embedding protocol status codes into domain logic.
+- One generic `{ error: "Something went wrong" }` response for every failure.
+- Enumerating every concrete subclass in the boundary translator.
 
 Exceptions:
-- A genuinely unknown error may translate to `{ code: "internal_error" }` with no detail; log the cause with `errorId`.
-- Tiny single-handler scripts may inline mapping until a second handler appears.
-- Frameworks with built-in error translation (NestJS exception filters, Fastify error handler) should host the translator, not be bypassed.
+- Tiny one-handler scripts may inline mapping until a second handler appears.
+- Framework-native error hooks (NestJS filters, Fastify handlers, GraphQL formatters) should host the translator rather than be bypassed.
+- A private internal boundary may choose a richer projection than a public one, but it should still be deliberate.
 
 Example:
 
-[Class-based] Single translator, catches by base class:
+[Class-based] Single translator, catching by family wrapper:
 
 ```ts
-// http/error-translator.ts
-import { AppError, BusinessError, InfraError, ValidationError } from "core/errors";
+import { AppError, BusinessError, InfraError, SecurityError, ValidationError } from "core/errors";
 import { ulid } from "ulid";
 
 export type ApiErrorBody = {
@@ -87,88 +101,119 @@ export type ApiErrorBody = {
 export function translate(e: unknown): { status: number; body: ApiErrorBody } {
   if (e instanceof ValidationError) {
     return {
-      status: 400,
-      body: { code: e.code, errorId: e.errorId, message: e.message, details: e.fieldErrors },
+      status: e.data.http?.status ?? 400,
+      body: {
+        code: e.data.code,
+        errorId: e.data.telemetry?.errorId ?? ulid(),
+        message: e.data.message,
+        details: e.data.details,
+      },
     };
   }
+
   if (e instanceof BusinessError) {
-    return { status: 400, body: { code: e.code, errorId: e.errorId, message: e.message } };
+    return {
+      status: e.data.http?.status ?? 400,
+      body: {
+        code: e.data.code,
+        errorId: e.data.telemetry?.errorId ?? ulid(),
+        message: e.data.message,
+      },
+    };
   }
-  if (e instanceof InfraError && e.retryable) {
-    return { status: 503, body: { code: e.code, errorId: e.errorId, message: "try again shortly" } };
+
+  if (e instanceof SecurityError) {
+    return {
+      status: e.data.http?.status ?? 403,
+      body: {
+        code: e.data.code,
+        errorId: e.data.telemetry?.errorId ?? ulid(),
+        message: e.data.message,
+      },
+    };
   }
+
   if (e instanceof InfraError) {
-    return { status: 500, body: { code: e.code, errorId: e.errorId, message: "internal error" } };
+    return {
+      status: e.data.http?.status ?? (e.data.retry?.allowed ? 503 : 500),
+      body: {
+        code: e.data.code,
+        errorId: e.data.telemetry?.errorId ?? ulid(),
+        message: e.data.retry?.allowed ? "try again shortly" : "internal error",
+      },
+    };
   }
+
   if (e instanceof AppError) {
-    return { status: 500, body: { code: e.code, errorId: e.errorId, message: "internal error" } };
+    return {
+      status: e.data.http?.status ?? 500,
+      body: {
+        code: e.data.code,
+        errorId: e.data.telemetry?.errorId ?? ulid(),
+        message: "internal error",
+      },
+    };
   }
-  // unknown — synthesize errorId so logs/response correlate
-  return { status: 500, body: { code: "internal_error", errorId: ulid(), message: "internal error" } };
+
+  return {
+    status: 500,
+    body: {
+      code: "internal_error",
+      errorId: ulid(),
+      message: "internal error",
+    },
+  };
 }
 ```
 
-Express — central error middleware applied once:
+Express middleware applies projection once; logs keep the richer internal shape:
 
 ```ts
-import { translate } from "./http/error-translator";
-
 app.use((err: unknown, req, res, next) => {
   const { status, body } = translate(err);
-  // log carries the cause chain; response carries only the sanitized body.
+
   if (status >= 500) {
-    const logShape = err instanceof AppError ? err.toLogShape() : { errorId: body.errorId, code: body.code, cause: err };
+    const logShape = err instanceof AppError
+      ? err.toLogShape()
+      : {
+          code: body.code,
+          errorId: body.errorId,
+          name: err instanceof Error ? err.name : "UnknownThrownValue",
+          message: err instanceof Error ? err.message : String(err),
+          cause: err,
+        };
+
     req.log.error("request_failed", logShape);
   }
-  res.status(status).json(body);
-});
 
-// route handler — domain throws, edge translates
-app.post("/orders/:id/charge", async (req, res, next) => {
-  try {
-    const result = await chargeOrder(req.params.id);
-    res.json(result);
-  } catch (e) {
-    next(e);
-  }
+  res.status(status).json(body);
 });
 ```
 
-Lambda handlers / GraphQL `formatError` / RPC error interceptors call `translate(e)` the same way; replace the Express middleware with the framework's error hook. The translator stays single, the host changes.
-
-Library entrypoint — never throw vendor types past the public API:
+[Result-based] Unwrap once and project once:
 
 ```ts
-import { Result } from "./result";
-
-export type PublicChargeError =
-  | { kind: "payment_declined"; providerCode: string }
-  | { kind: "payment_unavailable"; retryable: true }
-  | { kind: "internal" };
-
-export async function chargeWithRetry(input: ChargeInput): Promise<Result<ChargeOk, PublicChargeError>> {
-  try {
-    const v = await chargeOrder(input);
-    return { ok: true, value: v };
-  } catch (e) {
-    if (e instanceof PaymentDeclinedError) {
-      return { ok: false, error: { kind: "payment_declined", providerCode: e.providerCode } };
-    }
-    if (e instanceof PaymentProviderUnavailableError) {
-      return { ok: false, error: { kind: "payment_unavailable", retryable: true } };
-    }
-    return { ok: false, error: { kind: "internal" } };
+function toHttp<T>(result: { ok: true; value: T } | { ok: false; error: AppErrorData }) {
+  if (result.ok) {
+    return { status: 200, body: result.value };
   }
+
+  const error = result.error;
+  return {
+    status: error.http?.status ?? 500,
+    body: {
+      code: error.code,
+      errorId: error.telemetry?.errorId ?? ulid(),
+      message: error.message,
+    },
+  };
 }
 ```
 
-For public APIs whose consumers parse errors programmatically, wrap the body in RFC 7807 Problem Details — see `error-shape-and-metadata.md` for the `ProblemDetails` shape and `toProblemDetails()` helper.
-
 Verify:
-- Pick any boundary (route, handler, resolver, library function): can a caller distinguish failure modes from the response alone?
-- No third-party `error.message` string appears in any 4xx/5xx response body.
-- Is there exactly one place per boundary that translates errors?
-- Do 5xx responses include `errorId` so support can correlate the log?
-- Do 4xx responses give the caller enough info to fix the request without leaking internals?
-- Do error `code` strings stay stable across releases?
-- Is the translator catching base classes (`BusinessError`, `InfraError`) and not enumerating every subclass?
+- Each boundary has exactly one translation point.
+- Public responses use an app-owned shape, not a vendor or framework default shape.
+- Root fields are the starting point for projection.
+- `context` and `cause` are omitted by default from outward responses.
+- Logs retain the richer internal diagnostic shape separately.
+- The translator catches family wrappers or reads canonical classification fields instead of enumerating every concrete subclass.
