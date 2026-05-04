@@ -90,7 +90,7 @@ Progressive-design scenarios also require the agent to pick the correct rung: st
 
 ### Observability
 
-- Agent adds `logger.error(error)` or dumps raw request/config/provider objects. Expected: replace with meaningful structured log plus security redaction.
+- Agent adds `logger.error(error)` with no context, or dumps raw request/config/provider objects. Expected: keep the `Error` instance when the logger serializes errors, but add meaningful structured context and security redaction.
 - Agent adds logs only on happy path while important branches are silent. Expected: log meaningful branch decisions or add span events with reason codes.
 - Agent imports OpenTelemetry or X-Ray SDK directly inside business logic. Expected: move vendor setup to observability adapter/bootstrap and pass a small observability capability inward.
 - Agent creates spans with dynamic names or sensitive/high-cardinality attributes. Expected: stable span names, safe bounded attributes, span events for branch decisions.

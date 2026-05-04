@@ -166,24 +166,18 @@ export function translate(e: unknown): { status: number; body: ApiErrorBody } {
 }
 ```
 
-Express middleware applies projection once; logs keep the richer internal shape:
+Express middleware applies projection once; logs keep real error instance plus safe structured context:
 
 ```ts
 app.use((err: unknown, req, res, next) => {
   const { status, body } = translate(err);
 
   if (status >= 500) {
-    const logShape = err instanceof AppError
-      ? err.toLogShape()
-      : {
-          code: body.code,
-          errorId: body.errorId,
-          name: err instanceof Error ? err.name : "UnknownThrownValue",
-          message: err instanceof Error ? err.message : String(err),
-          cause: err,
-        };
-
-    req.log.error("request_failed", logShape);
+    req.log.error("request_failed", {
+      code: body.code,
+      errorId: body.errorId,
+      err,
+    });
   }
 
   res.status(status).json(body);

@@ -37,12 +37,13 @@ Do:
 - Log stable operation names, branch names, outcomes, safe IDs, counts, durations, and reason codes.
 - Prefer structured fields over interpolated strings.
 - Include branch decisions that explain which path executed when that matters operationally.
+- Pass the `Error` instance to the logger when the logger supports structured error serialization; keep stack, `cause`, `name`, and `message` available to the log pipeline.
 - Keep fields low-cardinality unless high-cardinality identifiers are explicitly safe and needed.
 - Coordinate with `typescript-security/rules/redaction.md` before logging sensitive context.
 - Write structured logs to stdout/stderr and let the runtime/infra route them (Twelve-Factor XI). Do not embed log shipping, file rotation, or transport in the application; that belongs to the runtime/platform.
 
 Avoid:
-- `logger.info("here")`, `logger.error(error)`, or `console.log(payload)` without context.
+- `logger.info("here")`, uncontextualized errors, or `console.log(payload)`.
 - Logging whole request bodies, provider responses, config objects, headers, or ORM entities.
 - Logging only happy-path success while failure branches are silent.
 - Logging every step in a loop or hot path without sampling or a specific diagnostic need.
@@ -58,10 +59,10 @@ Example:
 Bad: not actionable and leaks too much.
 
 ```ts
-logger.error("send failed", { order, error });
+logger.error("send failed", { order, requestBody, config });
 ```
 
-Good: actionable, branch-aware, and bounded.
+Good: actionable, branch-aware, bounded, and keeps the real error instance for serializer-controlled stack/cause handling.
 
 ```ts
 logger.warn("receipt_delivery_skipped", {
@@ -74,7 +75,7 @@ logger.error("receipt_delivery_failed", {
   orderId: order.id,
   tenantId: order.tenantId,
   provider: "ses",
-  errorCode: error.code,
+  err: error,
 });
 ```
 

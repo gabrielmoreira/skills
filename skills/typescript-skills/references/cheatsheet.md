@@ -662,7 +662,7 @@ logger.error("receipt_delivery_failed", {
   orderId: order.id,
   tenantId: order.tenantId,
   provider: "ses",
-  errorCode: error.code,
+  err: error,
 });
 
 logger.info("receipt_delivery_provider_selected", {
@@ -672,7 +672,7 @@ logger.info("receipt_delivery_provider_selected", {
 });
 ```
 
-No `logger.info("here")`. No `logger.error(error)`. No raw payload dumps.
+No `logger.info("here")`. No broad object dumps. Passing real `Error` as `err` is good when logger serializes errors.
 
 ---
 
