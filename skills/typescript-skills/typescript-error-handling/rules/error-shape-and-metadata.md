@@ -161,11 +161,12 @@ export abstract class AppError<E extends AppErrorData = AppErrorData> extends Er
       http: this.data.http,
       telemetry: this.data.telemetry,
       name: this.name,
-      originalCause: this.originalCause,
       causeChain: this.cause,
     };
   }
 }
+
+`originalCause` may still be retained on the wrapper for later internal diagnostics, even if it is not emitted in every default log payload.
 
 export class BusinessError<E extends AppErrorData = AppErrorData> extends AppError<E> {}
 

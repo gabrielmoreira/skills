@@ -105,6 +105,7 @@ export type AppErrorData = {
     message?: string;
     status?: number;
     requestId?: string;
+    correlationId?: string;
     stacktrace?: string;
     metadata?: Record<string, unknown>;
   };
