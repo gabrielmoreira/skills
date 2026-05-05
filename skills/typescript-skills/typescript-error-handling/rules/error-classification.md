@@ -44,7 +44,7 @@ Do:
 - Distinguish between backoff retry, retry after modification/remediation, and no retry.
 - Wrap third-party throws into your own classification at the adapter boundary.
 - Let the boundary translate by family-level wrapper or `kind`, not by concrete subclass names.
-- Preserve `cause` when wrapping so observed failure signals remain available for diagnostics.
+- Preserve runtime `cause` when wrapping so later diagnostics can still inspect the original failure, and keep normalized cause data on the canonical shape.
 
 Do (Class-based — recommended default):
 - Define family wrappers as the default runtime hierarchy.

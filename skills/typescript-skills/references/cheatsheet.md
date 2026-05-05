@@ -885,7 +885,7 @@ Downstream origin alone does not decide classification.
 
 ## Error Boundary Contract
 
-Translate once per boundary. Project your own outward shape. Keep `context` and `cause` internal by default.
+Translate once per boundary. Project your own outward shape. Keep `context`, `normalizedCause`, and runtime `cause` internal by default.
 
 ```ts
 function translate(e: unknown) {
@@ -894,7 +894,7 @@ function translate(e: unknown) {
       status: e.data.http?.status ?? 400,
       body: {
         code: e.data.code,
-        errorId: e.data.telemetry?.errorId ?? ulid(),
+        errorId: e.data.metadata?.errorId ?? ulid(),
         message: e.data.message,
         details: e.data.details,
       },
@@ -906,7 +906,7 @@ function translate(e: unknown) {
       status: e.data.http?.status ?? (e.data.retry?.allowed ? 503 : 500),
       body: {
         code: e.data.code,
-        errorId: e.data.telemetry?.errorId ?? ulid(),
+        errorId: e.data.metadata?.errorId ?? ulid(),
         message: "internal error",
       },
     };
@@ -925,7 +925,7 @@ Response shape is yours: stable `code`, `errorId`, sanitized `message`.
 
 ## Error Shape and Metadata
 
-Root = semantic contract. `context` and `cause` = internal attachments. `telemetry` carries correlation.
+Root = semantic contract. `context` and `normalizedCause` = internal attachments. `metadata` carries correlation.
 
 ```ts
 type AppErrorData = {
@@ -936,24 +936,25 @@ type AppErrorData = {
   context?: {
     service?: string;
     operation?: string;
-    metadata?: Record<string, unknown>;
   };
-  cause?: {
-    name?: string;
+  normalizedCause?: {
+    type?: string;
     code?: string;
     message?: string;
-    metadata?: Record<string, unknown>;
+    stacktrace?: string;
   };
-  telemetry?: {
+  metadata?: {
     errorId?: string;
     traceId?: string;
     correlationId?: string;
+    requestId?: string;
     occurredAt?: string;
+    custom?: Record<string, unknown>;
   };
 };
 ```
 
-Keep root `details` distinct from `context.metadata` and `cause.metadata`. Capture upstream request IDs in `cause` / `cause.metadata`.
+Keep root `details` distinct from `normalizedCause` and `metadata`. Capture upstream request IDs in `metadata` or `metadata.custom`.
 
 ---
 

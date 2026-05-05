@@ -60,7 +60,7 @@ Avoid:
 - `catch (e) { throw e }` with no added context.
 - `return null` for multiple distinct failure modes.
 - `Result<T, E>` where `E = unknown` or `E = string`.
-- Rethrowing without preserving `cause` when wrapping.
+- Rethrowing without preserving runtime `cause` when wrapping.
 - Letting unhandled exceptions reach the framework default handler in production.
 
 Exceptions:

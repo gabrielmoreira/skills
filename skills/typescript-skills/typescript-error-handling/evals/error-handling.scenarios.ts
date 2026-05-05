@@ -16,8 +16,8 @@ const scenarios = [
       "Rejects returning raw vendor/library error message directly to clients",
       "Requires one boundary translator that projects to an app-owned error shape",
       "Requires stable outward fields such as code and errorId with sanitized message",
-      "Keeps richer internal details for logs/telemetry rather than the public response",
-      "Treats raw cause/context/vendor details as internal by default"
+      "Keeps richer internal diagnostics for logs/traces rather than the public response",
+      "Treats raw runtime cause, normalized cause details, context, and vendor data as internal by default"
     ],
     mustNot: [
       "Approves exposing vendor err.message because support wants it",
@@ -64,7 +64,7 @@ const scenarios = [
     must: [
       "Preserves richer internal understanding of upstream failure details before public projection",
       "Keeps public error shape sanitized and app-owned rather than exposing raw upstream details",
-      "Separates internal diagnostics or telemetry from the outward boundary response",
+      "Separates internal diagnostics or tracing/logging detail from the outward boundary response",
       "Rejects throwing away actionable upstream failure context too early just because the public response is narrow"
     ],
     mustNot: [
@@ -82,21 +82,21 @@ const scenarios = [
     mode: "apply",
     difficulty: "hard",
     prompt:
-      "An adapter catches an AxiosError, normalizes `cause` down to `{ name, code, message, status }`, and drops both `error.stack` and the original error object reference before logs/traces run. Public responses are already sanitized. The team says normalized cause fields are enough and keeping the raw cause is risky. What should change?",
+      "An adapter catches an AxiosError, keeps only `normalizedCause` with type/code/message, and drops both `error.stack` and the original runtime cause reference before logs/traces run. Public responses are already sanitized. The team says the normalized cause fields are enough and keeping the raw cause is risky. What should change?",
     expectedPrimary: "typescript-error-handling",
     expectedSecondary: ["typescript-observability", "typescript-security"],
     must: [
-      "Keeps the canonical app-owned `cause` summary rather than replacing it with raw library shape",
-      "Preserves runtime-native stacktrace from the observed cause for internal diagnostics/logging/tracing when available",
-      "Allows retaining the original cause object reference internally when still in-process and useful, without making it the serialized/public contract",
-      "Keeps outward/public projection sanitized instead of exposing raw cause data"
+      "Keeps the canonical app-owned `normalizedCause` summary rather than replacing it with raw library shape",
+      "Preserves runtime-native stacktrace from the normalized cause source for internal diagnostics/logging/tracing when available",
+      "Allows retaining the original runtime cause reference internally when still in-process and useful, without making it the serialized/public contract",
+      "Keeps outward/public projection sanitized instead of exposing raw normalized-cause or cause data"
     ],
     mustNot: [
-      "Treats normalized cause message/code alone as enough when stacktrace or richer internal diagnostics are still needed",
+      "Treats normalized cause type/code/message alone as enough when stacktrace or richer internal diagnostics are still needed",
       "Serializes or returns the raw original cause object by default as the fix",
-      "Treats public sanitization as a reason to discard internal cause stacktrace or original-cause access too early"
+      "Treats public sanitization as a reason to discard internal normalized-cause stacktrace or original-cause access too early"
     ],
-    tags: ["cause", "stacktrace", "projection", "calibration"]
+    tags: ["normalized-cause", "stacktrace", "projection", "calibration"]
   },
 ] satisfies EvalScenario[];
 

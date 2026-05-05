@@ -13,7 +13,7 @@ Before writing new error-handling code, define the project's canonical error sem
 
 | Decision | Guidance |
 | --- | --- |
-| **Canonical contract** | Define one shared `AppErrorData` shape first. Root fields describe the app-owned semantic contract; attachments carry context, observed cause, retry, protocol projection, and telemetry. |
+| **Canonical contract** | Define one shared `AppErrorData` shape first. Root fields describe the app-owned semantic contract; attachments carry context, normalized cause data, retry, protocol projection, and metadata. Runtime `cause` stays available for internal diagnostics, but it is not the canonical serialized contract. |
 | **Propagation style** | Then pick one default style inside each package: class-based (`throw`) or Result-based. Mixing both styles casually inside the same package leads to inconsistency. |
 | **Runtime wrappers** | Prefer family wrappers such as `AppError`, `BusinessError`, `InfraError`, `SecurityError`, and `ValidationError`. Specific subclasses are allowed when they add local value, but they are not the primary cross-package contract. |
 
@@ -45,7 +45,7 @@ For a new mid-or-larger app, start with the family wrappers on day one. They sol
 | function that may fail, choosing throw vs return | `rules/throw-vs-result.md` |
 | caller asking "should I retry this?", retryable vs caller fault, generic `catch (e)` swallowing | `rules/error-classification.md` |
 | missing `errorId`, no `code`, support cannot find the request, log/response cannot be correlated | `rules/error-shape-and-metadata.md` |
-| unclear ownership of `details`, `context`, `cause`, or telemetry | `rules/error-shape-and-metadata.md` |
+| unclear ownership of `details`, `context`, `normalizedCause`, `metadata`, or runtime `cause` | `rules/error-shape-and-metadata.md` |
 | HTTP/RPC handler returning provider/library error shape directly to client | `rules/error-boundary-contract.md` |
 | third-party SDK / library error reaching the client or an unfiltered log | `rules/error-boundary-contract.md` |
 
@@ -55,7 +55,7 @@ For a new mid-or-larger app, start with the family wrappers on day one. They sol
 - Guidance for choosing one default propagation style per package: class-based or Result-based.
 - The family-level runtime wrappers and when to use specific subclasses.
 - Error classification (`kind`, business vs infra vs security vs validation, retryability).
-- Error shape and structured attachments: semantic root, context, normalized cause, internal cause stacktrace/original-cause retention guidance, retry, protocol projections, telemetry.
+- Error shape and structured attachments: semantic root, context, normalized cause data, metadata, retry, protocol projections, and runtime-cause retention guidance.
 - Boundary translation and projection into transport-level responses.
 
 ## Does Not Own
@@ -67,4 +67,4 @@ For a new mid-or-larger app, start with the family wrappers on day one. They sol
 
 ## Default
 
-For a new mid-sized app: define one canonical `AppErrorData` shape first, then default to class-based propagation with family wrappers in `core/errors`. Use stable `code` plus canonical error data as the shared contract. Add `context`, `cause`, `retry`, `http`, and `telemetry` as structured attachments when needed. Keep `cause` normalized in the canonical shape, preserve stacktrace and optional original-cause references internally for diagnostics when useful, translate once at the boundary, log the full internal diagnostic shape, and project only the safe public shape outward.
+For a new mid-sized app: define one canonical `AppErrorData` shape first, then default to class-based propagation with family wrappers in `core/errors`. Use stable `code` plus canonical error data as the shared contract. Add `context`, `normalizedCause`, `metadata`, `retry`, and `http` as structured attachments when needed. Keep runtime `cause` for internal diagnostics when useful, keep `normalizedCause` in the canonical shape, translate once at the boundary, log the full internal diagnostic shape, and project only the safe public shape outward.

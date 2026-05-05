@@ -8,7 +8,7 @@ references: [App-level error contract design, RFC 7807 Problem Details, W3C Trac
 
 # Define App Error Semantics Early
 
-Decision: Define one canonical, app-owned error model early. Standardize the root error contract, structured attachments, projection defaults, and creation helpers before modules invent incompatible error shapes.
+Decision: Define one canonical, app-owned error model early. Standardize the root semantic contract, normalized cause summary, metadata, projection defaults, and creation helpers before modules invent incompatible error shapes. Runtime `cause` still matters, but it remains the original in-process cause (`Error.cause`), not the serialized project contract.
 
 Use when:
 - Starting a new TypeScript service, API, worker, or library.
@@ -19,10 +19,10 @@ Use when:
 Start here:
 - Define one canonical `AppErrorData` shape for the project.
 - Keep the root focused on the app-owned semantic contract: `kind`, `code`, `message`, `details`.
-- Treat `context`, `cause`, `retry`, `http`, and `telemetry` as structured attachments.
+- Treat `context`, `normalizedCause`, `metadata`, `retry`, and `http` as structured attachments.
 - Treat root `details` as the semantic payload of the error.
-- Treat `context` and `cause` as internal-by-default attachments.
-- Normalize `cause` into app-owned fields, preserve runtime-native stacktrace internally when useful, and optionally retain the original cause object reference while still in-process.
+- Keep runtime `cause` separate from the canonical data shape.
+- Normalize cause data into app-owned fields and keep extra diagnostics in metadata instead of overloading the root.
 - Add factories and enrichment helpers so callers do not rebuild the whole shape manually.
 
 Escalate when:
@@ -34,8 +34,8 @@ Escalate when:
 Complexity ladder:
 1. Root contract only: `kind`, `code`, `message`, `details`.
 2. Add `context` for app-facing execution context.
-3. Add `cause` for normalized observed failure signals from adapters and dependencies.
-4. Add `retry`, `http`, and `telemetry` when resilience, boundaries, and observability need stable structure.
+3. Add `normalizedCause` for normalized cause data (`type`, `code`, `message`, `stacktrace`).
+4. Add `metadata`, `retry`, and `http` when diagnostics, resilience, and boundaries need stable structure.
 5. Add family wrappers (`AppError`, `BusinessError`, `InfraError`, `SecurityError`, `ValidationError`) and specialized factories once error creation starts repeating.
 
 Do:
@@ -44,26 +44,24 @@ Do:
 - Keep root `details` serializable and public-shape-friendly by default.
 - Use `context.service` and `context.operation` in the language of the app, not the vendor.
 - Use `context.target` for the immediate technical target only when one exists clearly.
-- Use `context.metadata` for internal execution metadata.
-- Use `cause` for normalized observed data from captured errors or downstream responses.
-- Use `cause.metadata` for internal observed-cause metadata.
-- Preserve runtime-native cause stacktrace internally when the observed cause provides one.
-- Allow an internal original-cause reference for later diagnostics/logging/tracing when the process/runtime boundary still allows it, but keep that reference out of the serialized/public contract by default.
+- Use `normalizedCause` for app-owned normalized cause data from captured errors or downstream responses.
+- Keep `normalizedCause` close to OpenTelemetry-style exception fields: `type`, `message`, `stacktrace`, plus project-specific `code` when useful.
+- Use `metadata` for correlation identifiers, request identifiers, occurrence time, and similar diagnostics metadata.
+- Put one-off or vendor-specific extras in `metadata.custom` instead of inventing new top-level fields casually.
+- Preserve runtime `cause` in wrappers when wrapping, so later in-process diagnostics/logging/tracing can still inspect the original error object.
 - Use a dedicated `retry` attachment for retry evaluation instead of scattering booleans across call sites.
 - Use a dedicated `http` attachment for HTTP projection instead of making protocol concerns part of the root contract.
-- Put correlation fields such as `errorId`, `traceId`, `correlationId`, and `occurredAt` in `telemetry`.
 - Prefer family-level wrappers as the default runtime wrappers.
 - Allow more specific subclasses when they add clear local value, but keep `code` and canonical error data as the shared contract.
-- Prefer specialized factories such as `orderNotFound(...)` and helpers such as `withContext(...)`, `withCause(...)`, and `withTelemetry(...)` over repeated manual object assembly.
+- Prefer specialized factories such as `orderNotFound(...)` and helpers such as `withContext(...)`, `withNormalizedCause(...)`, and `withMetadata(...)` over repeated manual object assembly.
 
 Avoid:
 - Letting each module invent its own error shape.
 - Using raw vendor/runtime codes as the app's primary contract.
 - Encoding HTTP status, database driver names, or SDK class names into the root error contract.
-- Treating root `details`, `context.metadata`, and `cause.metadata` as the same kind of information.
-- Dumping stacks, raw headers, raw response bodies, secrets, or arbitrary blobs into the canonical shape.
-- Treating normalized `cause.message` / `cause.code` as if they always replace internal stacktrace or later access to the original cause object.
-- Serializing the raw original cause object as part of the canonical/public error contract.
+- Treating root `details`, `normalizedCause`, and `metadata` as the same kind of information.
+- Dumping raw original causes, raw headers, raw response bodies, secrets, or arbitrary blobs into the canonical shape.
+- Treating normalized `normalizedCause.type` / `normalizedCause.code` / `normalizedCause.message` as if they always replace access to runtime `cause` when later diagnostics still need it.
 - Making subclass identity the primary cross-package contract.
 - Forcing `context.target` when there is no clear technical target.
 
@@ -96,18 +94,22 @@ export type AppErrorData = {
       operation?: string;
       resource?: string;
     };
-    metadata?: Record<string, unknown>;
   };
 
-  cause?: {
-    name?: string;
+  normalizedCause?: {
+    type?: string;
     code?: string;
     message?: string;
-    status?: number;
-    requestId?: string;
-    correlationId?: string;
     stacktrace?: string;
-    metadata?: Record<string, unknown>;
+  };
+
+  metadata?: {
+    errorId?: string;
+    traceId?: string;
+    correlationId?: string;
+    requestId?: string;
+    occurredAt?: string;
+    custom?: Record<string, unknown>;
   };
 
   retry?: {
@@ -118,13 +120,6 @@ export type AppErrorData = {
   http?: {
     status?: number;
   };
-
-  telemetry?: {
-    errorId?: string;
-    traceId?: string;
-    correlationId?: string;
-    occurredAt?: string;
-  };
 };
 
 type AppResult<T, E extends AppErrorData = AppErrorData> =
@@ -132,15 +127,12 @@ type AppResult<T, E extends AppErrorData = AppErrorData> =
   | { ok: false; error: E };
 
 class AppError<E extends AppErrorData = AppErrorData> extends Error {
-  readonly originalCause?: unknown;
-
   constructor(
     public readonly data: E,
-    options?: { cause?: unknown; originalCause?: unknown },
+    options?: { cause?: unknown },
   ) {
     super(data.message, { cause: options?.cause });
     this.name = "AppError";
-    this.originalCause = options?.originalCause ?? options?.cause;
   }
 }
 
@@ -163,7 +155,7 @@ function fail<E extends AppErrorData>(error: E): AppResult<never, E> {
 
 function toThrowable<E extends AppErrorData>(
   error: E,
-  options?: { cause?: unknown; originalCause?: unknown },
+  options?: { cause?: unknown },
 ): AppError<E> {
   switch (error.kind) {
     case "business":
@@ -177,29 +169,9 @@ function toThrowable<E extends AppErrorData>(
   }
 }
 
-function withCause<T extends AppErrorData>(
-  error: T,
-  observed: unknown,
-): T {
-  const e = observed instanceof Error ? observed : undefined;
-
-  return {
-    ...error,
-    cause: {
-      ...error.cause,
-      name: error.cause?.name ?? e?.name,
-      message: error.cause?.message ?? e?.message,
-      stacktrace: error.cause?.stacktrace ?? e?.stack,
-      metadata: {
-        ...error.cause?.metadata,
-      },
-    },
-  };
-}
-
 function throwError<E extends AppErrorData>(
   error: E,
-  options?: { cause?: unknown; originalCause?: unknown },
+  options?: { cause?: unknown },
 ): never {
   throw toThrowable(error, options);
 }
@@ -217,9 +189,39 @@ function withContext<T extends AppErrorData>(
         ...error.context?.target,
         ...context?.target,
       },
-      metadata: {
-        ...error.context?.metadata,
-        ...context?.metadata,
+    },
+  };
+}
+
+function withNormalizedCause<T extends AppErrorData>(
+  error: T,
+  observed: unknown,
+): T {
+  const e = observed instanceof Error ? observed : undefined;
+
+  return {
+    ...error,
+    normalizedCause: {
+      ...error.normalizedCause,
+      type: error.normalizedCause?.type ?? e?.name,
+      message: error.normalizedCause?.message ?? e?.message,
+      stacktrace: error.normalizedCause?.stacktrace ?? e?.stack,
+    },
+  };
+}
+
+function withMetadata<T extends AppErrorData>(
+  error: T,
+  metadata: AppErrorData["metadata"],
+): T {
+  return {
+    ...error,
+    metadata: {
+      ...error.metadata,
+      ...metadata,
+      custom: {
+        ...error.metadata?.custom,
+        ...metadata?.custom,
       },
     },
   };
@@ -263,20 +265,25 @@ async function requireOrder(orderId: string): Promise<{ id: string }> {
     const observed = new Error("db row missing");
 
     throwError(
-      withCause(
-        withContext(orderNotFound({ orderId }), {
-          service: "orders",
-          operation: "require_order",
-          target: {
-            kind: "db",
-            name: "orders-db",
-            operation: "select",
-            resource: "orders",
-          },
-        }),
-        observed,
+      withMetadata(
+        withNormalizedCause(
+          withContext(orderNotFound({ orderId }), {
+            service: "orders",
+            operation: "require_order",
+            target: {
+              kind: "db",
+              name: "orders-db",
+              operation: "select",
+              resource: "orders",
+            },
+          }),
+          observed,
+        ),
+        {
+          requestId: "req_123",
+        },
       ),
-      { cause: observed, originalCause: observed },
+      { cause: observed },
     );
   }
 
@@ -288,8 +295,8 @@ Verify:
 - The project has one canonical app-owned error shape.
 - The root contract stays stable even when propagation style changes.
 - Root `details` is the semantic payload of the error.
-- `context.metadata` and `cause.metadata` stay internal-by-default.
-- Normalized `cause` data can carry stacktrace for internal diagnostics, while any retained original-cause object reference stays internal-only.
+- Normalized `normalizedCause` data stays distinct from diagnostics `metadata`.
+- Runtime `cause` remains internal and separate from the canonical data shape.
 - Family wrappers are the default runtime wrappers; specific subclasses are optional, not mandatory.
 - The same specialized error can be enriched once and propagated via either `fail(...)` or `throwError(...)`.
 - Public projections can start from the root contract and omit internal attachments by default.

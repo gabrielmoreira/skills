@@ -23,7 +23,7 @@ Start here:
 - Translate exactly once per boundary: route handler, lambda handler, GraphQL formatter, RPC server, library entrypoint.
 - Translate by family-level wrapper or canonical error data (`kind`, `code`, `retry`), not by every concrete subclass.
 - Start public projection from the root contract: `code`, `message`, and safe parts of root `details`.
-- Treat `context` and `cause` as internal by default.
+- Treat `context` and `normalizedCause` as internal by default.
 
 Escalate when:
 - Many handlers share the same rules — extract one translator or formatter.
@@ -56,14 +56,14 @@ Projection:
 
 Redaction:
 - Redaction may omit, mask, summarize, or sanitize fields before they cross a boundary.
-- Treat `context` and `cause` as internal by default.
-- Do not project stack traces, raw vendor messages, raw headers, raw response bodies, request IDs from third parties, or arbitrary internal metadata unless the boundary explicitly requires them and the data is safe.
+- Treat `context`, `normalizedCause`, and runtime `cause` as internal by default.
+- Do not project stack traces, raw vendor messages, raw runtime causes, raw headers, raw response bodies, request IDs from third parties, or arbitrary internal metadata unless the boundary explicitly requires them and the data is safe.
 - Coordinate with security/redaction guidance before logging or exposing anything that may carry secrets or PII.
 
 Do (Class-based — recommended default):
 - Match by family wrapper (`BusinessError`, `InfraError`, `ValidationError`, `SecurityError`), not by every concrete subclass.
 - Use canonical error data carried by the wrapper to decide status and body shape.
-- Preserve `cause` for logs and telemetry while sanitizing the public response.
+- Preserve runtime `cause` and richer internal diagnostics for logs/tracing while sanitizing the public response.
 
 Do (Result-based):
 - Unwrap the `Result` once at the transport boundary.
@@ -104,7 +104,7 @@ export function translate(e: unknown): { status: number; body: ApiErrorBody } {
       status: e.data.http?.status ?? 400,
       body: {
         code: e.data.code,
-        errorId: e.data.telemetry?.errorId ?? ulid(),
+        errorId: e.data.metadata?.errorId ?? ulid(),
         message: e.data.message,
         details: e.data.details,
       },
@@ -116,7 +116,7 @@ export function translate(e: unknown): { status: number; body: ApiErrorBody } {
       status: e.data.http?.status ?? 400,
       body: {
         code: e.data.code,
-        errorId: e.data.telemetry?.errorId ?? ulid(),
+        errorId: e.data.metadata?.errorId ?? ulid(),
         message: e.data.message,
       },
     };
@@ -127,7 +127,7 @@ export function translate(e: unknown): { status: number; body: ApiErrorBody } {
       status: e.data.http?.status ?? 403,
       body: {
         code: e.data.code,
-        errorId: e.data.telemetry?.errorId ?? ulid(),
+        errorId: e.data.metadata?.errorId ?? ulid(),
         message: e.data.message,
       },
     };
@@ -138,7 +138,7 @@ export function translate(e: unknown): { status: number; body: ApiErrorBody } {
       status: e.data.http?.status ?? (e.data.retry?.allowed ? 503 : 500),
       body: {
         code: e.data.code,
-        errorId: e.data.telemetry?.errorId ?? ulid(),
+        errorId: e.data.metadata?.errorId ?? ulid(),
         message: e.data.retry?.allowed ? "try again shortly" : "internal error",
       },
     };
@@ -149,7 +149,7 @@ export function translate(e: unknown): { status: number; body: ApiErrorBody } {
       status: e.data.http?.status ?? 500,
       body: {
         code: e.data.code,
-        errorId: e.data.telemetry?.errorId ?? ulid(),
+        errorId: e.data.metadata?.errorId ?? ulid(),
         message: "internal error",
       },
     };
@@ -197,7 +197,7 @@ function toHttp<T>(result: { ok: true; value: T } | { ok: false; error: AppError
     status: error.http?.status ?? 500,
     body: {
       code: error.code,
-      errorId: error.telemetry?.errorId ?? ulid(),
+      errorId: error.metadata?.errorId ?? ulid(),
       message: error.message,
     },
   };
@@ -208,6 +208,6 @@ Verify:
 - Each boundary has exactly one translation point.
 - Public responses use an app-owned shape, not a vendor or framework default shape.
 - Root fields are the starting point for projection.
-- `context` and `cause` are omitted by default from outward responses.
+- `context`, `normalizedCause`, and runtime `cause` are omitted by default from outward responses.
 - Logs retain the richer internal diagnostic shape separately.
 - The translator catches family wrappers or reads canonical classification fields instead of enumerating every concrete subclass.

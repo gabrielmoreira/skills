@@ -16,7 +16,7 @@ Canonical rules:
 - `define-app-error-semantics-early.md` — define a canonical app-owned error model, structured attachments, factories, and enrichment helpers before the codebase fragments.
 - `throw-vs-result.md` — choose one propagation style per package while reusing the same canonical error data.
 - `error-classification.md` — classify by semantic family and explicit retry mode instead of technical origin alone.
-- `error-shape-and-metadata.md` — structure root semantic payload, internal attachments, retry/http extensions, and telemetry.
+- `error-shape-and-metadata.md` — structure root semantic payload, normalized cause data, metadata, retry/http extensions, and runtime-cause guidance.
 - `error-boundary-contract.md` — project canonical internal errors into safe public boundary shapes with explicit redaction.
 
 Pressure signals that motivated the bundle remain relevant:

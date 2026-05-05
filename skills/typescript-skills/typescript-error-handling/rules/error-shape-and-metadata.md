@@ -8,12 +8,12 @@ references: [RFC 7807 Problem Details for HTTP APIs, RFC 9457 (RFC 7807-bis), Mi
 
 # Error Shape and Metadata
 
-Decision: Define one canonical, app-owned error data shape. Keep the root focused on the semantic contract (`kind`, `code`, `message`, `details`). Use structured attachments for internal execution context, observed cause, retry evaluation, protocol projections, and telemetry. Root `details` is the semantic payload of the error; `context` and `cause` are internal by default.
+Decision: Define one canonical, app-owned error data shape. Keep the root focused on the semantic contract (`kind`, `code`, `message`, `details`). Use structured attachments for app-facing context, normalized cause data, metadata, retry evaluation, and protocol projections. Root `details` is the semantic payload of the error; runtime `cause` remains internal and separate from the canonical serialized shape.
 
 Use when:
 - Errors have no durable `code` or correlation identifier.
 - New error types add random fields in random places.
-- Teams cannot agree what belongs in semantic payload versus operational metadata.
+- Teams cannot agree what belongs in semantic payload versus diagnostics metadata.
 - Logs, traces, and responses cannot be correlated reliably.
 - Public responses leak internal context or vendor failure details.
 
@@ -21,22 +21,22 @@ Start here:
 - Define one canonical `AppErrorData` shape for the project.
 - Keep the root small: `kind`, `code`, `message`, `details`.
 - Use `context` for app-facing execution context.
-- Use `cause` for normalized observed failure data.
-- Use `retry`, `http`, and `telemetry` as explicit extensions instead of overloading the root.
+- Use `normalizedCause` for normalized observed cause data.
+- Use `metadata`, `retry`, and `http` as explicit extensions instead of overloading the root.
 - Keep root `details` serializable and public-shape-friendly by default.
-- Preserve runtime-native cause stacktrace internally when useful, and keep any original-cause object reference out of the canonical serialized shape by default.
+- Keep runtime `cause` outside the canonical serialized shape by default.
 
 Escalate when:
 - Multiple packages need to share the same error contract — extract the types into `core/errors` or equivalent.
 - Public consumers parse errors programmatically — define a projection strategy and consider RFC 7807 / RFC 9457.
-- Tracing and correlation are in place — feed `telemetry` from an app-owned tracing or observability port.
+- Tracing and correlation are in place — feed `metadata` from an app-owned tracing or observability port.
 - Teams keep adding fields without agreement — review the root versus attachment boundaries before adding more.
 
 Complexity ladder:
 1. Root only: `kind`, `code`, `message`, `details`.
 2. Add `context` for service, operation, and optional technical target.
-3. Add `cause` for normalized observed failure signals.
-4. Add `retry`, `http`, and `telemetry` when resilience, protocol projection, and observability become real concerns.
+3. Add `normalizedCause` for normalized observed cause data.
+4. Add `metadata`, `retry`, and `http` when resilience, protocol projection, and observability become real concerns.
 5. Add family wrappers and enrichment helpers so callers stop rebuilding the shape manually.
 
 Do:
@@ -44,21 +44,23 @@ Do:
 - Generate `errorId` when the error is materialized, not only when logging.
 - Record occurrence time when the error is materialized, not when the log line is written.
 - Keep root `details` for semantic payload that belongs to the error itself.
-- Use `context.metadata` for internal execution metadata.
-- Use `cause.metadata` for internal observed-cause metadata.
-- Preserve cause stacktrace in normalized form when the observed runtime error exposes one and internal diagnostics/tracing still need it.
-- If later analysis may need fields beyond the normalized snapshot, retain the original cause object reference internally in the wrapper/runtime layer instead of stuffing it into the canonical data shape.
-- Capture downstream request IDs and equivalent vendor correlation handles in `cause` / `cause.metadata`.
-- Keep `context` and `cause` internal by default when projecting outward.
+- Use `normalizedCause` for app-owned normalized cause data such as `type`, `code`, `message`, and `stacktrace`.
+- Keep `normalizedCause` close to OpenTelemetry exception fields, adding project-specific `code` only where useful.
+- Keep root `code` as the app's stable contract; `normalizedCause.code` is only the observed upstream/runtime code when one exists.
+- Use `metadata` for correlation IDs, request IDs, occurrence time, and similar diagnostics metadata.
+- Put one-off or vendor-specific extras in `metadata.custom`.
+- Capture downstream request IDs and equivalent vendor correlation handles in `metadata` or `metadata.custom`.
+- Keep `context` and `normalizedCause` internal by default when projecting outward.
+- Preserve runtime `cause` on the wrapper/runtime side when later diagnostics or tracing still need it.
 - Prefer ULID or UUID v7 for `errorId`.
 - Read tracing and correlation data through an app-owned port or helper, not directly from a vendor API in canonical examples.
 
 Avoid:
 - Using `message` as the machine contract.
 - Stuffing structured payload into `message`.
-- Treating root `details`, `context.metadata`, and `cause.metadata` as interchangeable.
+- Treating root `details`, `normalizedCause`, and `metadata` as interchangeable.
 - Reusing one `errorId` across distinct error occurrences.
-- Projecting raw `cause`, raw headers, raw response bodies, or stacks to clients by default.
+- Projecting raw runtime causes, raw response bodies, or stacks to clients by default.
 - Storing the raw original cause object itself inside the canonical error data shape.
 - Teaching a concrete tracing SDK as if it were the architecture.
 
@@ -94,18 +96,22 @@ export type AppErrorData = {
       operation?: string;
       resource?: string;
     };
-    metadata?: Record<string, unknown>;
   };
 
-  cause?: {
-    name?: string;
+  normalizedCause?: {
+    type?: string;
     code?: string;
     message?: string;
-    status?: number;
-    requestId?: string;
-    correlationId?: string;
     stacktrace?: string;
-    metadata?: Record<string, unknown>;
+  };
+
+  metadata?: {
+    errorId?: string;
+    traceId?: string;
+    correlationId?: string;
+    requestId?: string;
+    occurredAt?: string;
+    custom?: Record<string, unknown>;
   };
 
   retry?: {
@@ -117,36 +123,25 @@ export type AppErrorData = {
   http?: {
     status?: number;
   };
-
-  telemetry?: {
-    errorId?: string;
-    traceId?: string;
-    correlationId?: string;
-    occurredAt?: string;
-  };
 };
 ```
 
-Family wrappers can carry the same canonical data:
+Family wrappers can carry the same canonical data while runtime `cause` stays on the wrapper:
 
 ```ts
 import { ulid } from "ulid";
 
 type AppErrorOptions = {
   cause?: unknown;
-  originalCause?: unknown;
 };
 
 export abstract class AppError<E extends AppErrorData = AppErrorData> extends Error {
-  readonly originalCause?: unknown;
-
   constructor(
     public readonly data: E,
     options: AppErrorOptions = {},
   ) {
     super(data.message, { cause: options.cause });
     this.name = this.constructor.name;
-    this.originalCause = options.originalCause ?? options.cause;
   }
 
   toLogShape(): Record<string, unknown> {
@@ -156,17 +151,15 @@ export abstract class AppError<E extends AppErrorData = AppErrorData> extends Er
       message: this.data.message,
       details: this.data.details,
       context: this.data.context,
-      cause: this.data.cause,
+      normalizedCause: this.data.normalizedCause,
+      metadata: this.data.metadata,
       retry: this.data.retry,
       http: this.data.http,
-      telemetry: this.data.telemetry,
       name: this.name,
       causeChain: this.cause,
     };
   }
 }
-
-`originalCause` may still be retained on the wrapper for later internal diagnostics, even if it is not emitted in every default log payload.
 
 export class BusinessError<E extends AppErrorData = AppErrorData> extends AppError<E> {}
 
@@ -183,14 +176,14 @@ export function orderNotFound(orderId: string): AppErrorData {
 
 const err = new BusinessError({
   ...orderNotFound("ord_123"),
-  telemetry: {
+  metadata: {
     errorId: ulid(),
     occurredAt: new Date().toISOString(),
   },
 });
 ```
 
-Root `details` is semantic payload. `context.metadata` and `cause.metadata` are internal. Downstream request IDs belong in `cause` / `cause.metadata`. Preserve stacktrace in normalized `cause` when useful, but keep any original runtime cause object reference outside the canonical serialized shape:
+Root `details` is semantic payload. `normalizedCause` is the normalized cause summary. `metadata` carries correlation and diagnostics data; `metadata.custom` is the escape hatch for one-off extras. Runtime `cause` stays outside the canonical serialized shape:
 
 ```ts
 const error: AppErrorData = {
@@ -209,19 +202,22 @@ const error: AppErrorData = {
       operation: "POST",
       resource: "/v1/payment_intents",
     },
-    metadata: {
-      workflowStep: "payment_authorization",
-    },
   },
-  cause: {
-    name: "AxiosError",
+  normalizedCause: {
+    type: "AxiosError",
     code: "ECONNRESET",
     message: "socket hang up",
-    status: 503,
-    requestId: "req_123",
-    correlationId: "stripe_corr_456",
     stacktrace: "AxiosError: socket hang up\n    at ...",
-    metadata: {
+  },
+  // `code` above is the app's stable contract. `normalizedCause.code` here is the observed upstream/runtime code.
+  metadata: {
+    errorId: "01HZX9K3M7QABC456DEF789G",
+    traceId: "trace_123",
+    correlationId: "corr_456",
+    requestId: "req_123",
+    occurredAt: "2026-05-03T15:42:11.123Z",
+    custom: {
+      vendorCorrelationId: "stripe_corr_456",
       retryAfterHeader: "1",
     },
   },
@@ -232,12 +228,6 @@ const error: AppErrorData = {
   },
   http: {
     status: 503,
-  },
-  telemetry: {
-    errorId: "01HZX9K3M7QABC456DEF789G",
-    traceId: "trace_123",
-    correlationId: "corr_456",
-    occurredAt: "2026-05-03T15:42:11.123Z",
   },
 };
 ```
@@ -252,7 +242,7 @@ interface TracingPort {
   };
 }
 
-function withTelemetry<T extends AppErrorData>(
+function withMetadata<T extends AppErrorData>(
   error: T,
   tracing: TracingPort,
 ): T {
@@ -260,12 +250,15 @@ function withTelemetry<T extends AppErrorData>(
 
   return {
     ...error,
-    telemetry: {
-      ...error.telemetry,
-      errorId: error.telemetry?.errorId ?? ulid(),
-      traceId: error.telemetry?.traceId ?? ctx.traceId,
-      correlationId: error.telemetry?.correlationId ?? ctx.correlationId,
-      occurredAt: error.telemetry?.occurredAt ?? new Date().toISOString(),
+    metadata: {
+      ...error.metadata,
+      errorId: error.metadata?.errorId ?? ulid(),
+      traceId: error.metadata?.traceId ?? ctx.traceId,
+      correlationId: error.metadata?.correlationId ?? ctx.correlationId,
+      occurredAt: error.metadata?.occurredAt ?? new Date().toISOString(),
+      custom: {
+        ...error.metadata?.custom,
+      },
     },
   };
 }
@@ -274,8 +267,8 @@ function withTelemetry<T extends AppErrorData>(
 Verify:
 - Every app-owned error has stable `code`, human-readable `message`, and semantic root `details` when needed.
 - `errorId` and occurrence time are assigned when the error is materialized.
-- Root `details` stays distinct from `context.metadata` and `cause.metadata`.
-- Downstream request IDs / vendor correlation handles are captured in internal cause metadata when available.
-- `context` and `cause` are treated as internal-by-default attachments.
+- Root `details` stays distinct from `normalizedCause` and diagnostics `metadata`.
+- Downstream request IDs / vendor correlation handles are captured in `metadata` or `metadata.custom` when available.
+- Runtime `cause` stays separate from the canonical serialized shape.
 - Tracing and correlation data enter through an app-owned abstraction, not a concrete tracing import in canonical examples.
 - Public projections start from the root contract and omit internal attachments by default.

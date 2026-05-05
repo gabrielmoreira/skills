@@ -41,7 +41,7 @@ This file keeps routing authority in one place without a separate manifest. Each
 | Throw vs Result vs union return | `typescript-error-handling` | `rules/throw-vs-result.md` |
 | Error classification (semantic family, retry eligibility) | `typescript-error-handling` | `rules/error-classification.md` |
 | Error contract at module/API boundary, projection, redaction defaults | `typescript-error-handling` | `rules/error-boundary-contract.md` |
-| Error shape + structured attachments (`code`, `details`, `context`, `cause`, `retry`, `http`, `telemetry`) | `typescript-error-handling` | `rules/error-shape-and-metadata.md` |
+| Error shape + structured attachments (`code`, `details`, `context`, `normalizedCause`, `metadata`, `retry`, `http`) | `typescript-error-handling` | `rules/error-shape-and-metadata.md` |
 | Retry mechanism: backoff, jitter, `Retry-After`, attempt cap, idempotency key | `typescript-async` | `rules/retry-and-backoff.md` |
 | Parallel vs sequential, dependency-based parallelization, bounded concurrency | `typescript-async` | `rules/parallel-and-dependencies.md` |
 | Cancellation via AbortSignal, abort propagation, AbortController on unmount | `typescript-async` | `rules/cancellation-and-abort.md` |
