@@ -18,15 +18,17 @@ This simplified tree is a clean-cut draft, not yet installed into `~/.agents/ski
 
 ## Eval Status
 
-- Last run: 2026-05-03, iteration 2.
-- With-skill mean: 2.87/3 (96%) over 15 adversarial behavioral evals; baseline 1.73/3 (58%); lift +17 pts (+38pp).
-- Hard-gates passing: 5/5 (localhost-fallback, as-cast, secret-in-log, stage-default, mock-as-any).
-- Structural invariants: 21/21 passing (`evals/check-invariants.mjs`).
-- Workspace JSONs are not committed (regenerate via subagent runs against `evals/evals.json`); see `evals/README.md`.
+- Current structural gate: 21/21 passing (`evals/check-invariants.ts`) after the error-handling, async, and type-system additions.
+- Current behavioral suite: legacy `evals/evals.json` contains 25 adversarial prompts. It remains useful as a regression signal, but is being replaced by a phased per-bundle scenario harness for simplification safety.
+- Latest recorded aggregate benchmark for the 25-prompt suite: with-skill 2.64/3, baseline 2.28/3, lift +0.36. Treat as historical context, not the sole promotion gate.
+- Earlier 15-prompt iteration-2 result: with-skill 2.87/3, baseline 1.73/3. Kept as historical baseline only.
+- Promotion gate is now explicit: every scenario scores at least 2/3, hard-gates score 3/3, and with-skill mean is at least 2.5/3.
+- Workspace JSONs are not committed (regenerate via subagent runs or successor harness); see `evals/README.md`.
 
 ## Known Follow-ups
 
-- Run eval scenarios before promotion.
+- Stabilize the legacy eval gate before promotion: keep thresholds, docs, and invariants aligned.
+- Replace the monolithic behavioral suite with phased per-bundle scenario manifests focused on candidate-vs-gold regression and simplification safety.
 - Add snippets only where evals show agents need more than the inline example.
 - Re-check source coverage after any old file is reintroduced or removed.
 - If `references/ownership.md` grows too large, split by bundle rather than adding a separate config format.

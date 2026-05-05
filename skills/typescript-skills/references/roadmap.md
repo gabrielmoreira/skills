@@ -15,7 +15,7 @@ Resolved: canonical guidance now lives in `typescript-error-handling`.
 Canonical rules:
 - `define-app-error-semantics-early.md` — define a canonical app-owned error model, structured attachments, factories, and enrichment helpers before the codebase fragments.
 - `throw-vs-result.md` — choose one propagation style per package while reusing the same canonical error data.
-- `error-classification.md` — classify by semantic family and retry eligibility instead of technical origin alone.
+- `error-classification.md` — classify by semantic family and explicit retry mode instead of technical origin alone.
 - `error-shape-and-metadata.md` — structure root semantic payload, internal attachments, retry/http extensions, and telemetry.
 - `error-boundary-contract.md` — project canonical internal errors into safe public boundary shapes with explicit redaction.
 
@@ -23,19 +23,20 @@ Pressure signals that motivated the bundle remain relevant:
 - `raw-input-to-internal-model` requires distinguishable failures but does not define app error semantics by itself.
 - `validation-vs-verification` separates parse from verification but does not own the full error contract.
 - Testing covers failure-shape assertions but does not own project-wide error semantics.
-### 1.2 Async control and cancellation
+### 1.2 Async control and cancellation (status: resolved)
 
-Status: no coverage.
-Suggested bundle: `typescript-async` or rules inside `typescript-coding-standards`.
+Resolved: canonical guidance now lives in `typescript-async`.
 
-Candidate rules:
-- `concurrency-and-cancellation.md` — `Promise.all` vs serial, bounded concurrency (`p-limit`/semaphore), `AbortSignal` passed as capability. Progressive: serial first, parallelize when measured, cancel when caller/request can abort.
-- `cleanup-and-teardown.md` — finally, dispose, graceful shutdown, partial-failure rollback. `using` keyword when available.
+Canonical rules:
+- `parallel-and-dependencies.md` — sequential await only when values depend on previous results; independent work runs in parallel; unbounded/rate-limited work uses bounded concurrency.
+- `cancellation-and-abort.md` — pass `AbortSignal` as a cancellation capability and propagate it through fetches, waits, effects, and composed operations.
+- `cleanup-and-teardown.md` — release acquired resources deterministically with `finally`, dispose protocols, or `using`/`await using` when runtime support is verified.
+- `process-lifecycle.md` — handle SIGTERM/SIGINT with readiness flip, drain, ordered shutdown, hard deadline, and observability flush.
+- `retry-and-backoff.md` — retry only classified backoff-retryable failures; honor upstream hints; require idempotency/deduplication for retried mutating operations.
 
-Pressure signals:
-- Observability covers trace propagation in async but not concurrency control.
-- Composition covers dependency lifecycle but not operation cleanup.
-
+Pressure signals that motivated the bundle remain relevant:
+- Observability covers trace/log signals but not concurrency control.
+- Composition covers dependency lifecycle but not operation-level cancellation, cleanup, and retry mechanics.
 ### 1.3 Module and package surface design
 
 Status: no coverage.
@@ -84,16 +85,11 @@ Resolved: positive type-system guidance now lives in `typescript-coding-standard
 - `rules/branded-and-opaque-types.md` — nominal typing for domain primitives
 - `rules/exhaustive-narrowing.md` — discriminated unions + `assertNever`
 - `rules/generics-and-conditional-types.md` — generics with minimum constraints, mapped + conditional types, `infer`
-Suggested bundle: additional rules inside `typescript-coding-standards`.
+Future positive type-system gaps should be added only when they are not already covered by the resolved rules above.
 
-Candidate rules:
-- `generics-and-conditional-types.md` — when to use generics, when conditional types, when overloads. Progressive: concrete types first, generic when 2+ callers diverge, conditional type only when generic does not resolve.
-- `branded-and-opaque-types.md` — branded types for domain primitives (UserId, OrderId, EmailAddress). Progressive: plain string/number first, branded when confusion between primitives causes bugs.
-- `exhaustive-narrowing.md` — `satisfies`, exhaustive switch, `never` assertion. Discriminated unions as the primary tool.
-
-Pressure signals:
-- Type narrowing rule focuses on what not to do. Positive guidance on type design is missing.
-- Config and boundary rules use discriminated unions as examples but do not teach when to choose them.
+Pressure signals that motivated the bundle remain relevant:
+- Type narrowing covers assertions and boundary proof; these rules cover positive type design.
+- Config and boundary rules use discriminated unions as examples, but this bundle owns when to choose and enforce them.
 
 ---
 
@@ -143,11 +139,9 @@ Areas where the current tree covers the topic but alignment with recognized prac
 
 ### 3.1 Node.js runtime lifecycle (status: resolved)
 
-Resolved: `typescript-async/rules/process-lifecycle.md` covers SIGTERM/SIGINT handlers, draining in-flight, ordered resource shutdown, hard deadline before SIGKILL, `unhandledRejection`/`uncaughtException` as fail-loud in production, and observability flush before exit.
+Resolved: `typescript-async/rules/process-lifecycle.md` covers SIGTERM/SIGINT handlers, readiness flip, draining in-flight work, ordered resource shutdown, a hard deadline before forced exit, fail-loud unhandled error hooks, and observability flush before exit.
 
-Action: add rule in `typescript-composition` or `typescript-async`:
-- `process-lifecycle.md` — SIGTERM handler in the composition root, connection/timer cleanup, `unhandledRejection` as hard fail in production, health check readiness during shutdown.
-- Cross-link with observability (flush traces/logs before exit).
+Remaining action: keep cross-links aligned with observability when tracing/log flushing guidance changes.
 
 ### 3.2 Twelve-Factor alignment (alignment: adequate)
 
@@ -238,9 +232,9 @@ Problem: eval #10 noted that the `makeReceiptSender` pattern lives in compositio
 
 Action: add cross-link from `functions-vs-classes.md` to `composition/rules/ready-instance-vs-factory.md` and vice versa, one sentence each.
 
-### 4.9 Improvement: evaluation-plan.md does not cover new bundles
+### 4.9 Improvement: eval system modernization
 
-Action: when each new bundle from Phase 1-2 is created, add router scenarios, bundle pressure scenarios, and progressive complexity scenarios to evaluation-plan.
+Action: replace the legacy monolithic behavioral eval file with phased, per-bundle scenario manifests after stabilizing current thresholds and invariants. Prioritize candidate-vs-gold regression checks so future rule simplification preserves critical behavior.
 
 ---
 
@@ -250,7 +244,7 @@ Each roadmap item only advances to installed skills when:
 1. Rule written following `references/authoring-checklist.md`.
 2. Ownership updated in `references/ownership.md`.
 3. Router(s) updated — root and/or bundle SKILL.md.
-4. At least 2 eval scenarios added to `references/evaluation-plan.md`.
-5. Evals pass score 2+ (hard-gates score 3).
+4. At least 2 eval scenarios added to `references/evaluation-plan.md` or the successor per-bundle scenario manifest.
+5. Evals pass the current promotion gate: every scenario scores at least 2/3, hard-gates score 3/3, and the with-skill mean is at least 2.5/3.
 6. Source coverage updated if rule came from external material.
 7. No conflict with existing rules (check conflict audit).

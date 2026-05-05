@@ -24,7 +24,7 @@ For each scenario:
 | 2 | Right primary skill and mostly correct application |
 | 3 | Right primary skill, justified secondary skill if needed, concrete verification |
 
-Passing target: every scenario scores 2+, and hard-gate scenarios score 3.
+Passing target: every scenario scores at least 2/3, hard-gate scenarios score 3/3, and the with-skill mean is at least 2.5/3 as an aggregate health signal. The mean cannot hide a per-scenario failure.
 
 Progressive-design scenarios also require the agent to pick the correct rung: start with the smallest honest design, escalate only when the scenario includes pressure signals, and avoid jumping to the maximum abstraction.
 
@@ -158,7 +158,7 @@ Progressive-design scenarios also require the agent to pick the correct rung: st
 
 ## Regression Invariants (programmatic)
 
-These invariants are checked by `evals/check-invariants.mjs`. Any failure blocks promotion.
+These invariants are checked by `evals/check-invariants.ts`. Any failure blocks promotion.
 
 - Root router triggers include keywords for every bundle: provider, mapper, transform, env, config, secret, credential, log, trace, test.
 - No rule outside `typescript-security/` defines code defaults for URL, host, IP, token, password, API key, credential, secret, DSN, or connection string.

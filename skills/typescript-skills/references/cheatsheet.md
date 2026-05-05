@@ -947,18 +947,19 @@ type AppErrorData = {
   telemetry?: {
     errorId?: string;
     traceId?: string;
+    correlationId?: string;
     occurredAt?: string;
   };
 };
 ```
 
-Keep root `details` distinct from `context.metadata` and `cause.metadata`.
+Keep root `details` distinct from `context.metadata` and `cause.metadata`. Capture upstream request IDs in `cause` / `cause.metadata`.
 
 ---
 
 ## Retry and Backoff
 
-Retry only explicitly retryable failures. Use bounded attempts, backoff, jitter, and `Retry-After`.
+Retry only explicitly classified backoff-retryable failures. Honor upstream retry hints first.
 
 ```ts
 async function withRetry<T>(fn: () => Promise<T>, signal?: AbortSignal): Promise<T> {
@@ -968,15 +969,15 @@ async function withRetry<T>(fn: () => Promise<T>, signal?: AbortSignal): Promise
     catch (e) {
       if (!(e instanceof InfraError) || !e.data.retry?.allowed) throw e;
       if (attempt === 3) throw e;
-      await sleep(Math.random() * 200 * 2 ** (attempt - 1), signal);
+      const delay = e.data.retry?.afterMs ?? Math.random() * 200 * 2 ** (attempt - 1);
+      await sleep(delay, signal);
     }
   }
   throw new Error("unreachable");
 }
 ```
 
-For writes, pair retries with idempotency keys.
-
+For writes, pair retries with idempotency keys or equivalent deduplication.
 ---
 
 ## Branded and Opaque Types

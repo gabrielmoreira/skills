@@ -11,7 +11,7 @@ This file keeps routing authority in one place without a separate manifest. Each
 | Naming by reader need, semantic center | `typescript-coding-standards` | `rules/naming-and-semantic-center.md` |
 | Full cutovers and staged migration exceptions | `typescript-coding-standards` | `rules/cutovers.md` |
 | Type narrowing over assertion (`!`, `as`, `as unknown as`, `@ts-ignore`) | `typescript-coding-standards` | `rules/type-narrowing-over-assertion.md` |
-| Vertical discipline: blank lines, comment labels, extraction progression | `typescript-coding-standards` | `rules/vertical-discipline.md` |
+| Vertical discipline: blank lines, comment labels, extraction progression, top-down function ordering | `typescript-coding-standards` | `rules/vertical-discipline.md` |
 | Branded and opaque types, nominal typing for domain primitives | `typescript-coding-standards` | `rules/branded-and-opaque-types.md` |
 | Exhaustive narrowing of discriminated unions, `assertNever` | `typescript-coding-standards` | `rules/exhaustive-narrowing.md` |
 | Generics, conditional types, mapped types | `typescript-coding-standards` | `rules/generics-and-conditional-types.md` |
