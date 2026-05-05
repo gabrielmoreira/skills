@@ -18,6 +18,7 @@ Use when:
 - Domain code is encoding HTTP status codes or protocol errors directly.
 - A 500 response leaks stack traces, DB column names, vendor messages, or internal paths.
 
+- A `catch` converts an error into a fallback/default path and no log, span event, metric, or explicit error result explains why behavior changed.
 Start here:
 - Decide whose error shape callers see at the boundary. Always your own — never the dependency's.
 - Translate exactly once per boundary: route handler, lambda handler, GraphQL formatter, RPC server, library entrypoint.
@@ -46,6 +47,7 @@ Do:
 - Keep vendor and library error shapes behind the boundary.
 - Log the richer internal shape separately from the public response shape.
 - Make unknown errors produce a generic internal-error response with a fresh correlation identifier.
+- If code swallows an error, returns a fallback, or otherwise changes control flow instead of propagating normally, emit one meaningful signal at the layer that owns that recovery decision.
 
 Projection:
 - Projection adapts canonical error data to the needs of one boundary.
@@ -77,6 +79,8 @@ Avoid:
 - Embedding protocol status codes into domain logic.
 - One generic `{ error: "Something went wrong" }` response for every failure.
 - Enumerating every concrete subclass in the boundary translator.
+- Silent fallback or silent swallow when an error changed the control flow.
+- Duplicating the same error log at every layer instead of emitting one owned signal where the fallback/recovery decision is made.
 
 Exceptions:
 - Tiny one-handler scripts may inline mapping until a second handler appears.

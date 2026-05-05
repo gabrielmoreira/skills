@@ -43,9 +43,10 @@ For a new mid-or-larger app, start with the family wrappers on day one. They sol
 | --- | --- |
 | starting a new app, no error types yet, no shared conventions | `rules/define-app-error-semantics-early.md` |
 | function that may fail, choosing throw vs return | `rules/throw-vs-result.md` |
-| caller asking "should I retry this?", retryable vs caller fault, generic `catch (e)` swallowing | `rules/error-classification.md` |
+| caller asking "should I retry this?", retryable vs caller fault, generic `catch (e)` swallowing, silent fallback after an error | `rules/error-classification.md` |
 | missing `errorId`, no `code`, support cannot find the request, log/response cannot be correlated | `rules/error-shape-and-metadata.md` |
 | unclear ownership of `details`, `context`, `normalizedCause`, `metadata`, or runtime `cause` | `rules/error-shape-and-metadata.md` |
+| error factory/helper keeps losing request IDs, operations, or other important enrichments because callers forget later composition steps | `rules/define-app-error-semantics-early.md` |
 | HTTP/RPC handler returning provider/library error shape directly to client | `rules/error-boundary-contract.md` |
 | third-party SDK / library error reaching the client or an unfiltered log | `rules/error-boundary-contract.md` |
 
@@ -67,4 +68,4 @@ For a new mid-or-larger app, start with the family wrappers on day one. They sol
 
 ## Default
 
-For a new mid-sized app: define one canonical `AppErrorData` shape first, then default to class-based propagation with family wrappers in `core/errors`. Use stable `code` plus canonical error data as the shared contract. Add `context`, `normalizedCause`, `metadata`, `retry`, and `http` as structured attachments when needed. Keep runtime `cause` for internal diagnostics when useful, keep `normalizedCause` in the canonical shape, prefer object-based enrichment helpers or factory options over nested helper chains so important enrichment fields stay discoverable, translate once at the boundary, log the full internal diagnostic shape, and project only the safe public shape outward.
+For a new mid-sized app: define one canonical `AppErrorData` shape first, then default to class-based propagation with family wrappers in `core/errors`. Use stable `code` plus canonical error data as the shared contract. Add `context`, `normalizedCause`, `metadata`, `retry`, and `http` as structured attachments when needed. Keep runtime `cause` for internal diagnostics when useful, keep `normalizedCause` in the canonical shape, prefer object-based enrichment helpers or factory options over nested helper chains so important enrichment fields stay discoverable, make always-needed enrichment fields explicit at the helper/factory boundary instead of leaving everything optional forever, translate once at the boundary, log the full internal diagnostic shape, and keep fallback/swallow decisions observable when an error changes the control flow.

@@ -48,6 +48,7 @@ Do:
 - Keep `normalizedCause` close to OpenTelemetry-style exception fields: `type`, `message`, `stacktrace`, plus project-specific `code` when useful.
 - Use `metadata` for correlation identifiers, request identifiers, occurrence time, and similar diagnostics metadata.
 - Put one-off or vendor-specific extras in `metadata.custom` instead of inventing new top-level fields casually.
+- When certain context or metadata fields are always needed for an error to be useful, make them explicit or required in the factory/helper signature instead of hoping later composition will add them.
 - Preserve runtime `cause` in wrappers when wrapping, so later in-process diagnostics/logging/tracing can still inspect the original error object.
 - Use a dedicated `retry` attachment for retry evaluation instead of scattering booleans across call sites.
 - Use a dedicated `http` attachment for HTTP projection instead of making protocol concerns part of the root contract.
@@ -65,6 +66,8 @@ Avoid:
 - Treating root `details`, `normalizedCause`, and `metadata` as the same kind of information.
 - Dumping raw original causes, raw headers, raw response bodies, secrets, or arbitrary blobs into the canonical shape.
 - Treating normalized `normalizedCause.type` / `normalizedCause.code` / `normalizedCause.message` as if they always replace access to runtime `cause` when later diagnostics still need it.
+- Defaulting to optional-everything helper signatures when some enrichment fields are routinely required in practice.
+- Treating repeated missing metadata/context as only a discipline problem when the API shape could make those fields explicit.
 - Making subclass identity the primary cross-package contract.
 - Forcing `context.target` when there is no clear technical target.
 

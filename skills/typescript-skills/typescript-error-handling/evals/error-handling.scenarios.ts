@@ -122,6 +122,54 @@ const scenarios = [
     ],
     tags: ["ergonomics", "error-helper", "normalized-cause", "calibration"]
   },
+  {
+    id: "error-factory-required-fields-vs-optional-everything",
+    bundle: "typescript-error-handling",
+    rule: "define-app-error-semantics-early",
+    tier: "P1",
+    mode: "simplification",
+    difficulty: "mixed",
+    prompt:
+      "Code review. A project uses `paymentDeclined(input, options?)` where all enrichment fields are optional. In practice, support always needs `metadata.requestId` and `context.operation`, but contributors keep forgetting to attach them because they rely on later composition helpers and many call sites skip them. The author says making everything optional keeps the API flexible. What should the project recommend?",
+    expectedPrimary: "typescript-error-handling",
+    expectedSecondary: ["typescript-coding-standards"],
+    must: [
+      "Says fields that are truly required for the error to be useful should be made explicit or required at the factory/helper boundary",
+      "Distinguishes always-needed fields from optional enrichments that can remain composable",
+      "Treats helper ergonomics and signature design as part of error quality, not just convenience",
+      "Keeps the shared canonical error model rather than abandoning factories/helpers entirely"
+    ],
+    mustNot: [
+      "Treats optional-everything signatures as the default even when important fields are routinely forgotten",
+      "Frames missing required metadata/context as only a developer discipline problem with no API change",
+      "Recommends abandoning shared helpers in favor of ad hoc inline object literals everywhere"
+    ],
+    tags: ["required-fields", "ergonomics", "signature-design", "calibration"]
+  },
+  {
+    id: "error-silent-fallback-must-be-observable",
+    bundle: "typescript-error-handling",
+    rule: "error-boundary-contract",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "mixed",
+    prompt:
+      "PR review. A function wraps a dependency call in `try/catch`; on failure it returns a fallback value and does not rethrow, log, emit a span event, or return any explicit error result. The author says the fallback keeps the system resilient and extra signals would just add noise. What should change?",
+    expectedPrimary: "typescript-error-handling",
+    expectedSecondary: ["typescript-observability"],
+    must: [
+      "Treats swallowing or converting an error with a control-flow change as a decision that must stay observable or explicit",
+      "Requires a meaningful signal such as a log, span event, metric, or explicit error result when the error no longer propagates normally",
+      "Distinguishes silent fallback from normal propagation so operators can understand why behavior changed",
+      "Avoids requiring duplicate logs at every layer; the owning fallback/recovery point can emit the signal once"
+    ],
+    mustNot: [
+      "Approves silent fallback or silent swallow when an error changed the control flow",
+      "Treats resilience alone as enough reason to remove all observable signal",
+      "Demands that every catch at every layer log the same error regardless of ownership"
+    ],
+    tags: ["silent-swallow", "fallback", "observability", "calibration"]
+  },
 ] satisfies EvalScenario[];
 
 export default scenarios;
