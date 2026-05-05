@@ -1,18 +1,20 @@
 #!/usr/bin/env node
 // Programmatic invariants for the typescript-skills tree.
-// Run from repo root: node evals/check-invariants.mjs
+// Run from repo root: node evals/check-invariants.ts
 // Exit code 0 = all pass, non-zero = failures listed.
 
 import { readdir, readFile, stat } from "node:fs/promises";
 import { join, basename, sep } from "node:path";
+import { pathToFileURL } from "node:url";
+import { listScenarioControlIds, validateScenarioControls } from "./control-matrix.ts";
 
 const failures = [];
 const passes = [];
 
-function pass(name) { passes.push(name); }
-function fail(name, detail) { failures.push({ name, detail }); }
+function pass(name: string) { passes.push(name); }
+function fail(name: string, detail: string) { failures.push({ name, detail }); }
 
-async function walk(dir) {
+async function walk(dir: string): Promise<string[]> {
   const entries = await readdir(dir, { withFileTypes: true });
   const out = [];
   for (const e of entries) {
@@ -23,16 +25,25 @@ async function walk(dir) {
   return out;
 }
 
-async function readUtf8(path) {
+async function readUtf8(path: string) {
   return await readFile(path, "utf8");
 }
 
-function lower(s) { return s.toLowerCase(); }
+function lower(s: string) { return s.toLowerCase(); }
 
+export async function runInvariants() {
 // ----- discover files -----
-const allMd = (await walk(".")).filter(f => f.endsWith(".md"));
+const allFiles = await walk(".");
+const allMd = allFiles.filter(f => f.endsWith(".md"));
 const ruleFiles = allMd.filter(f => /typescript-[^/]+\/rules\/[^/]+\.md$/.test(f)).sort();
 const skillFiles = allMd.filter(f => /typescript-[^/]+\/SKILL\.md$/.test(f)).sort();
+const scenarioFiles = allFiles.filter(f => /typescript-[^/]+\/evals\/[^/]+\.scenarios\.ts$/.test(f)).sort();
+const scenarioIds = [];
+for (const file of scenarioFiles) {
+  const text = await readUtf8(file);
+  for (const match of text.matchAll(/\bid:\s*"([^"]+)"/g)) scenarioIds.push(match[1]);
+}
+const bundleNames = skillFiles.map(f => f.split("/")[0]).sort();
 const rootSkill = "SKILL.md";
 
 // ----- INV-1: every canonical rule has required frontmatter fields -----
@@ -83,7 +94,7 @@ const rootSkill = "SKILL.md";
   else fail("INV-4 root router includes mapper + transform", "missing keywords on boundaries trigger");
 }
 
-// ----- INV-5: root router triggers cover all 7 bundles by keyword -----
+// ----- INV-5: root router triggers cover all discovered bundles by keyword -----
 {
   const text = lower(await readUtf8(rootSkill));
   const required = [
@@ -94,15 +105,19 @@ const rootSkill = "SKILL.md";
     ["typescript-observability", ["logging", "tracing"]],
     ["typescript-security", ["secret", "credential"]],
     ["typescript-testing", ["test"]],
+    ["typescript-async", ["promise", "abort", "retry"]],
+    ["typescript-error-handling", ["error", "result", "retry"]],
   ];
   let bad = [];
-  for (const [bundle, keys] of required) {
+  for (const bundle of bundleNames) {
     if (!text.includes(bundle.toLowerCase())) bad.push(`${bundle} missing from router`);
+  }
+  for (const [bundle, keys] of required) {
     const missingKeys = keys.filter(k => !text.includes(k));
     if (missingKeys.length) bad.push(`${bundle} keywords missing: ${missingKeys.join(", ")}`);
   }
-  if (bad.length) fail("INV-5 root router covers all bundles + key triggers", bad.join("\n  "));
-  else pass("INV-5 root router covers all 7 bundles + key triggers");
+  if (bad.length) fail("INV-5 root router covers discovered bundles + key triggers", bad.join("\n  "));
+  else pass(`INV-5 root router covers all ${bundleNames.length} bundles + key triggers`);
 }
 
 // ----- INV-6: defaults-and-ownership does NOT own URL/host/IP/token/credential fallbacks -----
@@ -272,7 +287,7 @@ const rootSkill = "SKILL.md";
 // ----- INV-21: eval prompts do not name the expected skill or rule file -----
 {
   const evalsJson = JSON.parse(await readUtf8("evals/evals.json"));
-  const skillNames = ["typescript-coding-standards", "typescript-boundaries", "typescript-composition", "typescript-configs", "typescript-security", "typescript-observability", "typescript-testing"];
+  const skillNames = ["typescript-skills", ...bundleNames];
   const ruleSuffixes = ruleFiles.map(f => basename(f));
   let bad = [];
   for (const e of evalsJson.evals) {
@@ -283,8 +298,25 @@ const rootSkill = "SKILL.md";
       bad.push(`${e.id}: prompt names ${[...namedSkills, ...namedRules].join(", ")}`);
     }
   }
-  if (bad.length === 0) pass(`INV-21 eval prompts do not leak skill/rule names (${evalsJson.evals.length} prompts)`);
+  if (bad.length === 0) pass(`INV-21 eval prompts do not leak skill/rule names (${evalsJson.evals.length} prompts, ${skillNames.length} skill names checked)`);
   else fail("INV-21 eval prompts do not leak skill/rule names", bad.join("\n  "));
+}
+
+// ----- INV-22: committed control matrix only references discovered successor scenarios -----
+{
+  const bad = validateScenarioControls(scenarioIds);
+  if (bad.length === 0) {
+    pass(`INV-22 control matrix stays aligned with discovered scenarios (${listScenarioControlIds().length} control-backed scenarios)`);
+  } else {
+    fail("INV-22 control matrix stays aligned with discovered scenarios", bad.join("\n  "));
+  }
+}
+
+// ----- INV-23: no legacy eval .mjs shims remain -----
+{
+  const legacyShims = allFiles.filter((file) => /(^|\/)evals\/.+\.mjs$/.test(file));
+  if (legacyShims.length === 0) pass("INV-23 no legacy eval .mjs shims remain");
+  else fail("INV-23 no legacy eval .mjs shims remain", legacyShims.join("\n  "));
 }
 
 // ----- output -----
@@ -296,4 +328,10 @@ for (const f of failures) {
 }
 console.log(`\n${passes.length} passed, ${failures.length} failed (of ${passes.length + failures.length} total)\n`);
 
-process.exit(failures.length === 0 ? 0 : 1);
+return failures.length === 0;
+}
+
+if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
+  const ok = await runInvariants();
+  process.exit(ok ? 0 : 1);
+}

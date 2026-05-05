@@ -8,7 +8,7 @@ references: [Parse don't validate, Twelve-Factor III (Config)]
 
 # Parse and Expose Config
 
-Decision: Parse unknown config once at the boundary into typed values. Owns parsing mechanics (raw → typed, requiredness, schema, failure shape) — for module-slice shape and AppConfig avoidance, see `rules/contextual-config.md`.
+Decision: Parse unknown config once at the boundary into typed values. This rule owns raw-to-typed parsing, requiredness, schema choice, and parser failure shape. For module slices and AppConfig avoidance, see `rules/contextual-config.md`.
 
 Use when:
 - Code reads `process.env`, CLI args, raw config files, or untyped runtime values.
@@ -18,16 +18,15 @@ Use when:
 
 Start here:
 - Read raw values once at a parser boundary; do not let `process.env` reach behavior modules.
-- Return a typed object; never expose raw strings or untyped values to callers.
-- Parse strings into the right type deliberately (booleans, numbers, URLs, durations, arrays, enums).
+- Return typed config; never expose raw strings or untyped values to callers.
+- Parse strings deliberately into booleans, numbers, URLs, durations, arrays, enums, and required fields.
 
 Escalate when:
-- More than a few fields need typed parsing.
+- A few fields turn into many.
 - Modes make fields conditionally required.
-- Failure shape must be consistent across the app.
-- Different parts of the config need different parsing strategies (manual vs schema, sync vs deferred).
-- Tests become noisy because modules require unrelated config fields.
-- Framework-level config objects are being passed through feature modules unchanged.
+- Failure shape must stay consistent across the app.
+- Tests get noisy because modules require unrelated config.
+- Framework-level config objects are passed through feature modules unchanged.
 - Legacy env reads are scattered across behavior modules.
 
 Complexity ladder:
@@ -40,26 +39,26 @@ Complexity ladder:
 Do:
 - Collect raw values in one boundary module.
 - Parse strings into booleans, numbers, URLs, enums, durations, arrays, and required fields deliberately.
-- Expose typed config named by the module or capability context.
+- Expose typed config named by module or capability context.
 - Pass contextual config into feature modules and composition roots.
 - Start simple, but do not leave raw unknown values or broad god configs in behavior code.
-- Respect framework conventions for where config enters, but adapt to contextual configs before feature behavior.
+- Respect framework entry conventions, then adapt to contextual configs before feature behavior.
 
 Avoid:
 - Reading `process.env` from behavior modules.
 - Using non-null assertions or casts as validation.
 - Using `||` when `0`, `false`, or empty string are valid values; use `??` for missingness.
 - Exporting raw env maps as application config.
-- Returning a `Record<string, string>` of env values without parsing.
+- Returning `Record<string, string>` or similar unparsed env shapes.
 
 Exceptions:
-- Tests for the config-reading boundary may set env if they restore it.
+- Tests for the config boundary may set env if they restore it.
 - Legacy migration may introduce a seam before full parsing; see `migration.md`.
-- Framework config providers/modules may be the raw source boundary; they should not force feature modules to consume a broad framework config shape.
+- Framework config providers may be the raw source boundary, but feature modules should not consume a broad framework config shape.
 
 Preferred flow:
-1. Read stage or startup inputs.
-2. Load env/config files if the package or framework does that today.
+1. Read startup inputs.
+2. Load env/config files if the package or framework already does that.
 3. Build typed contextual config.
 4. Derive named feature decisions.
 5. Verify resources or load secrets later in bootstrap/composition.
@@ -71,12 +70,12 @@ File layout when earned:
 
 ```txt
 src/config/
-  stage.ts         // stage reading, stage parsing, env-file resolution/loading
+  stage.ts         // stage reading, env-file loading
   featureFlags.ts  // named feature decisions
   serviceConfig.ts // typed config creation and validation
 ```
 
-Keep one file while the package is small. Split once the file becomes hard to scan, grows past roughly 150-200 lines, or mixes three or more concerns: env loading, stage parsing, typed config building, feature decisions, resource naming.
+Keep one file while the package is small. Split once the file stops being easy to scan, grows past roughly 150-200 lines, or mixes env loading, typed config building, and feature decisions.
 
 Example:
 
@@ -136,7 +135,7 @@ export function makeEmailConfig(source: FrameworkConfigSource): EmailConfig {
 }
 ```
 
-Escalate to a schema when modes and conditional fields appear:
+Escalate to a schema when provider/mode switches make fields conditionally required:
 
 ```ts
 const EmailConfigSchema = z.discriminatedUnion("provider", [

@@ -8,7 +8,7 @@ references: [Structured Logging, Twelve-Factor XI (Logs)]
 
 # Meaningful Logging
 
-Decision: Logs should explain meaningful decisions, outcomes, and failure context with enough safe data to act; they should not dump objects or narrate every line.
+Decision: Logs should explain meaningful decisions, outcomes, and failure context with enough safe data to act. They should not dump objects or narrate every line.
 
 Use when:
 - A log says only `started`, `failed`, `done`, `error`, or `debug` without actionable context.
@@ -18,7 +18,7 @@ Use when:
 - Many logs are emitted but none make it clear which path the code took.
 
 Start here:
-- Use structured logs at meaningful boundaries: operation start/end only when useful, branch decisions, retries, fallback/migration paths, external calls, and failures.
+- Use structured logs at meaningful boundaries: operation outcomes when useful, branch decisions, retries, fallback/migration paths, external calls, and failures.
 
 Escalate when:
 - One request crosses modules/services and logs need correlation.
@@ -40,7 +40,7 @@ Do:
 - Pass the `Error` instance to the logger when the logger supports structured error serialization; keep stack, `cause`, `name`, and `message` available to the log pipeline.
 - Keep fields low-cardinality unless high-cardinality identifiers are explicitly safe and needed.
 - Coordinate with `typescript-security/rules/redaction.md` before logging sensitive context.
-- Write structured logs to stdout/stderr and let the runtime/infra route them (Twelve-Factor XI). Do not embed log shipping, file rotation, or transport in the application; that belongs to the runtime/platform.
+- Write structured logs to stdout/stderr and let the runtime/infra route them (Twelve-Factor XI). Do not embed log shipping, file rotation, or transport in the application.
 
 Avoid:
 - `logger.info("here")`, uncontextualized errors, or `console.log(payload)`.

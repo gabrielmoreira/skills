@@ -8,12 +8,12 @@ references: [Ports and Adapters (Hexagonal Architecture), Anti-Corruption Layer 
 
 # Provider Containment
 
-Decision: Keep provider, SDK, generated, and external API client shapes at the edge when their names or semantics are not the application's local meaning. Owns vendor/SDK/generated types only — for HTTP request/response/transport/env-like raw input, see `rules/raw-input-to-internal-model.md`.
+Decision: Keep provider, SDK, generated, and external API client shapes at the edge when their names or semantics are not the app's local meaning. This rule owns vendor/SDK/generated types only — for HTTP request/response/transport/env-like raw input, see `rules/raw-input-to-internal-model.md`.
 
 Use when:
 - Business logic imports provider, SDK, or generated types.
 - Provider enum/status/field names require provider docs to understand.
-- Provider SDK shape contains fields the application should not expose inward.
+- Provider SDK shapes contain fields the application should not expose inward.
 - The app needs a smaller local view of a larger external shape.
 
 Start here:
@@ -35,7 +35,7 @@ Complexity ladder:
 Do:
 - Convert external shapes in adapters, controllers, clients, or boundary modules.
 - Pass owned local models into behavior code.
-- Keep provider-specific fields available only where traceability or adapter behavior needs them.
+- Keep provider-specific fields only where traceability or adapter behavior needs them.
 - Make failure and unknown-state semantics explicit during translation.
 
 Avoid:

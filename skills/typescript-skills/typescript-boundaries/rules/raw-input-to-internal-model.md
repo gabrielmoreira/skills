@@ -8,7 +8,7 @@ references: [Anti-Corruption Layer (DDD), Parse don't validate]
 
 # Raw Input to Internal Model
 
-Decision: Parse and narrow raw input at the boundary before owned behavior depends on it. Owns HTTP request/response/transport shapes, env-like raw input, webhook payloads, CLI args, untyped JSON — for vendor/SDK/generated types, see `rules/provider-containment.md`.
+Decision: Parse and narrow raw input at the boundary before owned behavior depends on it. This rule owns HTTP request/response/transport shapes, env-like raw input, webhook payloads, CLI args, and untyped JSON — for vendor/SDK/generated types, see `rules/provider-containment.md`.
 
 Use when:
 - Request body, query, headers, webhook payload, CLI args, env-like input, or untyped JSON is passed inward.

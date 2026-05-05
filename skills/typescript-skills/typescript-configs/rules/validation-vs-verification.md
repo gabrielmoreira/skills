@@ -8,7 +8,7 @@ references: [Parse don't validate, Fail Fast]
 
 # Validation vs Verification
 
-Decision: Config parsing validates shape and local policy; external dependency checks happen later in explicit verification or startup code.
+Decision: Config parsing validates shape and local policy. External dependency checks happen later in explicit verification or startup code.
 
 Use when:
 - Config parsing opens files, calls network, checks cloud resources, pings databases, or fetches secrets.
@@ -18,7 +18,7 @@ Use when:
 
 Start here:
 - Keep the parser pure: turn raw values into typed config and reject invalid local shape.
-- Parse explicit resource pointers, names, paths, and URLs as typed config; do not verify the live resource in the parser.
+- Parse explicit resource pointers, names, paths, and URLs as typed config; do not verify live resources in the parser.
 
 Escalate when:
 - Startup must prove files, credentials, network resources, queues, buckets, databases, or secret permissions exist.
@@ -37,8 +37,8 @@ Do:
 - Validate syntax, type, enum membership, requiredness, local invariants, and parseable URLs/paths.
 - Verify existence, permissions, connectivity, credentials, and remote resources after parsing.
 - Name verification functions explicitly, such as `verifyDependencies` or `verifyConfigResources`.
-- Keep errors distinguishable: invalid config vs unavailable dependency.
-- Prefer passing explicit resource pointers through env/typed config over reconstructing important resource identity deep in runtime code.
+- Keep invalid config distinct from unavailable dependency.
+- Prefer explicit resource pointers in typed config over rebuilding important resource identity later.
 
 Avoid:
 - Network, filesystem, database, or cloud calls inside pure config parsing.
@@ -49,7 +49,7 @@ Avoid:
 
 Exceptions:
 - Synchronous local parsing of a literal string path/URL is validation; checking that the target exists is verification.
-- A tiny script may perform parse and verification in sequence in one file, but keep them separate functions.
+- A tiny script may parse and verify in one file, but keep them as separate functions.
 - Entrenched resource-name conventions may be maintained during migration; do not deepen them in new paths.
 
 Example:
@@ -93,7 +93,7 @@ export function parseQueueConfig(env: NodeJS.ProcessEnv): QueueConfig {
 }
 ```
 
-When stage-conditional logic appears (`stage === "prod" ? ... : ...` selecting resources), do not reach for it. Stage is not a behavior decision — see `rules/feature-decisions.md`. The right shape is one explicit env input per environment-specific resource (e.g. `ORDER_QUEUE_URL` set per stage), and a named decision parsed once when behavior really differs.
+When stage-conditional logic appears (`stage === "prod" ? ... : ...` selecting resources), stop. Stage is not a behavior decision — see `rules/feature-decisions.md`. Use one explicit env input per environment-specific resource (for example `ORDER_QUEUE_URL` set per environment), and parse a named decision once when behavior really differs.
 
 Verify:
 - Parser tests run without external resources.

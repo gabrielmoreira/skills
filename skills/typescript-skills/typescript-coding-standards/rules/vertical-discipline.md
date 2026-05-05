@@ -3,12 +3,12 @@ id: typescript-coding-standards.vertical-discipline
 owner: typescript-coding-standards
 canonical: true
 severity: default
-references: [Newspaper Metaphor (Clean Code), Extract Method (Fowler), Single Level of Abstraction Principle (SLAP), Template Method (GoF)]
+references: [Newspaper Metaphor (Clean Code), Step-Down Rule (Clean Code), Extract Method (Fowler), Single Level of Abstraction Principle (SLAP), Template Method (GoF)]
 ---
 
 # Vertical Discipline
 
-Decision: When a function needs visual structure to be readable, walk a small ladder — comment labels first, then extraction by responsibility, then template method. Blank lines are not a defect on their own; they often point to where extraction is hiding.
+Decision: When a function needs visual structure to be readable, walk a small ladder — comment labels first, then extraction by responsibility, then template method. Prefer a top-down / step-down file layout: put outer orchestration first, then place deeper helpers below in the order the reader encounters them whenever practical. Blank lines are not a defect on their own; they often point to where extraction is hiding.
 
 Use when:
 - A function has visually distinct blocks (validation / persist / notify, parse / decide / emit, fetch / transform / return).
@@ -16,6 +16,7 @@ Use when:
 - Reviewers add headings, blank lines, or comment labels to "organize" a long function.
 - The same block recurs in two or more functions.
 - One function mixes levels of abstraction (high-level orchestration next to low-level field plucking).
+- A reader must jump up and down the file to follow helpers that could be arranged top-down.
 
 Start here:
 - Read the function as one unit. If you can summarize it in one sentence and it fits on a screen, leave it alone.
@@ -40,6 +41,8 @@ Do:
 - Extract by responsibility and naming clarity, not by visual gap or line count.
 - Use early return to flatten nested conditionals before deciding to extract.
 - Keep one level of abstraction per function: orchestrators orchestrate, doers do.
+- Put the outer entrypoint first and place deeper helpers below it when the file still reads as one unit.
+- Within the same helper depth, prefer the order the reader encounters in the caller (`a` before `b`, `b1` before `b2`, `c1` before `c2`).
 - Let blank lines exist where they aid readability — they are not a defect.
 
 Avoid:
@@ -48,11 +51,15 @@ Avoid:
 - Treating blank-line removal as a goal in itself.
 - Replacing a clear blank-line block with a vague `// section` comment that adds no information.
 - Naming extracted helpers `processStep1`, `doWork`, `handleIt`.
+- Putting top-level orchestration below deep helpers when a reader could follow the file top-down instead.
+- Reordering same-depth helpers arbitrarily so the reader must hunt for the next step.
 
 Exceptions:
 - Top-level module structure (between imports, between exported declarations) uses blank lines normally.
 - Test files commonly use blank lines between Given/When/Then; that is fine when scanning is the priority.
 - A short function with 2-3 lines per visual group needs no extraction; the structure is the design.
+- Small strongly-related helpers may stay adjacent for local comprehension even if the exact call-depth order is not perfect.
+- Mutually recursive helpers or framework-mandated export order may override ideal step-down layout.
 
 Example:
 
@@ -142,8 +149,70 @@ function buildEmailHeaders(message: Message) {
 }
 ```
 
+Contrast — harder to read because the entrypoint is buried below helpers:
+
+```ts
+function validateOrderInput(input: OrderInput): NormalizedOrder {
+  if (!input.email) throw new MissingEmailError(input.id);
+  if (input.items.length === 0) throw new EmptyCartError(input.id);
+  return { ...input, email: input.email.toLowerCase() };
+}
+
+async function persistOrder(order: NormalizedOrder, db: DB) {
+  return db.transaction(async (tx) => {
+    const saved = await tx.orders.insert(order);
+    await tx.items.insertMany(saved.id, order.items);
+    return saved;
+  });
+}
+
+async function notifyOrderProcessed(order: SavedOrder, deps: NotifyDeps) {
+  await deps.mailer.send(order.email, formatReceipt(order));
+  await deps.audit.record("order-processed", { orderId: order.id });
+}
+
+async function processOrder(input: OrderInput, deps: OrderDeps) {
+  const validated = validateOrderInput(input);
+  const saved = await persistOrder(validated, deps.db);
+  await notifyOrderProcessed(saved, deps);
+  return saved;
+}
+```
+
+Top-down / step-down ordering inside one file:
+
+```ts
+async function processOrder(input: OrderInput, deps: OrderDeps) {
+  const validated = validateOrderInput(input);
+  const saved = await persistOrder(validated, deps.db);
+  await notifyOrderProcessed(saved, deps);
+  return saved;
+}
+
+function validateOrderInput(input: OrderInput): NormalizedOrder {
+  if (!input.email) throw new MissingEmailError(input.id);
+  if (input.items.length === 0) throw new EmptyCartError(input.id);
+  return { ...input, email: input.email.toLowerCase() };
+}
+
+async function persistOrder(order: NormalizedOrder, db: DB) {
+  return db.transaction(async (tx) => {
+    const saved = await tx.orders.insert(order);
+    await tx.items.insertMany(saved.id, order.items);
+    return saved;
+  });
+}
+
+async function notifyOrderProcessed(order: SavedOrder, deps: NotifyDeps) {
+  await deps.mailer.send(order.email, formatReceipt(order));
+  await deps.audit.record("order-processed", { orderId: order.id });
+}
+```
+
 Verify:
 - Did comment labels feel natural, or forced? Forced labels usually mean the function is fine as one unit.
 - Does each extracted helper have a name that says what it does, not how?
 - Are orchestration and low-level steps at different levels of abstraction in the file?
+- Can a reader scroll from top to bottom without repeatedly hunting upward for the next helper?
+- At the same depth, do helpers appear in the same order the caller uses them?
 - Did the function shrink because responsibilities moved out, or only because lines disappeared? Only the first is real.

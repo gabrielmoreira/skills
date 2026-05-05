@@ -13,7 +13,7 @@ Decision: Use tracing for request/operation paths and meaningful sub-operations 
 Use when:
 - A request crosses handlers, modules, queues, workers, providers, or services.
 - Code adds OpenTelemetry, AWS X-Ray, ADOT, tracer providers, exporters, spans, or context propagation.
-- Behavior needs branch/path visibility over time, not just a single log line.
+- Behavior needs branch/path visibility over time, not just one log line.
 - External calls, retries, fallbacks, or provider choices need correlation.
 - Owned code imports vendor tracing SDKs directly.
 

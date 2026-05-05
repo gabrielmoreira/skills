@@ -8,7 +8,7 @@ references: [Errors are values (Go), Failure modes (resilience engineering), Who
 
 # Error Classification
 
-Decision: Classify failures by semantic family (`kind`) and by whether retry can help. Use `kind` for broad meaning (`business`, `infra`, `security`, `validation`) and `code` for the stable, specific identifier. In class-based projects, family wrappers such as `BusinessError`, `InfraError`, `SecurityError`, and `ValidationError` are the default runtime wrappers. More specific subclasses are allowed when they add clear local value, but the boundary should still translate by family and stable `code`, not by enumerating every subclass.
+Decision: Classify failures by semantic family (`kind`) and by explicit retry mode. Use `kind` for broad meaning (`business`, `infra`, `security`, `validation`), `code` for the stable, specific identifier, and `retry` to distinguish between no retry, retry after modification/remediation, and retry with backoff. In class-based projects, family wrappers such as `BusinessError`, `InfraError`, `SecurityError`, and `ValidationError` are the default runtime wrappers. More specific subclasses are allowed when they add clear local value, but the boundary should still translate by family and stable `code`, not by enumerating every subclass.
 
 Use when:
 - A caller asks "should I retry this?" and the code cannot answer.
@@ -18,7 +18,7 @@ Use when:
 - Two services use different ad-hoc codes for the same logical failure.
 
 Start here:
-- Decide the classification axes at the project level: broad `kind`, stable `code`, and whether retry is allowed.
+- Decide the classification axes at the project level: broad `kind`, stable `code`, and explicit retry mode.
 - Prefer family wrappers (`BusinessError`, `InfraError`, `SecurityError`, `ValidationError`) as the default runtime wrappers.
 - Add more specific subclasses only when they make local code clearer and do not create package coupling.
 - The boundary asks the family wrapper or the root data (`kind`, `retry`), not each specific subclass.
@@ -40,7 +40,8 @@ Complexity ladder:
 Do:
 - Classify every app-owned error with a broad semantic family and a stable `code`.
 - Treat `code` as the fine-grained contract and `kind` as the broad family.
-- Treat retryability as a deliberate classification output, not an implementation accident.
+- Treat retry as a deliberate classification output, not an implementation accident.
+- Distinguish between backoff retry, retry after modification/remediation, and no retry.
 - Wrap third-party throws into your own classification at the adapter boundary.
 - Let the boundary translate by family-level wrapper or `kind`, not by concrete subclass names.
 - Preserve `cause` when wrapping so observed failure signals remain available for diagnostics.
@@ -60,6 +61,7 @@ Avoid:
 - Assuming every downstream failure is `infra`; downstream failures can still be `security`, `validation`, or `business`.
 - Throwing a generic `Error` from domain code for known failure modes.
 - Treating all errors as retryable, or none as retryable.
+- Collapsing caller-fixable, remediation-needed, and backoff-retryable failures into one vague `retryable` bucket.
 - Making subclass identity the only way to understand an error across packages.
 - Boundary code string-matching `message` or enumerating every specific subclass.
 
@@ -151,7 +153,7 @@ return /* 500 + synthesized errorId */;
 type AppErrorShape = {
   kind: "business" | "infra" | "security" | "validation";
   code: string;
-  retry?: { allowed?: boolean };
+  retry?: { allowed?: boolean; mode?: "backoff" | "after_remediation" | "none" };
 };
 
 type Result<T, E extends AppErrorShape> =

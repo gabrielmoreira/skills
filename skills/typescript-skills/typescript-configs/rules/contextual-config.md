@@ -8,14 +8,14 @@ references: [Interface Segregation (SOLID), Twelve-Factor III]
 
 # Contextual Config
 
-Decision: Pass the smallest contextual config a module needs; avoid broad app config objects except at composition roots, framework entrypoints, or simple scripts.
+Decision: Pass the smallest contextual config a module needs. Broad app config objects belong only at composition roots, framework entrypoints, or simple scripts.
 
 Use when:
 - A feature function accepts `AppConfig` but reads only a few fields.
 - Tests must build large unrelated config objects.
 - Multiple modules share one config type with unrelated fields.
-- A config object is growing with feature-specific fields, provider-specific fields, and service-wide facts together.
-- Framework conventions expose one config source, but feature modules need only a contextual slice.
+- A config object is growing with feature fields, provider fields, and service-wide facts together.
+- Framework conventions expose one config source, but feature modules need only a slice.
 
 Start here:
 - Simple script or single-file app: one local config object is acceptable.

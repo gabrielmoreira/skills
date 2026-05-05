@@ -8,12 +8,12 @@ references: [Anti-Corruption Layer (DDD), Indirection (GRASP)]
 
 # Earned Mapping
 
-Decision: Add a boundary mapper only when it protects a real semantic mismatch, repeated translation, or owned API from external churn.
+Decision: Add a boundary mapper only when it protects a real semantic mismatch, repeated translation, or an owned API from external churn.
 
 Use when:
 - The same translation appears in more than one owned module.
 - Provider semantics differ from local semantics.
-- Provider states or fields must be collapsed, expanded, rejected, or renamed for local meaning.
+- Provider states or fields must be collapsed, expanded, rejected, or renamed into local meaning.
 - The provider changes independently from owned code.
 - Tests need a stable local contract instead of provider fixtures everywhere.
 

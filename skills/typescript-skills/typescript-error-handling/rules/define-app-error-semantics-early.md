@@ -22,6 +22,7 @@ Start here:
 - Treat `context`, `cause`, `retry`, `http`, and `telemetry` as structured attachments.
 - Treat root `details` as the semantic payload of the error.
 - Treat `context` and `cause` as internal-by-default attachments.
+- Normalize `cause` into app-owned fields, preserve runtime-native stacktrace internally when useful, and optionally retain the original cause object reference while still in-process.
 - Add factories and enrichment helpers so callers do not rebuild the whole shape manually.
 
 Escalate when:
@@ -46,6 +47,8 @@ Do:
 - Use `context.metadata` for internal execution metadata.
 - Use `cause` for normalized observed data from captured errors or downstream responses.
 - Use `cause.metadata` for internal observed-cause metadata.
+- Preserve runtime-native cause stacktrace internally when the observed cause provides one.
+- Allow an internal original-cause reference for later diagnostics/logging/tracing when the process/runtime boundary still allows it, but keep that reference out of the serialized/public contract by default.
 - Use a dedicated `retry` attachment for retry evaluation instead of scattering booleans across call sites.
 - Use a dedicated `http` attachment for HTTP projection instead of making protocol concerns part of the root contract.
 - Put correlation fields such as `errorId`, `traceId`, `correlationId`, and `occurredAt` in `telemetry`.
@@ -59,6 +62,8 @@ Avoid:
 - Encoding HTTP status, database driver names, or SDK class names into the root error contract.
 - Treating root `details`, `context.metadata`, and `cause.metadata` as the same kind of information.
 - Dumping stacks, raw headers, raw response bodies, secrets, or arbitrary blobs into the canonical shape.
+- Treating normalized `cause.message` / `cause.code` as if they always replace internal stacktrace or later access to the original cause object.
+- Serializing the raw original cause object as part of the canonical/public error contract.
 - Making subclass identity the primary cross-package contract.
 - Forcing `context.target` when there is no clear technical target.
 
@@ -100,6 +105,7 @@ export type AppErrorData = {
     message?: string;
     status?: number;
     requestId?: string;
+    stacktrace?: string;
     metadata?: Record<string, unknown>;
   };
 
@@ -125,12 +131,15 @@ type AppResult<T, E extends AppErrorData = AppErrorData> =
   | { ok: false; error: E };
 
 class AppError<E extends AppErrorData = AppErrorData> extends Error {
+  readonly originalCause?: unknown;
+
   constructor(
     public readonly data: E,
-    options?: { cause?: unknown },
+    options?: { cause?: unknown; originalCause?: unknown },
   ) {
     super(data.message, { cause: options?.cause });
     this.name = "AppError";
+    this.originalCause = options?.originalCause ?? options?.cause;
   }
 }
 
@@ -153,7 +162,7 @@ function fail<E extends AppErrorData>(error: E): AppResult<never, E> {
 
 function toThrowable<E extends AppErrorData>(
   error: E,
-  options?: { cause?: unknown },
+  options?: { cause?: unknown; originalCause?: unknown },
 ): AppError<E> {
   switch (error.kind) {
     case "business":
@@ -167,9 +176,29 @@ function toThrowable<E extends AppErrorData>(
   }
 }
 
+function withCause<T extends AppErrorData>(
+  error: T,
+  observed: unknown,
+): T {
+  const e = observed instanceof Error ? observed : undefined;
+
+  return {
+    ...error,
+    cause: {
+      ...error.cause,
+      name: error.cause?.name ?? e?.name,
+      message: error.cause?.message ?? e?.message,
+      stacktrace: error.cause?.stacktrace ?? e?.stack,
+      metadata: {
+        ...error.cause?.metadata,
+      },
+    },
+  };
+}
+
 function throwError<E extends AppErrorData>(
   error: E,
-  options?: { cause?: unknown },
+  options?: { cause?: unknown; originalCause?: unknown },
 ): never {
   throw toThrowable(error, options);
 }
@@ -230,17 +259,23 @@ async function requireOrder(orderId: string): Promise<{ id: string }> {
   const found = false;
 
   if (!found) {
+    const observed = new Error("db row missing");
+
     throwError(
-      withContext(orderNotFound({ orderId }), {
-        service: "orders",
-        operation: "require_order",
-        target: {
-          kind: "db",
-          name: "orders-db",
-          operation: "select",
-          resource: "orders",
-        },
-      }),
+      withCause(
+        withContext(orderNotFound({ orderId }), {
+          service: "orders",
+          operation: "require_order",
+          target: {
+            kind: "db",
+            name: "orders-db",
+            operation: "select",
+            resource: "orders",
+          },
+        }),
+        observed,
+      ),
+      { cause: observed, originalCause: observed },
     );
   }
 
@@ -253,6 +288,7 @@ Verify:
 - The root contract stays stable even when propagation style changes.
 - Root `details` is the semantic payload of the error.
 - `context.metadata` and `cause.metadata` stay internal-by-default.
+- Normalized `cause` data can carry stacktrace for internal diagnostics, while any retained original-cause object reference stays internal-only.
 - Family wrappers are the default runtime wrappers; specific subclasses are optional, not mandatory.
 - The same specialized error can be enriched once and propagated via either `fail(...)` or `throwError(...)`.
 - Public projections can start from the root contract and omit internal attachments by default.

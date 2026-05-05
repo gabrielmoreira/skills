@@ -8,7 +8,7 @@ references: [Dependency Injection for Testability]
 
 # Config in Tests
 
-Decision: Inject config into tests when the module API allows it; mutate `process.env` only for the config-reading boundary and restore it completely.
+Decision: Inject config into tests when the module API allows it. Mutate `process.env` only for the config-reading boundary and restore it completely.
 
 Use when:
 - Tests set `process.env` to exercise ordinary feature behavior.

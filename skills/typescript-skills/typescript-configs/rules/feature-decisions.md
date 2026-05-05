@@ -8,13 +8,13 @@ references: [Feature Toggles (Fowler), Twelve-Factor III]
 
 # Feature Decisions
 
-Decision: Feature flags and modes should be parsed once into named behavior decisions, not repeated as raw env/string checks in application code.
+Decision: Parse feature flags and modes once into named behavior decisions. Do not repeat raw env/string checks in application code.
 
 Use when:
 - Code checks `process.env.FEATURE_X`, `USE_X`, stage names, or raw flag strings outside config.
 - A flag or mode changes which fields are required.
 - A flag can represent more than a boolean, such as false, true, allowlist, percentage, or provider mode.
-- A stage/environment name is being used as a proxy for behavior.
+- A stage/environment name is used as a proxy for behavior.
 - Business logic repeats the same feature-flag comparison in multiple places.
 
 Start here:

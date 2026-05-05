@@ -8,10 +8,10 @@ references: [Twelve-Factor III, Secure by Default (OWASP)]
 
 # Defaults and Ownership
 
-Decision: A default is allowed only when it is production-safe and correct by nature. Defaults belong to one owner; environment-specific or security-bearing values are not defaulted here at all — see `../typescript-security/rules/secrets-lifecycle.md`.
+Decision: A default is allowed only when it is production-safe and correct by nature. Each default has one owner. Environment-specific or security-bearing values are out of scope here — see `../typescript-security/rules/secrets-lifecycle.md`.
 
 Use when:
-- Code adds `??`, `||`, schema default, fallback object, implicit mode, or sample value for behavior tuning.
+- Code adds `??`, `||`, schema defaults, fallback objects, implicit modes, or sample values for behavior tuning.
 - A retry count, timeout, page size, cache TTL, or display limit needs a value.
 - The same default appears in more than one module.
 - Requiredness differs by mode, provider, stage, or feature flag.
@@ -22,8 +22,8 @@ Out of scope (route to security):
 - Anything pointing at localhost, sandbox, staging, dev, or test resources as a code default.
 
 Start here:
-- For behavior tuning values (timeouts, retries, limits), put a production-safe default beside the contextual module policy that owns the behavior.
-- For environment-specific or security-bearing values, require them; do not add a default here. See `../typescript-security/rules/secrets-lifecycle.md`.
+- For behavior tuning values (timeouts, retries, limits), put one production-safe default beside the contextual module policy that owns the behavior.
+- For environment-specific or security-bearing values, require them; do not default them here. See `../typescript-security/rules/secrets-lifecycle.md`.
 
 Escalate when:
 - The same default appears in two modules.
@@ -55,10 +55,10 @@ Avoid:
 - Moving feature defaults into root config just because raw env is parsed there.
 
 Exceptions:
-- Harmless production-safe defaults are acceptable for behavior tuning such as display limits, retry counts, timeouts, page sizes, or cache TTLs when documented and tested.
+- Production-safe defaults are acceptable for behavior tuning such as display limits, retry counts, timeouts, page sizes, or cache TTLs when documented and tested.
 - Local development may use explicit `.env` or framework-local config files, but those values are inputs, not code defaults.
 - Migration may preserve a legacy default temporarily; record owner, tests, and removal/revisit condition.
-- Truly service-wide facts such as stage, region, and app name may have root-owned defaults only when the default remains correct for production.
+- Truly service-wide facts such as stage, region, and app name may have root-owned defaults only when the default remains correct in production.
 
 Example:
 
@@ -75,7 +75,7 @@ export function parseEmailConfig(env: NodeJS.ProcessEnv): EmailConfig {
 }
 ```
 
-Good: module policy derives a decision from a named flag, not from stage.
+Good: module policy derives a decision from a named flag (`isHighThroughputMode`), not from env stage (`ENV === 'prod'`).
 
 ```ts
 export function makeEmailConfig(flags: { isHighThroughputMode: boolean }): EmailConfig {

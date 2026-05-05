@@ -55,7 +55,7 @@ For a new mid-or-larger app, start with the family wrappers on day one. They sol
 - Guidance for choosing one default propagation style per package: class-based or Result-based.
 - The family-level runtime wrappers and when to use specific subclasses.
 - Error classification (`kind`, business vs infra vs security vs validation, retryability).
-- Error shape and structured attachments: semantic root, context, cause, retry, protocol projections, telemetry.
+- Error shape and structured attachments: semantic root, context, normalized cause, internal cause stacktrace/original-cause retention guidance, retry, protocol projections, telemetry.
 - Boundary translation and projection into transport-level responses.
 
 ## Does Not Own
@@ -67,4 +67,4 @@ For a new mid-or-larger app, start with the family wrappers on day one. They sol
 
 ## Default
 
-For a new mid-sized app: define one canonical `AppErrorData` shape first, then default to class-based propagation with family wrappers in `core/errors`. Use stable `code` plus canonical error data as the shared contract. Add `context`, `cause`, `retry`, `http`, and `telemetry` as structured attachments when needed. Translate once at the boundary, log the full internal diagnostic shape, and project only the safe public shape outward.
+For a new mid-sized app: define one canonical `AppErrorData` shape first, then default to class-based propagation with family wrappers in `core/errors`. Use stable `code` plus canonical error data as the shared contract. Add `context`, `cause`, `retry`, `http`, and `telemetry` as structured attachments when needed. Keep `cause` normalized in the canonical shape, preserve stacktrace and optional original-cause references internally for diagnostics when useful, translate once at the boundary, log the full internal diagnostic shape, and project only the safe public shape outward.

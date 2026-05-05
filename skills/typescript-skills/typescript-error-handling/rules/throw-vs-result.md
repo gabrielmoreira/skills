@@ -8,17 +8,17 @@ references: [Java/C# checked exceptions critique, Result/Either type (Rust, Scal
 
 # Throw vs Result
 
-Decision: The project picks one default propagation style inside each package — class-based (`throw`) or Result-based (`Result<T, E>` discriminated union) — and stays consistent. The canonical error semantics stay the same either way: both styles should reuse the same app-owned error data. Throwing for programmer errors and invariant violations is still allowed in both styles.
+Decision: Each package picks one default propagation style — class-based (`throw`) or Result-based (`Result<T, E>` discriminated union) — and stays consistent. The canonical error semantics stay the same either way: both styles reuse the same app-owned error data. Throwing for programmer errors and invariant violations is still allowed in both styles.
 
 Use when:
 - Writing a new function that may fail.
-- The project has not made the project decision yet (read `SKILL.md` first).
+- The project decision is not visible yet (read `SKILL.md` first).
 - A pull request mixes both styles in the same package and a reviewer asks why.
 - Library code is throwing in a context where consumers were not expecting it.
 - A function returns `T | null` for multiple distinct failure modes and the caller cannot tell why it failed.
 
 Start here:
-- Confirm the project's chosen default style for the package.
+- Confirm the package's chosen default style.
 - Keep the canonical error contract the same either way — reuse `AppErrorData` or the equivalent app-owned error shape.
 - For programmer errors and invariant violations, both styles may still `throw new Error(...)`.
 - For known business, infra, security, or validation failures, follow the package default.
