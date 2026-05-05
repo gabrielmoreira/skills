@@ -98,6 +98,30 @@ const scenarios = [
     ],
     tags: ["normalized-cause", "stacktrace", "projection", "calibration"]
   },
+  {
+    id: "error-helper-ergonomics-single-cause-pass",
+    bundle: "typescript-error-handling",
+    rule: "define-app-error-semantics-early",
+    tier: "P1",
+    mode: "simplification",
+    difficulty: "mixed",
+    prompt:
+      "PR review. A contributor replaces a small local helper with this pattern:\n\n```ts\nthrowError(\n  withMetadata(\n    withNormalizedCause(\n      withContext(orderNotFound({ orderId }), {\n        service: \"orders\",\n        operation: \"require_order\",\n      }),\n      cause,\n    ),\n    { requestId },\n  ),\n  { cause },\n);\n```\n\nThe author says the chain is explicit and composable. Another reviewer worries that developers will miss available enrichment fields or stop attaching them consistently because the pattern is too awkward. What should the project recommend as the default style?",
+    expectedPrimary: "typescript-error-handling",
+    expectedSecondary: ["typescript-coding-standards"],
+    must: [
+      "Prefers an object-based enrichment helper or factory options over deeply nested helper chains as the default API",
+      "Keeps the semantic error factory visible first and makes enrichment fields discoverable in one place",
+      "Avoids requiring callers to pass the same runtime cause twice when throwing",
+      "Preserves the same underlying error model and lets teams make important enrichment fields explicit or required at the helper/factory boundary"
+    ],
+    mustNot: [
+      "Treats nested `withContext(withNormalizedCause(withMetadata(...)))` style as the preferred default ergonomics",
+      "Requires callers to pass the same runtime cause both into enrichment and separately into `throwError`",
+      "Collapses the fix into manual object literals with no shared helper or factory pattern"
+    ],
+    tags: ["ergonomics", "error-helper", "normalized-cause", "calibration"]
+  },
 ] satisfies EvalScenario[];
 
 export default scenarios;

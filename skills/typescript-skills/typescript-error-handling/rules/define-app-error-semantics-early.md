@@ -54,6 +54,9 @@ Do:
 - Prefer family-level wrappers as the default runtime wrappers.
 - Allow more specific subclasses when they add clear local value, but keep `code` and canonical error data as the shared contract.
 - Prefer specialized factories such as `orderNotFound(...)` and helpers such as `withContext(...)`, `withNormalizedCause(...)`, and `withMetadata(...)` over repeated manual object assembly.
+- Prefer object-based enrichment helpers or factory options as the default ergonomics; keep nested `withA(withB(withC(...)))` chains as low-level primitives, not the primary API.
+
+- Keep important enrichment fields discoverable at the call site. Teams may decide that some metadata or context fields are always required; helper/factory signatures should make that easy instead of hiding everything behind optional follow-up helpers.
 
 Avoid:
 - Letting each module invent its own error shape.
@@ -149,6 +152,20 @@ function businessError<const T extends Omit<AppErrorData, "kind">>(data: T) {
   return defineError({ kind: "business", ...data });
 }
 
+type ErrorOptions = {
+  cause?: unknown;
+  context?: AppErrorData["context"];
+  normalizedCause?: AppErrorData["normalizedCause"];
+  metadata?: AppErrorData["metadata"];
+  retry?: AppErrorData["retry"];
+  http?: AppErrorData["http"];
+};
+
+type PreparedError<E extends AppErrorData = AppErrorData> = {
+  data: E;
+  cause?: unknown;
+};
+
 function fail<E extends AppErrorData>(error: E): AppResult<never, E> {
   return { ok: false, error };
 }
@@ -169,62 +186,65 @@ function toThrowable<E extends AppErrorData>(
   }
 }
 
-function throwError<E extends AppErrorData>(
+// Recommended default: object-based enrichment keeps fields discoverable in one place.
+// Low-level `withX(...)` helpers may still exist, but they should not be the primary developer UX.
+function errorWith<E extends AppErrorData>(
   error: E,
-  options?: { cause?: unknown },
+  options: ErrorOptions = {},
+): PreparedError<E> {
+  const observed = options.cause instanceof Error ? options.cause : undefined;
+
+  return {
+    data: {
+      ...error,
+      context: {
+        ...error.context,
+        ...options.context,
+        target: {
+          ...error.context?.target,
+          ...options.context?.target,
+        },
+      },
+      normalizedCause: {
+        ...error.normalizedCause,
+        ...options.normalizedCause,
+        type: options.normalizedCause?.type ?? error.normalizedCause?.type ?? observed?.name,
+        message: options.normalizedCause?.message ?? error.normalizedCause?.message ?? observed?.message,
+        stacktrace: options.normalizedCause?.stacktrace ?? error.normalizedCause?.stacktrace ?? observed?.stack,
+      },
+      metadata: {
+        ...error.metadata,
+        ...options.metadata,
+        custom: {
+          ...error.metadata?.custom,
+          ...options.metadata?.custom,
+        },
+      },
+      retry: {
+        ...error.retry,
+        ...options.retry,
+      },
+      http: {
+        ...error.http,
+        ...options.http,
+      },
+    },
+    cause: options.cause,
+  };
+}
+
+function failWith<E extends AppErrorData>(
+  error: E,
+  options: ErrorOptions = {},
+): AppResult<never, E> {
+  return fail(errorWith(error, options).data);
+}
+
+function throwError<E extends AppErrorData>(
+  error: E | PreparedError<E>,
 ): never {
-  throw toThrowable(error, options);
-}
-
-function withContext<T extends AppErrorData>(
-  error: T,
-  context: AppErrorData["context"],
-): T {
-  return {
-    ...error,
-    context: {
-      ...error.context,
-      ...context,
-      target: {
-        ...error.context?.target,
-        ...context?.target,
-      },
-    },
-  };
-}
-
-function withNormalizedCause<T extends AppErrorData>(
-  error: T,
-  observed: unknown,
-): T {
-  const e = observed instanceof Error ? observed : undefined;
-
-  return {
-    ...error,
-    normalizedCause: {
-      ...error.normalizedCause,
-      type: error.normalizedCause?.type ?? e?.name,
-      message: error.normalizedCause?.message ?? e?.message,
-      stacktrace: error.normalizedCause?.stacktrace ?? e?.stack,
-    },
-  };
-}
-
-function withMetadata<T extends AppErrorData>(
-  error: T,
-  metadata: AppErrorData["metadata"],
-): T {
-  return {
-    ...error,
-    metadata: {
-      ...error.metadata,
-      ...metadata,
-      custom: {
-        ...error.metadata?.custom,
-        ...metadata?.custom,
-      },
-    },
-  };
+  const prepared = "data" in error ? error : { data: error };
+  throw toThrowable(prepared.data, { cause: prepared.cause });
 }
 
 export function orderNotFound(input: { orderId: string }) {
@@ -241,8 +261,8 @@ function loadOrder(orderId: string): AppResult<{ id: string }> {
   const found = false;
 
   if (!found) {
-    return fail(
-      withContext(orderNotFound({ orderId }), {
+    return failWith(orderNotFound({ orderId }), {
+      context: {
         service: "orders",
         operation: "load_order",
         target: {
@@ -251,8 +271,8 @@ function loadOrder(orderId: string): AppResult<{ id: string }> {
           operation: "select",
           resource: "orders",
         },
-      }),
-    );
+      },
+    });
   }
 
   return { ok: true, value: { id: orderId } };
@@ -262,28 +282,23 @@ async function requireOrder(orderId: string): Promise<{ id: string }> {
   const found = false;
 
   if (!found) {
-    const observed = new Error("db row missing");
-
     throwError(
-      withMetadata(
-        withNormalizedCause(
-          withContext(orderNotFound({ orderId }), {
-            service: "orders",
-            operation: "require_order",
-            target: {
-              kind: "db",
-              name: "orders-db",
-              operation: "select",
-              resource: "orders",
-            },
-          }),
-          observed,
-        ),
-        {
+      errorWith(orderNotFound({ orderId }), {
+        cause: new Error("db row missing"),
+        context: {
+          service: "orders",
+          operation: "require_order",
+          target: {
+            kind: "db",
+            name: "orders-db",
+            operation: "select",
+            resource: "orders",
+          },
+        },
+        metadata: {
           requestId: "req_123",
         },
-      ),
-      { cause: observed },
+      }),
     );
   }
 
@@ -295,7 +310,7 @@ Verify:
 - The project has one canonical app-owned error shape.
 - The root contract stays stable even when propagation style changes.
 - Root `details` is the semantic payload of the error.
-- Normalized `normalizedCause` data stays distinct from diagnostics `metadata`.
+- `normalizedCause` stays distinct from diagnostics `metadata`.
 - Runtime `cause` remains internal and separate from the canonical data shape.
 - Family wrappers are the default runtime wrappers; specific subclasses are optional, not mandatory.
 - The same specialized error can be enriched once and propagated via either `fail(...)` or `throwError(...)`.
