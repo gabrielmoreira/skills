@@ -144,6 +144,8 @@ vite.config.ts.timestamp-*
 
 # --- Project-specific ---
 
+.local/
+
 # Eval workspace — generated local successor-harness artifacts.
 # Keep generated eval results under the single gitignored eval workspace.
 skills/typescript-skills/evals/workspace/
