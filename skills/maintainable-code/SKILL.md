@@ -22,6 +22,12 @@ Use these principles to keep code simple, testable, readable, and sustainable.
 Core stance: clear business flow, explicit I/O, no hidden dependencies, no unnecessary fragmentation.
 
 They are organized in the order of a change: first how to approach the work, then how to shape the system, then how to write the code, then how to name things, and finally how to communicate plans.
+## Language Policy
+
+During an agent session, reply in the language the user is using.
+
+When writing code, comments, documentation, plans, or any other persistent repository content, write in English by default unless the user explicitly asks for another language.
+
 
 The arc is:
 
@@ -36,7 +42,7 @@ think → shape → write → name → explain
 | **A — Process** | **1.** Investigate before you change.<br>**2.** Plan from the test; build the core first.<br>**3.** Aim at the final experience; loop back when you learn. |
 | **B — Architecture** | **4.** Keep few layers: clear flow, explicit I/O.<br>**5.** Inject dependencies explicitly; watch what crosses the layers.<br>**6.** Keep the generic generic.<br>**7.** Choose external dependencies deliberately.<br>**8.** Organize by feature, not by technical type. |
 | **C — Implementation** | **9.** Give each unit one coherent responsibility.<br>**10.** Keep support pure; isolate technical mini engines.<br>**11.** Lay out files top-down. |
-| **D — Naming & Language** | **12.** Reuse the domain's vocabulary.<br>**13.** Write in international, intermediate English.<br>**14.** Name with symmetry. |
+| **D — Naming & Language** | **12.** Reuse the domain's vocabulary.<br>**13.** Write repository content in international, intermediate English.<br>**14.** Name with symmetry. |
 | **E — Communication** | **15.** Present plans progressively. |
 
 ---
@@ -166,9 +172,9 @@ Define the main concepts and taxonomy as early as possible, then carry those ter
 
 Prefer familiar software terms when they are accurate enough. A slightly broader term that most developers understand is often better than a very precise term that feels obscure or academic. Precision is valuable, but not when it makes the code harder to read.
 
-### 13. Write in international, intermediate English.
+### 13. Write repository content in international, intermediate English.
 
-Write code names, comments, docs, and plans in English that an intermediate non-native reader can follow. Avoid rare idioms, overly fluent expressions, or vocabulary that only advanced speakers catch.
+Write code names, comments, documentation, plans, and other persistent repository content in English that an intermediate non-native reader can follow. Avoid rare idioms, overly fluent expressions, or vocabulary that only advanced speakers catch.
 
 Technical software terms are the exception. If a technical term is widely used in the industry, use it. Its popularity already gives readers context.
 
@@ -222,7 +228,7 @@ The goal is to leave the reader more oriented, not more impressed.
 10. Keep support pure; isolate technical mini engines.
 11. Lay out files top-down.
 12. Reuse the domain's vocabulary.
-13. Write in international, intermediate English.
+13. Write repository content in international, intermediate English.
 14. Name with symmetry.
 15. Present plans progressively.
 
