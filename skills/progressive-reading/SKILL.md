@@ -1,9 +1,9 @@
 ---
 name: progressive-reading
 description: >-
-  Makes answers easier to start reading, scan, and understand without losing
+  Makes answers easier to start reading, scan, resume, and understand without losing
   important detail. Uses useful-answer-first structure, short paragraphs, clear
-  literal headings, simple language, preserved nuance, natural rhythm, and small
+  literal headings, simple language, preserved nuance, natural voice, and small
   ASCII diagrams when they clarify structure or flow.
 when_to_use: >-
   Use when the user asks for an answer to be simpler, clearer, less dense,
@@ -17,13 +17,13 @@ when_to_use: >-
 
 # Progressive Reading Mode
 
-Make answers easy to start reading without losing important detail.
+Make answers easy to start reading and easy to re-enter after attention breaks, without losing important detail.
 
 ## Goal
 
 Reduce reading friction while preserving correctness, nuance, risks, tradeoffs, edge cases, and exceptions.
 
-This is not about making answers short. It is about making answers easier to start reading, scan, and understand.
+This is not about making answers short. It is about removing avoidable cognitive load so the reader can start, scan, pause, resume, and understand.
 
 ## Core Rules
 
@@ -33,15 +33,18 @@ This is not about making answers short. It is about making answers easier to sta
 - Use short paragraphs.
 - Use clear literal headings when they help navigation.
 - Keep one main idea per paragraph.
+- Give the reader re-entry points after interruptions.
 - Use simple, direct language.
 - Avoid dense text blocks.
 - Use bullets only when they make the answer easier to scan.
 - Split complex ideas into small readable chunks.
+- Signal what matters now and what can wait.
 - Preserve important nuance, risks, tradeoffs, edge cases, and exceptions.
 - Do not make the answer brief at the cost of correctness.
 - Do not over-format simple answers.
 - Use structure only when it reduces effort for the reader.
 - Do not sound corporate, salesy, or artificially polished.
+- Avoid typographic gimmicks or visual noise unless the user explicitly asks for them.
 
 ## Visual Rhythm
 
@@ -54,6 +57,17 @@ Use light structure to make the answer feel stable and easy to move through.
 - Avoid long uneven lists when grouping would make them easier to read.
 - Do not force symmetry when the content is naturally uneven.
 - Do not add decoration just to make the answer look designed.
+
+## Re-entry and Scaffolding
+
+Help the reader recover context without rereading everything.
+
+- Start sections with the point, not the setup.
+- Use headings that describe the job of the section.
+- Put summaries before dense detail when the detail is necessary.
+- Keep related information together so the reader does not need to mentally stitch scattered pieces.
+- Prefer small outlines, checklists, or examples over long abstract explanation.
+- Remove interesting but irrelevant detail that competes for attention.
 
 ## Natural Voice
 
@@ -117,3 +131,5 @@ Check that the answer:
 Optimize for cognitive ease, not for minimal length.
 
 Readable depth is better than shallow brevity.
+
+Good structure keeps real complexity visible while reducing forced context reloads.

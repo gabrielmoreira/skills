@@ -21,13 +21,10 @@ Use these principles to keep code simple, testable, readable, and sustainable.
 
 Core stance: clear business flow, explicit I/O, no hidden dependencies, no unnecessary fragmentation.
 
+Reader stance: code should help the reader recover context after interruption. Keep real complexity visible, but remove avoidable cognitive load.
+Architectural stance: good architecture makes the right place obvious. Design the invitation, not only the rule.
+
 They are organized in the order of a change: first how to approach the work, then how to shape the system, then how to write the code, then how to name things, and finally how to communicate plans.
-## Language Policy
-
-During an agent session, reply in the language the user is using.
-
-When writing code, comments, documentation, plans, or any other persistent repository content, write in English by default unless the user explicitly asks for another language.
-
 
 The arc is:
 
@@ -35,13 +32,19 @@ The arc is:
 think → shape → write → name → explain
 ```
 
+## Language Policy
+
+During an agent session, reply in the language the user is using.
+
+When writing code, comments, documentation, plans, or any other persistent repository content, write in English by default unless the user explicitly asks for another language.
+
 ## Overview
 
 | Family | Principles |
 | --- | --- |
 | **A — Process** | **1.** Investigate before you change.<br>**2.** Plan from the test; build the core first.<br>**3.** Aim at the final experience; loop back when you learn. |
 | **B — Architecture** | **4.** Keep few layers: clear flow, explicit I/O.<br>**5.** Inject dependencies explicitly; watch what crosses the layers.<br>**6.** Keep the generic generic.<br>**7.** Choose external dependencies deliberately.<br>**8.** Organize by feature, not by technical type. |
-| **C — Implementation** | **9.** Give each unit one coherent responsibility.<br>**10.** Keep support pure; isolate technical mini engines.<br>**11.** Lay out files top-down. |
+| **C — Implementation** | **9.** Give each unit one coherent responsibility.<br>**10.** Keep support pure; isolate technical mini engines.<br>**11.** Lay out files top-down for re-entry. |
 | **D — Naming & Language** | **12.** Reuse the domain's vocabulary.<br>**13.** Write repository content in international, intermediate English.<br>**14.** Name with symmetry. |
 | **E — Communication** | **15.** Present plans progressively. |
 
@@ -60,6 +63,7 @@ DRY matters, but do not turn every similarity into an abstraction. Reuse should 
 Before coding, ask how the change will be tested. Sketch the main flow in rough pseudocode, especially across the main parts of the system: routing, use case, subtasks, connectors, and entry point.
 
 Design connector interfaces early, but build the core behavior first. Start with the business flow and the subtasks that make it readable. Then wire routing, connectors, and the composition root. This keeps most of the work focused on behavior instead of infrastructure.
+Plan for re-entry as well as first-pass reading. A maintainer should be able to return after losing the thread and recover the next step from the structure, names, and tests without rebuilding the whole context mentally.
 
 ### 3. Aim at the final experience; loop back when you learn.
 
@@ -83,7 +87,9 @@ The composition root creates connectors and wires dependencies. Routing chooses 
 
 Prefer pure logic when it is natural: data in, decision out, no I/O. But do not force purity or split code into tiny functions when that makes the business flow harder to understand. Use cases and subtasks may coordinate ports or infrastructure dependencies when needed, as long as those dependencies are explicit and injected.
 
-The goal is not purity for its own sake. The goal is cohesive business flow, clear dependencies, and controlled side effects. Keep the spine; do not invent layers or micro-abstractions the code has not earned.
+Keep the main path and its essential context close. Move secondary detail down, behind a named subtask, or outward to a connector/support module. Do not make the reader jump across many files just to reconstruct one business decision.
+
+The goal is not purity for its own sake. The goal is cohesive business flow, clear dependencies, controlled side effects, and fewer forced context reloads. Keep the spine; do not invent layers or micro-abstractions the code has not earned.
 
 ### 5. Inject dependencies explicitly; watch what crosses the layers.
 
@@ -147,7 +153,7 @@ Some support code is bigger than a helper and smaller than a framework: state ma
 
 A mini engine can be internal or external. When adopting a library for this role, either wrap it or embrace it deliberately. Wrap it behind a small semantic support layer when its API should not spread through the system. Embrace it directly only when it is mature, widely adopted, stable, and valuable enough to become part of the project's shared language.
 
-### 11. Lay out files top-down.
+### 11. Lay out files top-down for re-entry.
 
 Put the main function of the file at the top. Below it, place the functions it calls, in order of first use; then the functions those functions call; and so on.
 
@@ -160,7 +166,7 @@ mainFunction
     subHelper
 ```
 
-Keep function bodies free of blank lines; when a function wants visual sections, extract the secondary detail. The file should read in the order the reader needs to understand it.
+Keep function bodies free of blank lines; when a function wants visual sections, extract the secondary detail. The file should read in the order the reader needs to understand it, and it should give clear re-entry points after interruption.
 
 ---
 
@@ -210,6 +216,8 @@ Start with the useful answer first. Then layer context, details, edge cases, cav
 
 Use short paragraphs, plain language, and one main idea per paragraph. Use headings and bullets only when they reduce effort. Keep important nuance, but do not make the answer dense, corporate, over-polished, or artificially brief.
 
+Prefer scaffolded explanations over information dumps: orient the reader, show the main path, then reveal secondary detail only when it helps the next decision.
+
 The goal is to leave the reader more oriented, not more impressed.
 
 ---
@@ -220,13 +228,13 @@ The goal is to leave the reader more oriented, not more impressed.
 2. Plan from the test; build the core first.
 3. Aim at the final experience; loop back when you learn.
 4. Keep few layers: clear flow, explicit I/O.
-5. Inject dependencies explicitly; avoid hidden globals and god contexts.
+5. Inject dependencies explicitly; watch what crosses the layers.
 6. Keep the generic generic; do not hardcode one case into an engine.
 7. Choose external dependencies deliberately.
 8. Organize by feature, not by technical type.
 9. Give each unit one coherent responsibility.
 10. Keep support pure; isolate technical mini engines.
-11. Lay out files top-down.
+11. Lay out files top-down for re-entry.
 12. Reuse the domain's vocabulary.
 13. Write repository content in international, intermediate English.
 14. Name with symmetry.
@@ -241,8 +249,9 @@ The goal is to leave the reader more oriented, not more impressed.
 - **#6 and #10** protect generic mechanisms: engines and support primitives should not absorb business-specific shortcuts.
 - **#7 and #10** decide when to build, adopt, wrap, or embrace reusable technical behavior.
 - **#11 and #15** share the same reader-first idea: top-down in code, most-useful-first in prose.
+- **#2, #11, and #15** all protect re-entry: tests, file order, and plans should help the reader resume after losing context.
 - **#12, #13, and #14** make the code easier to recognize, search, discuss, and extend.
 
 ## Before applying these principles
 
-Apply these principles deliberately. If you break one, make the reason visible: clearer flow, safer dependency boundaries, simpler testing, or less accidental complexity.
+Apply these principles deliberately. If you break one, make the reason visible: clearer flow, safer dependency boundaries, simpler testing, fewer forced context reloads, or less accidental complexity.
