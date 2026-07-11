@@ -48,6 +48,26 @@ const scenarios = [
       "Treats support/debug convenience as enough reason to put tracing ownership in the service layer"
     ],
     tags: ["tracing-boundary", "vendor-sdk", "span-naming", "calibration"]
+  },
+  {
+    id: "log-streaming-question",
+    bundle: "typescript-observability",
+    rule: "meaningful-logging",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "obvious",
+    prompt:
+      "Our containerized Node.js service writes logs to `/var/log/app.log` via Winston's file transport, and a sidecar ships them to our log aggregator. Is this the right architecture?",
+    expectedPrimary: "typescript-observability",
+    must: [
+      "Recommends writing structured logs to stdout/stderr and letting infrastructure route them (Twelve-Factor XI)",
+      "Says the application should not own log shipping, file transports, or rotation",
+      "Mentions the sidecar/aggregator can consume stdout via the container runtime"
+    ],
+    mustNot: [
+      "Recommends keeping the file transport for safety"
+    ],
+    tags: ["stdout", "twelve-factor", "log-routing", "legacy-migrated"]
   }
 ] satisfies EvalScenario[];
 

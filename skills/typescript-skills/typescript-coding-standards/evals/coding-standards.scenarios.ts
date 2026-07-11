@@ -169,6 +169,93 @@ const scenarios = [
     ],
     tags: ["vertical-discipline", "step-down", "top-down", "ordering", "calibration"]
   },
+  {
+    id: "long-handler-with-blank-lines",
+    bundle: "typescript-coding-standards",
+    rule: "vertical-discipline",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "mixed",
+    prompt:
+      "Code review feedback says my handler is too long. It's 80 lines with three blank-line-separated blocks: input parsing, business call, response formatting. Should I just remove the blanks, add comment headers, or extract functions?",
+    expectedPrimary: "typescript-coding-standards",
+    must: [
+      "Uses comment labels as the discovery step of the ladder before or while deciding to extract",
+      "Extracts by responsibility once labels map to real, specific names",
+      "Recognizes the three blocks (parse / business call / format) as probably separate responsibilities",
+      "Names extracted helpers specifically, not generically (no doWork/processStep1)"
+    ],
+    mustNot: [
+      "Prescribes blank-line removal as the fix",
+      "Treats all three presented options as equally valid"
+    ],
+    tags: ["vertical-discipline", "blank-lines", "extraction", "legacy-migrated"]
+  },
+  {
+    id: "mocked-test-with-as-any",
+    bundle: "typescript-coding-standards",
+    rule: "type-narrowing-over-assertion",
+    tier: "P0",
+    mode: "bypass",
+    difficulty: "mixed",
+    prompt:
+      "In a unit test I have `const fakeStripe = { paymentIntents: { create: vi.fn().mockResolvedValue({ id: 'pi_123', status: 'succeeded' }) } } as any as Stripe;`. The Stripe type has 200+ methods and I only need one for this test. Is this acceptable in test code?",
+    expectedPrimary: "typescript-coding-standards",
+    expectedSecondary: ["typescript-testing"],
+    must: [
+      "Acknowledges a test-code exception exists without blessing `as any as Stripe`",
+      "Recommends depending on a narrow capability/interface instead of the full Stripe shape",
+      "Suggests a typed builder or explicit partial wrapper that makes the partiality visible"
+    ],
+    mustNot: [
+      "Leaves the cast in place because it is 'just tests'",
+      "Accepts the '200+ methods' practicality appeal as sufficient justification"
+    ],
+    tags: ["hard-gate", "test-exception", "as-any", "legacy-migrated"]
+  },
+  {
+    id: "id-confusion",
+    bundle: "typescript-coding-standards",
+    rule: "branded-and-opaque-types",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "obvious",
+    prompt:
+      "We had an incident where `archiveOrder(orderId)` was called with a `userId` value because both are `string`. The compiler said nothing. How do we prevent this class of bug?",
+    expectedPrimary: "typescript-coding-standards",
+    must: [
+      "Recommends branded/opaque types for the IDs",
+      "Mentions a smart constructor (asUserId/asOrderId) creating the branded value",
+      "Says downstream code should not cast into the brand"
+    ],
+    mustNot: [
+      "Recommends wrapping IDs in a class as the primary solution",
+      "Offers only runtime checks (prefix regex) without compile-time protection"
+    ],
+    tags: ["branded-types", "nominal-typing", "legacy-migrated"]
+  },
+  {
+    id: "overgeneric-helper",
+    bundle: "typescript-coding-standards",
+    rule: "generics-and-conditional-types",
+    tier: "P2",
+    mode: "complexity",
+    difficulty: "mixed",
+    prompt:
+      "I'm writing a `findById(items, id)` helper for the first place that needed it. Should I make it `<T extends { id: string }>(items: T[], id: string): T | undefined` from day one, or wait?",
+    expectedPrimary: "typescript-coding-standards",
+    must: [
+      "Accepts the generic with `extends { id: string }` when a second caller is plausible",
+      "Keeps the constraint to the minimum the body needs",
+      "Acknowledges a concrete signature is also fine for a single caller"
+    ],
+    mustNot: [
+      "Recommends an unconstrained `<T>` that forces `any` in the body",
+      "Recommends a looser constraint like `<T extends object>` when `{ id: string }` is what the body needs",
+      "Refuses generics outright on YAGNI grounds"
+    ],
+    tags: ["generics", "constraints", "progressive-complexity", "legacy-migrated"]
+  },
 ] satisfies EvalScenario[];
 
 export default scenarios;

@@ -144,6 +144,50 @@ const scenarios = [
       "router",
       "env"
     ]
+  },
+  {
+    id: "config-shape-too-small-to-care",
+    bundle: "typescript-configs",
+    rule: "parse-and-expose-config",
+    tier: "P1",
+    mode: "complexity",
+    difficulty: "obvious",
+    prompt:
+      "I'm writing a 50-line CLI script that reads `EMAIL_API_KEY` and sends one email. A coworker says I should set up zod, contextual configs, and a composition root. Is that overkill?",
+    expectedPrimary: "typescript-configs",
+    expectedSecondary: ["typescript-composition"],
+    must: [
+      "Says the proposed setup is overkill for a 50-line CLI",
+      "Recommends a small manual parse of the single env value",
+      "Names when escalation would be warranted (modes, multiple modules, conditional fields)"
+    ],
+    mustNot: [
+      "Recommends zod, contextual configs, or a composition root at this scale",
+      "Treats coworker authority as a reason to add structure"
+    ],
+    tags: ["progressive-complexity", "small-scale", "legacy-migrated"]
+  },
+  {
+    id: "provider-default-stage",
+    bundle: "typescript-configs",
+    rule: "feature-decisions",
+    tier: "P0",
+    mode: "bypass",
+    difficulty: "mixed",
+    prompt:
+      "Our config does `const queueUrl = stage === 'prod' ? 'sqs://prod-queue' : 'sqs://staging-queue'`. The URLs are public AWS endpoints, not secrets. Is this OK?",
+    expectedPrimary: "typescript-configs",
+    expectedSecondary: ["typescript-security"],
+    must: [
+      "Identifies both problems: stage used as a proxy for a behavior decision AND resource identity reconstructed in code",
+      "Says the queue URL should be an explicit env/config input even though it is not a secret",
+      "Recommends the named-decision pattern instead of stage conditionals",
+      "States that 'not a secret' does not exempt environment-specific coordinates"
+    ],
+    mustNot: [
+      "Accepts the code-defaulted resource identity because the endpoints are public"
+    ],
+    tags: ["stage-conditional", "resource-identity", "bypass", "legacy-migrated"]
   }
 ] satisfies EvalScenario[];
 

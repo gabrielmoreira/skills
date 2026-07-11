@@ -11,8 +11,10 @@ async function loadScenarioModule(path: string) {
   return mod.default ?? mod.scenarios;
 }
 
+// Discover from the parent skills/ folder so sibling skills
+// (maintainable-code, progressive-reading) are validated too.
 const cliPaths = process.argv.slice(2);
-const scenarioPaths = cliPaths.length ? cliPaths : await discoverScenarioModulePaths(resolve("."));
+const scenarioPaths = cliPaths.length ? cliPaths : await discoverScenarioModulePaths(resolve(".."));
 let failed = false;
 for (const path of scenarioPaths) {
   const scenarios = await loadScenarioModule(path);

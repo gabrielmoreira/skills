@@ -14,5 +14,5 @@ async function walk(dir: string): Promise<string[]> {
 
 export async function discoverScenarioModulePaths(root = "."): Promise<string[]> {
   const all = await walk(root);
-  return all.filter((p) => /typescript-[^/]+\/evals\/[^/]+\.scenarios\.ts$/.test(p)).sort();
+  return all.filter((p) => /(?:^|\/)evals\/[^/]+\.scenarios\.ts$/.test(p)).sort();
 }

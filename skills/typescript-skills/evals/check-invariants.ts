@@ -37,7 +37,7 @@ const allFiles = await walk(".");
 const allMd = allFiles.filter(f => f.endsWith(".md"));
 const ruleFiles = allMd.filter(f => /typescript-[^/]+\/rules\/[^/]+\.md$/.test(f)).sort();
 const skillFiles = allMd.filter(f => /typescript-[^/]+\/SKILL\.md$/.test(f)).sort();
-const scenarioFiles = allFiles.filter(f => /typescript-[^/]+\/evals\/[^/]+\.scenarios\.ts$/.test(f)).sort();
+const scenarioFiles = allFiles.filter(f => /(?:^|\/)evals\/[^/]+\.scenarios\.ts$/.test(f)).sort();
 const scenarioIds = [];
 for (const file of scenarioFiles) {
   const text = await readUtf8(file);
@@ -141,8 +141,8 @@ const rootSkill = "SKILL.md";
   // Use-when section must not include these phrases as primary triggers.
   // Look in the Use-when block specifically.
   const useWhenIdx = text.indexOf("Use when:");
-  const startHereIdx = text.indexOf("Start here:");
-  const useWhen = text.slice(useWhenIdx, startHereIdx > 0 ? startHereIdx : text.length).toLowerCase();
+  const endIdx = ["Start here:", "\nDo:"].map(s => text.indexOf(s)).filter(i => i > useWhenIdx).sort((a, b) => a - b)[0] ?? text.length;
+  const useWhen = text.slice(useWhenIdx, endIdx).toLowerCase();
   const forbidden = ["request body", "query", "headers", "webhook", "transport"];
   const found = forbidden.filter(p => useWhen.includes(p));
   if (found.length === 0) pass("INV-7 provider-containment Use-when does not claim transport/request territory");
@@ -172,18 +172,17 @@ const rootSkill = "SKILL.md";
   else fail("INV-9 local-test-style does not prescribe fixed unit/integration/e2e ordering", "found prescriptive phrasing");
 }
 
-// ----- INV-10: ownership.md lists each rule file at most once as canonical -----
+// ----- INV-10: each rule file has a unique canonical id in its frontmatter -----
 {
-  const text = await readUtf8("references/ownership.md");
-  const lines = text.split("\n").filter(l => l.includes("rules/") && l.includes("|"));
-  const counts = new Map();
-  for (const line of lines) {
-    const m = line.match(/`(rules\/[^`]+\.md)`/);
-    if (m) counts.set(m[1], (counts.get(m[1]) || 0) + 1);
+  const ids = new Map();
+  for (const f of ruleFiles) {
+    const text = await readUtf8(f);
+    const m = text.match(/^id:\s*(\S+)/m);
+    if (m) ids.set(m[1], (ids.get(m[1]) || 0) + 1);
   }
-  const dupes = [...counts.entries()].filter(([_, n]) => n > 1);
-  if (dupes.length === 0) pass(`INV-10 ownership.md has unique canonical entries (${counts.size} rules)`);
-  else fail("INV-10 ownership.md has unique canonical entries", dupes.map(([r, n]) => `${r}: ${n} entries`).join("\n  "));
+  const dupes = [...ids.entries()].filter(([_, n]) => n > 1);
+  if (dupes.length === 0) pass(`INV-10 rule ids are unique (${ids.size} rules)`);
+  else fail("INV-10 rule ids are unique", dupes.map(([r, n]) => `${r}: ${n} entries`).join("\n  "));
 }
 
 // ----- INV-11: parse-and-expose-config defers parser purity / secret loading to neighbors -----
@@ -266,12 +265,12 @@ const rootSkill = "SKILL.md";
     `provider→raw: ${aOk}, raw→provider: ${bOk}`);
 }
 
-// ----- INV-19: roadmap opening status is not stale (no "27 canonical rules") -----
+// ----- INV-19: no meta/authoring docs inside the skill payload references/ -----
 {
-  const text = await readUtf8("references/roadmap.md");
-  const stale = text.includes("27 canonical rules") || text.includes("Evals 12/12");
-  if (!stale) pass("INV-19 roadmap opening status is not stale");
-  else fail("INV-19 roadmap opening status is not stale", "stale phrasing found");
+  const metaDocs = ["roadmap.md", "ownership.md", "evaluation-plan.md", "source-coverage.md", "review-notes.md", "cheatsheet.md"];
+  const found = allMd.filter(f => f.startsWith("references/") && metaDocs.includes(basename(f)));
+  if (found.length === 0) pass("INV-19 no meta/authoring docs inside references/ (they live in docs/typescript-skills)");
+  else fail("INV-19 no meta/authoring docs inside references/", found.join("\n  "));
 }
 
 // ----- INV-20: no README.md inside skill bundles (router must be SKILL.md) -----
@@ -284,22 +283,27 @@ const rootSkill = "SKILL.md";
   else fail("INV-20 no README.md inside skill bundles (router is SKILL.md)", readmes.join("\n  "));
 }
 
-// ----- INV-21: eval prompts do not name the expected skill or rule file -----
+// ----- INV-21: scenario prompts do not name the expected skill or rule file -----
 {
-  const evalsJson = JSON.parse(await readUtf8("evals/evals.json"));
   const skillNames = ["typescript-skills", ...bundleNames];
   const ruleSuffixes = ruleFiles.map(f => basename(f));
   let bad = [];
-  for (const e of evalsJson.evals) {
-    const lc = e.prompt.toLowerCase();
-    const namedSkills = skillNames.filter(s => lc.includes(s));
-    const namedRules = ruleSuffixes.filter(r => lc.includes(r.toLowerCase()));
-    if (namedSkills.length || namedRules.length) {
-      bad.push(`${e.id}: prompt names ${[...namedSkills, ...namedRules].join(", ")}`);
+  let promptCount = 0;
+  for (const file of scenarioFiles) {
+    const mod = await import(pathToFileURL(file).href);
+    const scenarios = mod.default ?? mod.scenarios ?? [];
+    for (const s of scenarios) {
+      promptCount++;
+      const lc = String(s.prompt ?? "").toLowerCase();
+      const namedSkills = skillNames.filter(n => lc.includes(n));
+      const namedRules = ruleSuffixes.filter(r => lc.includes(r.toLowerCase()));
+      if (namedSkills.length || namedRules.length) {
+        bad.push(`${s.id}: prompt names ${[...namedSkills, ...namedRules].join(", ")}`);
+      }
     }
   }
-  if (bad.length === 0) pass(`INV-21 eval prompts do not leak skill/rule names (${evalsJson.evals.length} prompts, ${skillNames.length} skill names checked)`);
-  else fail("INV-21 eval prompts do not leak skill/rule names", bad.join("\n  "));
+  if (bad.length === 0) pass(`INV-21 scenario prompts do not leak skill/rule names (${promptCount} prompts, ${skillNames.length} skill names checked)`);
+  else fail("INV-21 scenario prompts do not leak skill/rule names", bad.join("\n  "));
 }
 
 // ----- INV-22: committed control matrix only references discovered successor scenarios -----

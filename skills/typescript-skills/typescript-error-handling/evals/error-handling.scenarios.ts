@@ -170,6 +170,28 @@ const scenarios = [
     ],
     tags: ["silent-swallow", "fallback", "observability", "calibration"]
   },
+  {
+    id: "retry-everything",
+    bundle: "typescript-error-handling",
+    rule: "error-classification",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "mixed",
+    prompt:
+      "Our payment service wraps every downstream call in `for (let i = 0; i < 3; i++) { try { return await call() } catch (e) { await sleep(i * 1000) } }`. Sometimes a 400 'card declined' gets retried 3 times. What's wrong?",
+    expectedPrimary: "typescript-error-handling",
+    expectedSecondary: ["typescript-async"],
+    must: [
+      "Identifies that the loop retries caller-fault errors like the declined card",
+      "Recommends classifying errors with explicit retry semantics before retrying",
+      "Distinguishes caller fault (no retry) from transient infra (retry)",
+      "Places classification responsibility at the layer that knows the app's error semantics"
+    ],
+    mustNot: [
+      "Suggests merely reducing the retry count as the fix"
+    ],
+    tags: ["retry-classification", "caller-fault", "legacy-migrated"]
+  },
 ] satisfies EvalScenario[];
 
 export default scenarios;

@@ -72,6 +72,27 @@ const scenarios = [
       "Recommends configured singleton imports inside behavior modules as the default fix"
     ],
     tags: ["composition-root", "provider-selection", "bootstrap", "calibration"]
+  },
+  {
+    id: "request-scoped-vs-singleton",
+    bundle: "typescript-composition",
+    rule: "dependency-scope",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "mixed",
+    prompt:
+      "Our `getCurrentUser()` reads a JWT from a module-level `currentRequest` variable that we set at the start of each request via middleware. It works but feels wrong. What pattern should we use?",
+    expectedPrimary: "typescript-composition",
+    must: [
+      "Identifies module-level mutable request state as the core smell",
+      "Recommends passing a request-scoped capability or factory inward",
+      "Connects the fix to deliberate dependency scope decisions",
+      "Mentions tests cannot isolate request state with the current design"
+    ],
+    mustNot: [
+      "Recommends AsyncLocalStorage as the first answer instead of a later escalation"
+    ],
+    tags: ["dependency-scope", "request-scope", "module-state", "legacy-migrated"]
   }
 ] satisfies EvalScenario[];
 

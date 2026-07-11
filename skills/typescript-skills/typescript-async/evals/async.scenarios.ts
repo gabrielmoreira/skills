@@ -48,6 +48,89 @@ const scenarios = [
       "Leaves long waits or hangs effectively unbounded"
     ],
     tags: ["timeout", "lambda", "caller-budget", "calibration"]
+  },
+  {
+    id: "sequential-independent-fetches",
+    bundle: "typescript-async",
+    rule: "parallel-and-dependencies",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "obvious",
+    prompt:
+      "Our profile page handler does `const user = await fetchUser(id); const config = await fetchConfig(); const notifications = await fetchNotifications(id);`. P95 latency went up. The three fetches don't depend on each other. What's the fix?",
+    expectedPrimary: "typescript-async",
+    must: [
+      "Recommends Promise.all for the three independent fetches",
+      "Names the sequential awaits with no value flow as a waterfall",
+      "Mentions start-early/await-late for partial dependencies"
+    ],
+    mustNot: [
+      "Recommends caching or CDN as the primary fix for this latency"
+    ],
+    tags: ["parallel", "waterfall", "legacy-migrated"]
+  },
+  {
+    id: "promise-all-rate-limited",
+    bundle: "typescript-async",
+    rule: "parallel-and-dependencies",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "mixed",
+    prompt:
+      "We have a nightly job that fetches profile data for ~5000 users from a third-party API. We do `Promise.all(userIds.map(fetchProfile))`. Half the requests now fail with 429 since they tightened the limits. What should we do?",
+    expectedPrimary: "typescript-async",
+    expectedSecondary: ["typescript-error-handling"],
+    must: [
+      "Recommends bounded concurrency (p-limit, p-map, or batch-of-N) instead of an unbounded Promise.all burst",
+      "Mentions honoring Retry-After and the documented rate limit",
+      "Mentions classifying 429 as retryable so the retry layer behaves correctly"
+    ],
+    mustNot: [
+      "Recommends dropping to fully sequential processing as the fix"
+    ],
+    tags: ["bounded-concurrency", "rate-limit", "legacy-migrated"]
+  },
+  {
+    id: "fetch-without-abort",
+    bundle: "typescript-async",
+    rule: "cancellation-and-abort",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "mixed",
+    prompt:
+      "In a React component I do `useEffect(() => { fetch('/api/users/' + id).then(r => r.json()).then(setUser) }, [id])`. Sometimes the user state shows the wrong user briefly when navigating quickly. Why?",
+    expectedPrimary: "typescript-async",
+    must: [
+      "Identifies the race: a stale fetch resolves after a newer one and overwrites state",
+      "Recommends AbortController in the effect with abort on cleanup",
+      "Mentions AbortError must not be treated as a real failure"
+    ],
+    mustNot: [
+      "Offers only a stale-check guard (if currentId === id) as the primary fix"
+    ],
+    tags: ["abort", "race-condition", "react", "legacy-migrated"]
+  },
+  {
+    id: "sigterm-mid-request",
+    bundle: "typescript-async",
+    rule: "process-lifecycle",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "mixed",
+    prompt:
+      "Our Node.js HTTP server in Kubernetes occasionally returns 502 to clients during deploys. We did not set up any signal handler. What changes should we make?",
+    expectedPrimary: "typescript-async",
+    expectedSecondary: ["typescript-observability"],
+    must: [
+      "Recommends a SIGTERM handler that drains in-flight requests, then exits",
+      "Says readiness should flip to not-ready before draining so new traffic stops arriving",
+      "Mentions a hard exit deadline shorter than the platform grace period",
+      "Mentions flushing observability before exit"
+    ],
+    mustNot: [
+      "Recommends only increasing terminationGracePeriodSeconds"
+    ],
+    tags: ["sigterm", "graceful-shutdown", "kubernetes", "legacy-migrated"]
   }
 ] satisfies EvalScenario[];
 
