@@ -11,37 +11,17 @@ references: [OpenTelemetry Specification, Distributed Tracing (Dapper)]
 Decision: Use tracing for request/operation paths and meaningful sub-operations from the start, but keep OpenTelemetry, X-Ray, exporters, and vendor APIs behind an observability adapter or framework edge.
 
 Use when:
-- A request crosses handlers, modules, queues, workers, providers, or services.
-- Code adds OpenTelemetry, AWS X-Ray, ADOT, tracer providers, exporters, spans, or context propagation.
-- Behavior needs branch/path visibility over time, not just one log line.
-- External calls, retries, fallbacks, or provider choices need correlation.
-- Owned code imports vendor tracing SDKs directly.
-
-Start here:
-- For small apps, create one observability capability with `logger` and optional `tracer` and pass it where useful.
-- Initialize SDK/exporters at app startup, framework entrypoint, worker bootstrap, or composition root.
-
-Escalate when:
-- Multiple modules need trace correlation.
-- External calls need parent/child spans.
-- Branch decisions need timestamped span events.
-- The app must switch exporters/backends, such as console, OTLP collector, AWS X-Ray, or ADOT.
-- Libraries/packages should emit telemetry without owning SDK initialization.
-
-Complexity ladder:
-1. Structured logs with request/correlation ID.
-2. Observability capability passed inward: `{ logger, tracer }`.
-3. OpenTelemetry API behind a local adapter; SDK/exporter initialized once at the edge.
-4. Span events for meaningful branch decisions inside an operation.
-5. Exporter/backend adapter for OTLP, OpenTelemetry Collector, AWS X-Ray/ADOT, or test exporters.
-6. Sampling/resource/semantic-convention policy owned by app bootstrap.
+- A request crosses handlers, modules, queues, workers, providers, or services and needs trace correlation.
+- Code adds OpenTelemetry, X-Ray, ADOT, tracer providers, exporters, spans, or context propagation, or the app must switch exporters/backends (console, OTLP collector, X-Ray/ADOT).
+- Behavior needs branch/path visibility over time — not just one log line — via timestamped span events.
+- External calls, retries, fallbacks, or provider choices need parent/child span correlation.
+- Owned code imports vendor tracing SDKs directly, or a library/package needs to emit telemetry without owning SDK initialization.
 
 Do:
-- Name spans as stable operations, not dynamic values.
-- Use attributes for stable metadata and span events for meaningful timestamped branch decisions.
+- Start with one observability capability (`logger` + optional `tracer`) passed where useful, with SDK/exporters initialized once at app startup, framework entrypoint, worker bootstrap, or composition root; scale up through a local adapter around OpenTelemetry, span events for branch decisions, and an exporter/backend adapter (OTLP/Collector/X-Ray/ADOT) with sampling/semantic-convention policy owned by bootstrap as needs grow.
+- Name spans as stable operations, not dynamic values; use attributes for stable metadata and span events for meaningful timestamped branch decisions.
 - Propagate context across async boundaries, queues, workers, and outbound calls.
-- Prefer OpenTelemetry concepts/API inside adapters; keep X-Ray/exporter specifics at the edge.
-- In libraries, depend on a small local observability port or OpenTelemetry API only; do not initialize SDK/exporters.
+- Prefer OpenTelemetry concepts/API inside adapters, keeping X-Ray/exporter specifics at the edge; in libraries, depend on a small local observability port or the OpenTelemetry API only and do not initialize SDK/exporters.
 - Coordinate with redaction before adding span attributes or events.
 
 Avoid:
@@ -65,51 +45,31 @@ import AWSXRay from "aws-xray-sdk";
 
 export async function sendReceipt(order: Order) {
   const segment = AWSXRay.getSegment()?.addNewSubsegment("sendReceipt");
-  segment?.addAnnotation("orderId", order.id);
   await sendEmail(order.email);
   segment?.close();
 }
 ```
 
-Good: owned code depends on a small observability capability.
+Good: owned code depends on a small observability capability; vendor setup stays in a bootstrap adapter.
 
 ```ts
-type Observability = {
-  logger: Logger;
-  tracer: {
-    span<T>(name: string, fn: () => Promise<T>): Promise<T>;
-    event(name: string, attributes?: Record<string, string | number | boolean>): void;
-  };
-};
+type Observability = { logger: Logger; tracer: Tracer /* span(name, fn), event(name, attrs) */ };
 
 export function makeSendReceipt({ mailer, obs }: { mailer: Mailer; obs: Observability }) {
   return (order: Order) =>
     obs.tracer.span("receipt.send", async () => {
       if (!order.email) {
         obs.tracer.event("receipt.skipped", { reason: "missing_email" });
-        obs.logger.warn("receipt_delivery_skipped", { reason: "missing_email", orderId: order.id });
         return;
       }
-
       await mailer.send(order.email);
       obs.tracer.event("receipt.sent", { provider: "ses" });
     });
 }
 ```
 
-Good: vendor/OpenTelemetry setup stays at the edge.
-
-```ts
-export function makeObservability(config: ObservabilityConfig): Observability {
-  const tracer = makeOpenTelemetryTracer({ exporter: config.exporter });
-  const logger = makeStructuredLogger({ redact: redactTelemetryFields });
-  return { tracer, logger };
-}
-```
-
 Verify:
-- Search for OpenTelemetry/X-Ray/exporter imports outside observability adapters or bootstrap files.
+- Search for OpenTelemetry/X-Ray/exporter imports outside observability adapters or bootstrap files, and confirm SDK/exporter lifecycle is owned by the composition root/framework bootstrap, not behavior modules.
 - Check important request paths have stable span names or structured logs.
 - Check branch decisions are span events or logs with reason codes.
 - Check attributes are safe, bounded, and low-cardinality unless explicitly justified.
-- Check SDK/exporter lifecycle is owned by composition root/framework bootstrap, not behavior modules.

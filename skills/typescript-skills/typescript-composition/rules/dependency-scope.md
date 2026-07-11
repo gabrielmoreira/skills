@@ -13,27 +13,11 @@ Decision: Lifecycle, cache, singleton, pool, and request-scope policy must be ex
 Use when:
 - Code adds a singleton, module-level cache, pool, memoized client, or request-scoped object.
 - A dependency includes credentials, tenant, user, request, transaction, or cleanup state.
-- Tests leak state between cases.
-- Performance optimization changes dependency lifetime.
-
-Start here:
-- Use a ready dependency with the narrowest lifetime that matches its captured data.
-
-Escalate when:
-- Construction is expensive and safe to reuse.
-- Dependency input includes tenant, user, request, transaction, or credential scope.
-- A cache needs invalidation, bounds, or cleanup.
-- Tests reveal state leakage or module-reset hacks.
-
-Complexity ladder:
-1. Per-call local value for cheap stateless work.
-2. App-scoped ready instance for safe clients/constants.
-3. Request/tenant/transaction-scoped factory for scoped data.
-4. Explicit cache/pool with owner, bounds, invalidation, and cleanup.
-5. Container-managed lifecycle only when framework/plugin pressure earns it.
+- Tests leak state between cases, or performance optimization changes dependency lifetime.
+- Construction is expensive and safe to reuse, or a cache needs invalidation, bounds, or cleanup.
 
 Do:
-- Choose scope deliberately: app, worker, request, tenant, transaction, or call.
+- Use a ready dependency with the narrowest lifetime that matches its captured data; choose scope deliberately (app, worker, request, tenant, transaction, or call).
 - Create long-lived dependencies at the edge and pass them inward.
 - Keep request/tenant/user state out of app-singleton dependencies.
 - Expose cleanup when dependencies own resources.
@@ -51,49 +35,22 @@ Exceptions:
 
 Example:
 
-Bad: tenant state captured in an app singleton.
-
 ```ts
+// Bad: tenant state captured in an app singleton.
 let cachedClient: Client | undefined;
-
 export function getClient(tenantId: string) {
   cachedClient ??= makeClient({ tenantId });
   return cachedClient;
 }
-```
 
-Good: scope follows captured data.
-
-```ts
+// Good: scope follows captured data.
 export function makeTenantDependencies(tenantId: string) {
-  return {
-    client: makeClient({ tenantId }),
-  };
+  return { client: makeClient({ tenantId }) };
 }
 ```
 
-Good: request-scoped dependencies built per-request at the handler edge.
+For lazy/tiered scope (app singletons → app infra → request-scoped via `memoizeByReference`), see `references/patterns/layered-resolve.md`. Reference material; escalate from the canonical default above only when scope tiers earn it.
 
-```ts
-async function handleCreateOrder(req: ParsedRequest, appDeps: AppDeps) {
-  const requestDeps = makeRequestDeps(appDeps, {
-    correlationId: req.correlationId,
-    userId: req.userId,
-  });
-  return createOrder(req.body, requestDeps);
-}
-
-function makeRequestDeps(app: AppDeps, ctx: RequestContext) {
-  return {
-    db: app.db,
-    logger: app.logger.child({ correlationId: ctx.correlationId }),
-    userId: ctx.userId,
-  };
-}
-```
-
-
-For lazy/tiered scope (app singletons → app infra → request-scoped via `memoizeByReference`), see `references/patterns/layered-resolve.md`. Reference material; escalate from the canonical default in `composition-root.md` only when scope tiers earn it.
 Verify:
 - State the dependency scope in one phrase.
 - Check whether dependency input includes tenant/user/request/transaction data.

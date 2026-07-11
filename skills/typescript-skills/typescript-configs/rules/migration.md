@@ -8,23 +8,13 @@ references: [Strangler Fig, Branch by Abstraction]
 
 # Config Migration
 
-Decision: Migrate legacy config reads through explicit seams that preserve observed behavior first, then parse and cut over callers without speculatively changing runtime assumptions.
+Decision: Migrate legacy config reads through explicit seams that preserve observed behavior first, then parse and cut over callers without speculatively changing runtime assumptions. This rule owns the config-specific ladder; the general cutover policy (clean cutover by default, staged only when bounded) lives in `../../typescript-coding-standards/rules/cutovers.md`.
 
 Use when:
-- Env reads are scattered across feature modules.
-- Legacy behavior is uncertain or untested.
-- Existing defaults are unclear or unsafe.
-- Stage/env loading semantics are inconsistent but still active runtime reality.
+- Env reads are scattered across feature modules, or the same env/config concern appears in several runtime paths.
+- Legacy behavior, defaults, or stage/env loading semantics are uncertain, untested, unsafe, or inconsistent but still active runtime reality.
 - A big-bang config rewrite would change behavior accidentally.
-
-Start here:
-- Preserve current runtime assumptions first, then introduce a seam around the smallest boundary you are changing.
-
-Escalate when:
-- The same env/config concern appears in several runtime paths.
-- A default or stage-derived behavior is risky but production compatibility matters.
-- Multiple modules need the same typed config decision.
-- Current behavior depends on globals, env loading, or hidden imports that need characterization.
+- Multiple modules need the same typed config decision, or current behavior depends on globals, env loading, or hidden imports that need characterization.
 
 Complexity ladder:
 1. Characterization test for current behavior.
@@ -34,20 +24,16 @@ Complexity ladder:
 5. Remove old env reads and compatibility aliases after cutover.
 
 Do:
-- Characterize current behavior before changing semantics.
-- Keep current stage/runtime assumptions stable unless the task explicitly changes them.
-- Introduce a seam that centralizes reads without changing behavior.
-- Add parsing and typed exposure behind the seam.
+- Characterize current behavior before changing semantics; keep current stage/runtime assumptions stable unless the task explicitly changes them.
+- Introduce a seam that centralizes reads without changing behavior, then add parsing and typed exposure behind the seam.
 - Move callers to typed config one boundary at a time.
 - Remove old env reads and compatibility aliases after cutover.
 
 Avoid:
 - Rewriting all config and behavior in one untested step.
-- Sneaking requiredness/default changes into a mechanical migration.
-- Preserving permissive legacy behavior without labeling it temporary.
+- Sneaking requiredness/default changes into a mechanical migration, or preserving permissive legacy behavior without labeling it temporary.
 - Leaving both raw env reads and typed config as permanent paths.
-- Introducing a new global stage model speculatively.
-- Renaming or reinterpreting existing stage semantics casually.
+- Introducing a new global stage model speculatively, or renaming/reinterpreting existing stage semantics casually.
 
 Exceptions:
 - If the affected code is fully owned, small, and covered, prefer a clean cutover.

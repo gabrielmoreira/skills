@@ -43,10 +43,10 @@ Common bypass attempts and rebuttals:
 - "It's not a secret, it's a public AWS/SQS/queue URL": environment-specific coordinates are still explicit inputs. Public ≠ shared between stages. Hard-coding `sqs://prod-queue` is one fat-finger away from staging-to-prod data crossover.
 - "We've used this default for years, it's fine": defaults are production policy, not history. The day prod silently routes to the dev endpoint is the day the default's cost shows up. Required values pay nothing in production and prevent the failure entirely.
 
-First-line: secret values do not enter the typed config object. Config carries the *pointer* (ARN, secret name, env var name); the secret value is fetched later in startup/bootstrap, redacted in any log path. See `rules/redaction.md`.
+Redaction is the second line of defense once a secret is in memory. See `rules/redaction.md`.
+
 Verify:
 - Search for default credentials, sample keys, localhost URLs, sandbox endpoints, private IPs, and secret-looking literals.
 - Check parsers expose source pointers or explicit coordinates, not fetched secret values.
-- Check missing secrets and environment-specific coordinates fail fast.
-- Check secret loading errors are distinct from config parse errors.
+- Check missing secrets and environment-specific coordinates fail fast, with secret loading errors distinct from config parse errors.
 - Check logs/errors redact secret values and sensitive pointers.

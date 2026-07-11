@@ -69,9 +69,9 @@ Use it when the explanation itself needs to be easier to start reading.
 
 ### `typescript-skills`
 
-A TypeScript skill set with useful material, still denser than the direction of this repo.
+A TypeScript skill set organized as a router plus nine focused bundles (coding standards, boundaries, composition, configs, async, error handling, observability, security, testing).
 
-It should keep moving toward fewer concepts at once, stronger examples, and more progressive disclosure.
+Each rule is compact and operational: Decision, Use when, Do, Avoid, one example, Verify. Structural invariants and behavioral evals live in `skills/typescript-skills/evals/`; authoring history lives in `docs/typescript-skills/`.
 
 ## In short
 

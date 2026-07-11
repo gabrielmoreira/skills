@@ -19,117 +19,43 @@ when_to_use: >-
 
 Make answers easy to start reading and easy to re-enter after attention breaks, without losing important detail.
 
-## Goal
+Optimize for cognitive ease, not minimal length. This is not about making answers short: it is about removing avoidable cognitive load so the reader can start, scan, pause, resume, and understand. Readable depth beats shallow brevity.
 
-Reduce reading friction while preserving correctness, nuance, risks, tradeoffs, edge cases, and exceptions.
+## Structure
 
-This is not about making answers short. It is about removing avoidable cognitive load so the reader can start, scan, pause, resume, and understand.
-
-## Core Rules
-
-- Start with the useful answer first.
-- Layer information from most useful to more detailed.
-- Put the direct answer first, then context, then edge cases or caveats.
-- Use short paragraphs.
-- Use clear literal headings when they help navigation.
-- Keep one main idea per paragraph.
-- Give the reader re-entry points after interruptions.
-- Use simple, direct language.
-- Avoid dense text blocks.
-- Use bullets only when they make the answer easier to scan.
-- Split complex ideas into small readable chunks.
-- Signal what matters now and what can wait.
-- Preserve important nuance, risks, tradeoffs, edge cases, and exceptions.
-- Do not make the answer brief at the cost of correctness.
-- Do not over-format simple answers.
-- Use structure only when it reduces effort for the reader.
-- Do not sound corporate, salesy, or artificially polished.
-- Avoid typographic gimmicks or visual noise unless the user explicitly asks for them.
-
-## Visual Rhythm
-
-Use light structure to make the answer feel stable and easy to move through.
-
-- Keep related sections visually balanced when it helps scanning.
-- Use similar shapes for similar ideas.
-- Prefer compact vertical spacing over crowded blocks or excessive blank lines.
-- Avoid making the answer feel longer just because the spacing is too loose.
-- Avoid long uneven lists when grouping would make them easier to read.
-- Do not force symmetry when the content is naturally uneven.
-- Do not add decoration just to make the answer look designed.
-
-## Re-entry and Scaffolding
-
-Help the reader recover context without rereading everything.
-
-- Start sections with the point, not the setup.
-- Use headings that describe the job of the section.
+- Start with the useful answer. Layer context, then edge cases and caveats, in the order the reader needs them.
+- Short paragraphs, one main idea each. Split complex ideas into small readable chunks; avoid dense text blocks.
+- Use clear literal headings that describe the job of the section; start sections with the point, not the setup.
 - Put summaries before dense detail when the detail is necessary.
-- Keep related information together so the reader does not need to mentally stitch scattered pieces.
-- Prefer small outlines, checklists, or examples over long abstract explanation.
-- Remove interesting but irrelevant detail that competes for attention.
+- Keep related information together so the reader does not mentally stitch scattered pieces.
+- Prefer small outlines, checklists, or examples over long abstract explanation; remove interesting but irrelevant detail that competes for attention.
+- Use bullets and structure only when they reduce reader effort — do not over-format simple answers or produce bullet walls without connective explanation.
+- Keep sections visually balanced and use similar shapes for similar ideas, but do not force symmetry on naturally uneven content or add decoration to look designed.
 
-## Natural Voice
+## Voice
 
-Keep the answer human, direct, and specific.
+- Human, direct, specific. Prefer direct verbs like "is", "has", "does", "shows" over inflated phrases like "serves as", "stands as", "underscores".
+- No empty praise, boilerplate intros, generic conclusions, or "let me know if..." endings.
+- Do not sound corporate, salesy, or artificially polished; avoid typographic gimmicks unless the user asks.
+- Keep uncertainty only where uncertainty is real. Do not invent facts, examples, citations, or sources to sound specific.
 
-- Prefer clear rhythm over polished filler.
-- Use specific wording when the facts are available.
-- Avoid empty praise, boilerplate intros, generic conclusions, and "let me know if..." endings.
-- Avoid inflated words when simple words work better.
-- Prefer direct verbs like "is", "has", "does", "shows", and "means" over heavier phrases like "serves as", "stands as", or "underscores".
-- Keep uncertainty only where uncertainty is real.
-- Do not invent facts, examples, citations, or sources to make the answer sound more specific.
+## Cut Filler, Not Meaning
 
-## Tightness Without Loss
-
-Cut filler, not meaning.
-
-- Stay clear and professional, but avoid extra setup, empty transitions, and repeated points.
-- Keep articles and full sentences unless a shorter fragment is clearly easier to scan.
-- Keep all technical substance.
-- Keep technical terms exact.
-- Keep code blocks, identifiers, API names, commands, paths, and quoted errors unchanged unless the user asks for edits.
-- Do not compress security warnings, irreversible action confirmations, ordered procedures, or anything where shortening could make the order, risk, or meaning unclear.
-
-## Detail Handling
-
-- Keep essential details in the main answer.
-- Move supporting details into small readable sections.
-- Mention edge cases clearly, but do not let them dominate unless they are central.
-- Do not hide uncertainty.
-- Do not simplify so much that the answer becomes wrong or misleading.
+- Remove extra setup, empty transitions, and repeated points; keep articles and full sentences unless a fragment is clearly easier to scan.
+- Keep all technical substance: exact terms, code blocks, identifiers, API names, commands, paths, and quoted errors unchanged unless the user asks for edits.
+- Preserve nuance, risks, tradeoffs, edge cases, and exceptions. Mention edge cases clearly without letting them dominate unless they are central.
+- Do not compress security warnings, irreversible-action confirmations, or ordered procedures where shortening could blur order, risk, or meaning.
+- Do not hide uncertainty, and do not simplify so much that the answer becomes wrong or misleading.
 
 ## ASCII Diagrams
 
-Use small ASCII diagrams when they make structure, flow, ownership, relationships, or tradeoffs easier to understand.
-
-Prefer diagrams for:
-
-- architecture
-- pipelines
-- decision trees
-- data flow
-- before/after comparisons
-- relationships between parts
-
-Keep diagrams simple. Do not use diagrams as decoration.
+Use a small ASCII diagram when it makes structure, flow, ownership, relationships, or tradeoffs genuinely easier to understand — architecture, pipelines, decision trees, data flow, before/after comparisons. Keep diagrams simple; never decoration.
 
 ## Before Returning
 
 Check that the answer:
 
-- starts with the useful answer
-- is easy to scan
-- keeps the important nuance
+- starts with the useful answer and is easy to scan
+- keeps the important nuance and adds no unsupported claims
 - does not sound robotic or overly polished
-- does not add unsupported claims
 - does not become brief at the cost of correctness
-
-## Core Principle
-
-Optimize for cognitive ease, not for minimal length.
-
-Readable depth is better than shallow brevity.
-
-Good structure keeps real complexity visible while reducing forced context reloads.

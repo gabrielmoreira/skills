@@ -11,32 +11,17 @@ references: [Dependency Injection for Testability]
 Decision: Inject config into tests when the module API allows it. Mutate `process.env` only for the config-reading boundary and restore it completely.
 
 Use when:
-- Tests set `process.env` to exercise ordinary feature behavior.
+- Tests set `process.env` to exercise ordinary feature behavior, or several tests repeat env setup for behavior that should accept config instead.
 - Module tests fail depending on global environment order.
-- Config is read during import time.
-- A config parser or config boundary is under test.
-
-Start here:
-- Pass typed config directly to the unit under test.
-
-Escalate when:
-- The test is specifically about reading raw env/config input.
-- Legacy import-time config reads cannot be refactored before characterization.
-- Several tests repeat env setup for behavior that should accept config.
-
-Complexity ladder:
-1. Inject typed config directly.
-2. Test config parser with raw env object argument.
-3. Mutate `process.env` only inside an isolated config-boundary test helper.
-4. Use module reset only for legacy import-time reads during migration.
-5. Refactor toward explicit config injection.
+- Config is read during import time, including legacy import-time reads that cannot yet be refactored.
+- A config parser or config boundary is under test, specifically to exercise raw env/config input.
 
 Do:
-- Pass typed config directly to factories, constructors, or functions.
-- Test the config-reading boundary separately.
+- Pass typed config directly to the unit under test — factories, constructors, or functions.
+- Scale from direct config injection, to testing the config parser with a raw env object, to isolated `process.env` mutation only inside a config-boundary test helper, to module-cache reset only for legacy import-time reads during migration — then refactor toward explicit injection.
+- Test the config-reading boundary separately from ordinary behavior.
 - If env mutation is necessary, snapshot and restore env around each test.
 - Avoid import-time config reads; prefer explicit factory calls.
-- Reset module cache only when testing legacy import-time reads.
 
 Avoid:
 - Process-wide env mutation for normal behavior tests.

@@ -18,15 +18,13 @@ Use when:
 
 Do:
 - Boot the root with explicit test config.
-- Assert public capabilities exist or a small behavior works.
-- Assert provider selection only when selection is an intentional contract.
+- Assert public capabilities exist or a small behavior works; assert provider selection only when selection is an intentional contract.
 - Keep detailed behavior tests in the modules that own behavior.
 - Test handler behavior through the handler factory with explicit deps — no bootstrap import needed.
 - Test scope memoization (same reference = same instance) only when testing bootstrap infra itself.
 
 Avoid:
-- Snapshotting entire containers or dependency graphs.
-- Testing every edge in the wiring graph.
+- Snapshotting entire containers or dependency graphs, or testing every edge in the wiring graph.
 - Asserting private field names or constructor order.
 - Using composition tests to compensate for untested behavior modules.
 - Dynamic-importing bootstrap modules (`await import(...)`) with `vi.resetModules()` to test handler behavior — that is a bootstrap infra test, not a handler test.
@@ -34,7 +32,6 @@ Avoid:
 Exceptions:
 - Plugin registries, public DI containers, or generated wiring may make graph shape a contract.
 - Critical startup safety checks may deserve explicit tests for a required dependency being present.
-
 
 Example:
 
@@ -59,6 +56,7 @@ it("returns the same usecase for the same request reference", () => {
   expect(resolveCreateNoteUsecase(request)).toBe(resolveCreateNoteUsecase(request));
 });
 ```
+
 Verify:
 - Check the test would survive harmless refactors of private wiring.
 - Check failure would indicate a real startup or public contract problem.

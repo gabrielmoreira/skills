@@ -5,19 +5,17 @@ description: Use when TypeScript code needs to express failure with a canonical 
 
 # TypeScript Error Handling
 
-Failure is part of the design, not an afterthought. Start by defining a canonical, app-owned error model. Then classify failures, structure attachments, choose a propagation style (`throw` or `Result`), and project errors safely at boundaries.
+Failure is part of the design, not an afterthought. Define a canonical, app-owned error model first; then classify failures, structure attachments, choose a propagation style (`throw` or `Result`), and project errors safely at boundaries.
 
 ## Project Decision (read first)
 
-Before writing new error-handling code, define the project's canonical error semantics. The error contract should stay stable even if the project later chooses a different propagation style.
-
 | Decision | Guidance |
 | --- | --- |
-| **Canonical contract** | Define one shared `AppErrorData` shape first. Root fields describe the app-owned semantic contract; attachments carry context, normalized cause data, retry, protocol projection, and metadata. Runtime `cause` stays available for internal diagnostics, but it is not the canonical serialized contract. |
-| **Propagation style** | Then pick one default style inside each package: class-based (`throw`) or Result-based. Mixing both styles casually inside the same package leads to inconsistency. |
-| **Runtime wrappers** | Prefer family wrappers such as `AppError`, `BusinessError`, `InfraError`, `SecurityError`, and `ValidationError`. Specific subclasses are allowed when they add local value, but they are not the primary cross-package contract. |
+| **Canonical contract** | One shared `AppErrorData` shape. Root fields (`kind`, `code`, `message`, `details`) are the app-owned semantic contract; `context`, `normalizedCause`, `metadata`, `retry`, `http` are structured attachments. Runtime `cause` stays available for in-process diagnostics but is not the serialized contract. |
+| **Propagation style** | One default style per package: class-based (`throw`) or Result-based. Mixing both casually in the same package leads to inconsistency. |
+| **Runtime wrappers** | Prefer family wrappers (`AppError`, `BusinessError`, `InfraError`, `SecurityError`, `ValidationError`). Specific subclasses are allowed for local value, but stable `code` plus canonical error data is the cross-package contract — not class identity. |
 
-The durable shared contract is the canonical error data plus stable `code`. Class identity is useful in-process, but it should not be the only thing another package must know to understand the error.
+Hierarchy by app size: simple script → plain `Error` or a couple of local wrappers; mid app → family wrappers in `core/errors`; large multi-package app → same family wrappers in a shared `core/errors` package with no reverse dependency. For a new mid-or-larger app, start with the family wrappers on day one.
 
 ## Suggested progression
 
@@ -27,45 +25,29 @@ The durable shared contract is the canonical error data plus stable `code`. Clas
 4. Choose how failures propagate — `rules/throw-vs-result.md`
 5. Project errors safely at boundaries — `rules/error-boundary-contract.md`
 
-## Hierarchy ladder by app size
-
-| App scale | Suggested runtime wrappers |
-| --- | --- |
-| Simple script / single-file tool | Plain `Error` or a couple of local wrappers if needed |
-| Mid app (multiple features, one team) | `AppError` → `BusinessError`, `InfraError` (+ `ValidationError` / `SecurityError`) in `core/errors` |
-| Large app (multi-team, multi-package) | Same family wrappers in a shared `core/errors` package with no reverse dependency |
-
-For a new mid-or-larger app, start with the family wrappers on day one. They solve most runtime needs without forcing every feature into a subclass-per-code hierarchy.
-
 ## Agent Quick Path
 
 | If you see... | Read |
 | --- | --- |
-| starting a new app, no error types yet, no shared conventions | `rules/define-app-error-semantics-early.md` |
+| starting a new app, no error types yet; factory/helper keeps losing required metadata/context | `rules/define-app-error-semantics-early.md` |
 | function that may fail, choosing throw vs return | `rules/throw-vs-result.md` |
-| caller asking "should I retry this?", retryable vs caller fault, generic `catch (e)` swallowing, silent fallback after an error | `rules/error-classification.md` |
-| missing `errorId`, no `code`, support cannot find the request, log/response cannot be correlated | `rules/error-shape-and-metadata.md` |
-| unclear ownership of `details`, `context`, `normalizedCause`, `metadata`, or runtime `cause` | `rules/error-shape-and-metadata.md` |
-| error factory/helper keeps losing request IDs, operations, or other important enrichments because callers forget later composition steps | `rules/define-app-error-semantics-early.md` |
-| HTTP/RPC handler returning provider/library error shape directly to client | `rules/error-boundary-contract.md` |
-| third-party SDK / library error reaching the client or an unfiltered log | `rules/error-boundary-contract.md` |
+| "should I retry this?", retryable vs caller fault, generic `catch (e)` swallowing, silent fallback | `rules/error-classification.md` |
+| missing `errorId`/`code`, log/response cannot be correlated; unclear ownership of `details`/`context`/`normalizedCause`/`metadata`/runtime `cause` | `rules/error-shape-and-metadata.md` |
+| handler returning provider/library error shape to client or unfiltered log | `rules/error-boundary-contract.md` |
 
 ## Owns
 
-- Guidance for defining the project's canonical error semantics early.
-- Guidance for choosing one default propagation style per package: class-based or Result-based.
-- The family-level runtime wrappers and when to use specific subclasses.
-- Error classification (`kind`, business vs infra vs security vs validation, retryability).
-- Error shape and structured attachments: semantic root, context, normalized cause data, metadata, retry, protocol projections, and runtime-cause retention guidance.
+- Canonical error semantics, family wrappers, and propagation-style choice.
+- Error classification (`kind`, business/infra/security/validation, retryability).
+- Error shape and structured attachments; runtime-cause retention guidance.
 - Boundary translation and projection into transport-level responses.
 
 ## Does Not Own
 
-- Retry mechanics (backoff, jitter, max attempts) — see `../typescript-async/rules/retry-and-backoff.md`.
-- Logging implementation and redaction mechanics — see `../typescript-observability/` and `../typescript-security/rules/redaction.md`.
-- Type narrowing mechanics for `catch (e: unknown)` — see `../typescript-coding-standards/rules/type-narrowing-over-assertion.md`.
-- Framework-specific HTTP/REST/GraphQL error hooks beyond the translator contract.
+- Retry mechanics (backoff, jitter, caps) — `../typescript-async/rules/retry-and-backoff.md`.
+- Logging/redaction mechanics — `../typescript-observability/` and `../typescript-security/rules/redaction.md`.
+- Narrowing `catch (e: unknown)` — `../typescript-coding-standards/rules/type-narrowing-over-assertion.md`.
 
 ## Default
 
-For a new mid-sized app: define one canonical `AppErrorData` shape first, then default to class-based propagation with family wrappers in `core/errors`. Use stable `code` plus canonical error data as the shared contract. Add `context`, `normalizedCause`, `metadata`, `retry`, and `http` as structured attachments when needed. Keep runtime `cause` for internal diagnostics when useful, keep `normalizedCause` in the canonical shape, prefer object-based enrichment helpers or factory options over nested helper chains so important enrichment fields stay discoverable, make always-needed enrichment fields explicit at the helper/factory boundary instead of leaving everything optional forever, translate once at the boundary, log the full internal diagnostic shape, and keep fallback/swallow decisions observable when an error changes the control flow.
+Define one canonical `AppErrorData` shape, default to class-based propagation with family wrappers in `core/errors`, use stable `code` plus canonical data as the shared contract, translate once at the boundary, and keep fallback/swallow decisions observable. Make always-needed enrichment fields explicit in factory/helper signatures instead of optional-everything.

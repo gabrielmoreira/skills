@@ -12,40 +12,19 @@ Decision: Config parsing validates shape and local policy. External dependency c
 
 Use when:
 - Config parsing opens files, calls network, checks cloud resources, pings databases, or fetches secrets.
-- A schema mixes raw value parsing with runtime availability checks.
-- Startup failures are hard to classify as parse errors vs dependency failures.
-- Runtime code reconstructs bucket names, table names, ARNs, URLs, secret names, or SSM paths from stage strings.
-
-Start here:
-- Keep the parser pure: turn raw values into typed config and reject invalid local shape.
-- Parse explicit resource pointers, names, paths, and URLs as typed config; do not verify live resources in the parser.
-
-Escalate when:
-- Startup must prove files, credentials, network resources, queues, buckets, databases, or secret permissions exist.
-- Operators need dependency failures reported separately from invalid config.
-- Verification is slow, flaky, permissioned, or retryable.
-- Application code reconstructs important resource identity from environment/stage strings instead of receiving explicit pointers.
-
-Complexity ladder:
-1. Pure parser validates shape and local invariants.
-2. Explicit resource pointers pass through typed config: bucket name, table name, ARN, URL, secret name, SSM path, certificate path.
-3. Startup calls `verifyConfigResources(config)` after parsing.
-4. Integration test covers verification against controlled resources.
-5. Health/readiness checks report dependency availability separately from parse success.
+- A schema mixes raw value parsing with runtime availability checks, making startup failures hard to classify as parse errors vs dependency failures.
+- Runtime code reconstructs bucket names, table names, ARNs, URLs, secret names, or SSM paths from stage strings instead of receiving explicit resource pointers.
+- Verification is slow, flaky, permissioned, or retryable, and operators need dependency failures reported separately from invalid config.
 
 Do:
-- Validate syntax, type, enum membership, requiredness, local invariants, and parseable URLs/paths.
-- Verify existence, permissions, connectivity, credentials, and remote resources after parsing.
-- Name verification functions explicitly, such as `verifyDependencies` or `verifyConfigResources`.
-- Keep invalid config distinct from unavailable dependency.
-- Prefer explicit resource pointers in typed config over rebuilding important resource identity later.
+- Keep the parser pure: validate syntax, type, enum membership, requiredness, local invariants, and parseable URLs/paths; parse explicit resource pointers (bucket name, table name, ARN, URL, secret name, SSM path, certificate path) as typed config without verifying live resources.
+- Verify existence, permissions, connectivity, credentials, and remote resources after parsing, in explicitly named functions such as `verifyDependencies` or `verifyConfigResources`.
+- Keep invalid config distinct from unavailable dependency; health/readiness checks can report dependency availability separately from parse success.
 
 Avoid:
-- Network, filesystem, database, or cloud calls inside pure config parsing.
-- Fetching secret values in the config parser.
-- Retrying or fallback behavior inside schema parsing.
-- Hiding dependency failures as config defaults.
-- Reconstructing important resource identifiers from stage strings in application code unless that convention is already entrenched and the task is only maintaining it.
+- Network, filesystem, database, or cloud calls inside pure config parsing, including fetching secret values.
+- Retrying or fallback behavior inside schema parsing, or hiding dependency failures as config defaults.
+- Reconstructing important resource identifiers from stage strings in application code, unless an already-entrenched convention is only being maintained, not deepened.
 
 Exceptions:
 - Synchronous local parsing of a literal string path/URL is validation; checking that the target exists is verification.
@@ -54,20 +33,16 @@ Exceptions:
 
 Example:
 
-Bad: parser does I/O.
-
 ```ts
+// Bad: parser does I/O.
 export async function parseConfig(env: NodeJS.ProcessEnv) {
   const bucket = env.REPORT_BUCKET;
   if (!bucket) throw new Error("REPORT_BUCKET is required");
   await s3.headBucket({ Bucket: bucket });
   return { bucket };
 }
-```
 
-Good: parse first, verify later.
-
-```ts
+// Good: parse first, verify later, as separate named functions.
 type ReportStorageConfig = { bucket: string };
 
 export function parseReportStorageConfig(env: NodeJS.ProcessEnv): ReportStorageConfig {
@@ -81,19 +56,7 @@ export async function verifyReportStorage(config: ReportStorageConfig) {
 }
 ```
 
-Good: pass explicit resource pointers instead of rebuilding them later.
-
-```ts
-type QueueConfig = { queueUrl: string };
-
-export function parseQueueConfig(env: NodeJS.ProcessEnv): QueueConfig {
-  const queueUrl = env.ORDER_QUEUE_URL;
-  if (!queueUrl) throw new Error("ORDER_QUEUE_URL is required");
-  return { queueUrl };
-}
-```
-
-When stage-conditional logic appears (`stage === "prod" ? ... : ...` selecting resources), stop. Stage is not a behavior decision — see `rules/feature-decisions.md`. Use one explicit env input per environment-specific resource (for example `ORDER_QUEUE_URL` set per environment), and parse a named decision once when behavior really differs.
+When stage-conditional logic appears (`stage === "prod" ? ... : ...` selecting resources), stop — stage is not a behavior decision; see `rules/feature-decisions.md`. Use one explicit env input per environment-specific resource instead, and parse a named decision once when behavior really differs.
 
 Verify:
 - Parser tests run without external resources.

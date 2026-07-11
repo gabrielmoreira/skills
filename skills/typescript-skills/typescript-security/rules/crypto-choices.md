@@ -12,28 +12,14 @@ Decision: Model crypto and security behavior as explicit modes or algorithms, no
 
 Use when:
 - Code adds `secure`, `encrypted`, `useTls`, `verify`, `legacy`, or similar boolean flags.
-- Security behavior changes by environment or mode.
-- Algorithm, key type, signing strategy, token format, or verification policy is implicit.
-- Multiple flags can combine into unclear states.
-
-Start here:
-- If there is one safe production behavior, make it explicit and reject missing/unknown choices.
-
-Escalate when:
-- There are multiple valid algorithms, protocols, key sources, or verification modes.
-- Compatibility mode exists for legacy data or rollout.
-- Test/local mode differs from production mode.
-- More than one boolean would be needed to describe security behavior.
-
-Complexity ladder:
-1. Single explicit production mode.
-2. Discriminated union for supported modes.
-3. Compatibility mode with owner, tests, warning, and removal condition.
-4. Policy object only when several security choices must be versioned together.
+- Security behavior changes by environment or mode, or test/local mode differs from production mode.
+- Algorithm, key type, signing strategy, token format, or verification policy is implicit, or multiple valid algorithms/protocols/key sources exist.
+- Multiple flags can combine into unclear or impossible states.
 
 Do:
-- Use explicit discriminated modes for meaningful security choices.
-- Name algorithms, verification policy, and legacy compatibility deliberately.
+- If there is one safe production behavior, make it explicit and reject missing/unknown choices.
+- Use explicit discriminated modes for meaningful security choices; name algorithms, verification policy, and legacy compatibility deliberately.
+- Scale from a single explicit production mode, to a discriminated union of supported modes, to a documented compatibility mode (owner, tests, warning, removal condition) only when legacy data or rollout needs it.
 - Reject invalid combinations during parsing or construction.
 - Keep insecure/test modes visibly named and bounded.
 

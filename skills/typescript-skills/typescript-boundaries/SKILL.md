@@ -26,6 +26,8 @@ Use this skill when external shapes meet owned code. The goal is to keep foreign
 
 `provider-containment.md` owns vendor SDK / generated / external API client types. `raw-input-to-internal-model.md` owns HTTP request/response/transport shapes, env-like input, webhook payloads, CLI args, untyped JSON. When in doubt: is the type defined by us or by an external runtime contract?
 
+A payload can violate both at once: a webhook body cast to a vendor SDK type (e.g. `req.body as Stripe.Event`) is raw transport input that needs parsing/verification AND a vendor type that should not flow past the handler — parse the input at the edge, then translate the vendor shape to a local event model before business logic sees it.
+
 ## Does Not Own
 
 - Choosing which provider/client to instantiate: use `../typescript-composition/SKILL.md`.

@@ -16,30 +16,16 @@ First line of defense is keeping secret values out of the typed config object in
 
 Use when:
 - Code logs config, headers, auth objects, env, request bodies, provider responses, credentials, tokens, keys, or connection strings.
-- Errors include raw input or config context.
+- Errors include raw input or config context, especially when sensitive objects are nested or reused across error paths.
 - Debug output is added near authentication, crypto, webhooks, or secret loading.
 - A pointer may reveal sensitive account, tenant, environment, or resource data.
-
-Start here:
-- Log only allowlisted safe context instead of logging whole objects.
-
-Escalate when:
-- Sensitive objects are nested or reused across error paths.
-- Multiple modules need the same redaction policy.
-- Pointers may be sensitive depending on account, tenant, environment, or resource naming.
-- Observability spans/logs need meaningful context but may include sensitive fields unless classified first.
-
-Complexity ladder:
-1. Allowlist safe fields at the log callsite.
-2. Small redaction helper for one sensitive object shape.
-3. Shared redaction utility for repeated nested shapes.
-4. Central logging policy only when many modules emit structured sensitive context.
+- Observability spans/logs need meaningful context that may include sensitive fields unless classified first.
 
 Do:
-- Redact by key and by value category.
-- Prefer allowlisted safe fields over blocklisting sensitive names.
+- Log only allowlisted safe fields at the callsite instead of logging whole objects; prefer allowlisting over blocklisting sensitive names.
+- Redact by key and by value category, and redact before constructing the final error/log message.
 - Preserve enough non-sensitive context for debugging.
-- Redact before constructing the final error/log message.
+- Scale from an allowlist at one callsite, to a shared redaction helper for repeated nested shapes, to a central logging policy once many modules emit structured sensitive context.
 - Test redaction for representative secrets and nested objects.
 - Keep redaction policy reusable by observability adapters.
 
@@ -73,7 +59,6 @@ logger.error("secret loading failed", {
 
 Verify:
 - Search for broad stringification/logging near sensitive objects.
-- Confirm tests fail if a representative token/key/password appears in output.
-- Check error paths, not only success paths.
+- Confirm tests fail if a representative token/key/password appears in output, in error paths as well as success paths.
 - Check whether the secret should have been excluded from the in-memory config object in the first place; redaction is the second line of defense, not the first. If the typed config carries the secret value (not a pointer), fix that before adding redaction.
 - Check meaningful logging/tracing still has enough safe context after redaction.

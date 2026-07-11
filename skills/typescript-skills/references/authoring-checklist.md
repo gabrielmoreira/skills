@@ -4,7 +4,7 @@ Use this checklist when creating or editing a TypeScript skill rule.
 
 ## Required Rule Shape
 
-Every canonical rule should be operational: it must tell the agent what to choose, when to choose it, when to stop, and how to verify it.
+Every canonical rule is operational: it tells the agent what to choose, when to choose it, and how to verify it. Say each idea exactly once — no restating the Decision inside Do, no restating Do inside Verify.
 
 ```md
 ---
@@ -12,6 +12,7 @@ id: bundle.rule-name
 owner: bundle-name
 canonical: true
 severity: hard-gate | default | advisory
+references: [recognized sources]
 ---
 
 # Human-readable title
@@ -19,68 +20,35 @@ severity: hard-gate | default | advisory
 Decision: One sentence that chooses the default behavior.
 
 Use when:
-- Deterministic trigger
-- Deterministic trigger
-
-Start here:
-- Smallest honest solution for the first version.
-
-Escalate when:
-- Concrete pressure signal that proves the first version is no longer enough.
-
-Complexity ladder:
-1. First useful form.
-2. Next smallest stronger form.
-3. Higher form only after stronger pressure.
+- Deterministic trigger (include escalation signals here when the right answer changes with scale)
 
 Do:
-- Imperative rule
-- Imperative rule
+- Imperative rule (a compact numbered ladder may appear here when progression IS the rule)
 
 Avoid:
 - Concrete anti-pattern
-- Concrete anti-pattern
 
 Exceptions:
-- Allowed deviation and required evidence
+- Behavior-changing deviation only (omit the section if none)
 
 Example:
-- One small bad/good or start/escalate example when the rule affects code shape.
+- At most one compact example; a wrong-vs-right contrast only when essential. Elide non-essential bodies with `/* ... */`.
 
 Verify:
-- How to prove adherence
+- Max 4 checks not already stated above
 ```
 
-## Complexity Ladder Rule
-
-Minimalism is structure proportional to pressure, not refusal to abstract.
-
-For design rules where the right answer changes as a project grows, include:
-
-- `Start here`: the smallest correct design.
-- `Escalate when`: observable signals that the current form is no longer enough.
-- `Complexity ladder`: the next level, not the maximum framework.
-- `Example`: one small code shape that shows the first level and the escalation trigger.
-- `Application shape`: examples should make clear whether they target a simple script, medium modular app, large multi-team app, or framework-shaped app.
-
-This prevents two common agent failures:
-
-- over-engineering: jumping from direct code to framework/registry/adapter hierarchy;
-- under-engineering: hiding behind "simple" after repeated pressure appears.
-- framework-hostile abstraction: fighting Next.js, React Native/Expo, NestJS, or similar conventions instead of using their entrypoints as boundaries.
+`Decision:`, `Use when:`, `Do:`, `Avoid:`, `Verify:` are mandatory markers (enforced by `evals/check-invariants.ts`). `Start here:` / `Escalate when:` / `Complexity ladder:` are optional — use a compact ladder only when structure-proportional-to-pressure is the rule's core, and fold escalation signals into `Use when:` otherwise.
 
 ## Style Rules
 
 - Keep `SKILL.md` files as routers, not essays.
-- Put long rationale in references only when it is still needed.
-- Use ASCII labels: `Decision`, `Use when`, `Start here`, `Escalate when`, `Complexity ladder`, `Do`, `Avoid`, `Exceptions`, `Example`, `Verify`.
-- Avoid emoji prefixes as required syntax.
-- Prefer one canonical good/bad or start/escalate example over repeated variants.
-- When examples depend on scale, label them as simple, medium, large, or framework-shaped.
-- Replace subjective terms with signals. Do not rely only on words like `earned`, `small`, `edge`, `clean`, or `real`.
-- If a rule has legitimate exceptions, write the exception. Do not phrase it as an absolute.
+- Minimalism is structure proportional to pressure, not refusal to abstract. Guard both failure modes: over-engineering (jumping to framework/registry hierarchies) and under-engineering (hiding behind "simple" after repeated pressure).
+- Respect framework conventions (Next.js, React Native/Expo, NestJS); show where owned boundaries begin behind the framework edge.
+- Replace subjective terms with signals; do not rely only on words like `earned`, `small`, or `clean`.
+- If a rule has legitimate exceptions, write them; do not phrase defaults as absolutes.
 - If a rule is a hard safety gate, say so directly and make verification concrete.
-- Respect framework conventions, but show where owned module boundaries begin behind the framework edge.
+- When examples depend on scale, label them simple, medium, large, or framework-shaped.
 
 ## Rule Severity
 
@@ -88,17 +56,15 @@ This prevents two common agent failures:
 | --- | --- | --- |
 | `hard-gate` | Security, secrets, correctness claims, parsing unknown input before use | Direct prohibition and required verification |
 | `default` | Design preferences with real exceptions | Default plus escalation criteria |
-| `advisory` | Naming/rationale guidance that improves readability | Recommendation plus examples |
+| `advisory` | Naming/rationale guidance | Recommendation plus examples |
 
 ## Before Adding a New Rule
 
-- Check `references/ownership.md` for the canonical owner.
-- Search existing rules for the same decision.
-- If an existing rule owns it, edit that rule instead of adding a parallel rule.
+- Search existing rules for the same decision; each topic has exactly one canonical owner (the bundle SKILL.md `Owns` sections define ownership).
+- If an existing rule owns it, edit that rule instead of adding a parallel one.
 - If the new topic crosses bundles, update root `SKILL.md` tie-breakers.
 
 ## Before Promoting to Installed Skills
 
-- Add or update evaluation scenarios in `references/evaluation-plan.md`.
-- Run at least one routing scenario and one pressure scenario for the changed skill.
-- Record whether the agent opened the intended focused skill and applied the canonical rule.
+- `node evals/check-invariants.ts` exits 0.
+- Add or update scenarios in the bundle's `evals/*.scenarios.ts`; run at least one routing and one pressure scenario for the changed skill.

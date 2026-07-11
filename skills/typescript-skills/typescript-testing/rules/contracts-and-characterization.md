@@ -12,33 +12,17 @@ Decision: Test caller-visible contracts and behavior; use characterization tests
 
 Use when:
 - A test asserts helper names, private fields, file paths, call order, or dependency graph details.
-- A refactor changes structure but should preserve behavior.
-- Existing behavior is uncertain, risky, or undocumented.
-- Config/default/failure shape is the caller-visible contract.
+- A refactor changes structure but should preserve behavior, especially when a harmless refactor would currently break the test.
+- Existing behavior is uncertain, risky, undocumented, or important-but-messy (config defaults, auth context, downstream mapping, pass-through proxies, globals, hidden imports).
+- Config/default/failure shape is the caller-visible contract, or the boundary contract includes failure shape, persistence, emitted events, or public wiring.
 - Code currently reads env, globals, hidden imports, framework/transport objects, or mixed runtime concerns.
 
-Start here:
-- Write the smallest test that proves a caller-visible promise in the local test style.
-
-Escalate when:
-- Legacy behavior is unclear and must be preserved before refactor.
-- Current behavior is important but messy, especially around config defaults, auth context, downstream mapping, pass-through proxies, globals, or hidden imports.
-- The boundary contract includes failure shape, persistence, emitted events, or public wiring.
-- A harmless refactor would currently break the test.
-
-Complexity ladder:
-1. Focused behavior test for one public promise.
-2. Boundary contract test for returned shape and failure shape.
-3. Characterization test before risky refactor.
-4. Temporary internal assertion only when it protects migration safety.
-5. Remove or narrow characterization after the new contract is explicit.
-
 Do:
+- Write the smallest test that proves a caller-visible promise, in the local test style.
+- Scale from a focused behavior test for one public promise, to a boundary contract test for returned/failure shape, to a characterization test before a risky refactor, to a temporary internal assertion only when it protects migration safety — then remove or narrow characterization once the new contract is explicit.
 - Assert values, failure shape, side effects, public events, persisted output, or observable behavior.
-- Write characterization tests before risky refactors.
-- Characterize shaky boundaries before refactoring, then change structure with the baseline in place.
+- Write characterization tests before risky refactors: characterize shaky boundaries first, then change structure with the baseline in place.
 - Label temporary characterization tests and state what they protect.
-- Replace or narrow characterization tests after the new contract is clear.
 
 Avoid:
 - Tests that fail on harmless renames or helper extraction.
@@ -63,14 +47,6 @@ Contract-focused:
 ```ts
 expect(() => parseEmailConfig({})).toThrow("EMAIL_API_KEY is required");
 expect(parseEmailConfig({ EMAIL_API_KEY: "test-key" })).toEqual({ apiKey: "test-key" });
-```
-
-Temporary characterization:
-
-```ts
-test("characterization: preserves legacy empty timeout fallback until config migration", () => {
-  expect(parseLegacyTimeout({ EMAIL_TIMEOUT_MS: "" })).toBe(5000);
-});
 ```
 
 Verify:
