@@ -192,6 +192,28 @@ const scenarios = [
     ],
     tags: ["retry-classification", "caller-fault", "legacy-migrated"]
   },
+  {
+    id: "error-model-small-script-stays-small",
+    bundle: "typescript-error-handling",
+    rule: "define-app-error-semantics-early",
+    tier: "P1",
+    mode: "exception",
+    difficulty: "mixed",
+    prompt:
+      "This TypeScript script reads one local file, transforms it, and exits. It has one caller, no API boundary, no retry loop, and no shared logging pipeline. A reviewer wants an `AppError` hierarchy with stable codes, error IDs, metadata, HTTP projections, and factories before we ship. Do we need that?",
+    expectedPrimary: "typescript-error-handling",
+    must: [
+      "Keeps the script on ordinary `Error` plus `cause` unless a real consumer needs more semantics",
+      "Explains that codes, families, metadata, IDs, and protocol projections are earned by cross-module or boundary contracts",
+      "Allows a small local message or contextual wrapper without introducing an application-wide framework"
+    ],
+    mustNot: [
+      "Requires the full app error model for every TypeScript program",
+      "Adds HTTP or correlation machinery with no consumer",
+      "Rejects all future structured errors even if the script later gains real boundaries"
+    ],
+    tags: ["error-model", "earned-exception", "small-script"]
+  },
 ] satisfies EvalScenario[];
 
 export default scenarios;

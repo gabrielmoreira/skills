@@ -1,6 +1,6 @@
 ---
 name: typescript-skills
-description: Use when TypeScript work needs focused guidance on coding standards, boundaries, composition, configs, async control, error handling, observability, security, or testing.
+description: Use when TypeScript code design, implementation, review, debugging, or testing needs focused guidance on coding standards, boundaries, composition, configs, async control, error handling, observability, security, or testing. Do not use for prose-only, formatting-only, or history requests that merely mention TypeScript.
 ---
 
 # TypeScript Rules Router
@@ -37,7 +37,7 @@ Only genuinely ambiguous cases belong here. Everything else routes through Open 
 | Provider selection happens at startup | `skill://typescript-skills/typescript-composition/INDEX.md` | `skill://typescript-skills/typescript-boundaries/INDEX.md` if provider shapes cross inward |
 | Secret source pointer appears in config | `skill://typescript-skills/typescript-security/INDEX.md` | `skill://typescript-skills/typescript-configs/INDEX.md` for parsing/exposure |
 | `localhost` / `sandbox` / `test-token` fallback in code | `skill://typescript-skills/typescript-security/INDEX.md` | `skill://typescript-skills/typescript-configs/INDEX.md` only for non-secret behavior defaults |
-| `as` cast on `JSON.parse`, env, or unknown response | `skill://typescript-skills/typescript-coding-standards/INDEX.md` (hard gate: no assertion) | `skill://typescript-skills/typescript-configs/INDEX.md` for parser shape; `skill://typescript-skills/typescript-boundaries/INDEX.md` for HTTP/transport data |
+| `as` cast on `JSON.parse`, env, or unknown response | `skill://typescript-skills/typescript-coding-standards/INDEX.md` (untrusted boundary: parse or narrow) | `skill://typescript-skills/typescript-configs/INDEX.md` for parser shape; `skill://typescript-skills/typescript-boundaries/INDEX.md` for HTTP/transport data |
 | Broad app/framework config enters feature modules | `skill://typescript-skills/typescript-configs/INDEX.md` | `skill://typescript-skills/typescript-composition/INDEX.md` if framework assembly is involved |
 | Stage-conditional resource selection (`stage === "prod" ? ... : ...`) | `skill://typescript-skills/typescript-configs/rules/feature-decisions.md` | `skill://typescript-skills/typescript-configs/rules/validation-vs-verification.md` |
 | Secret-bearing log or trace attributes | `skill://typescript-skills/typescript-security/INDEX.md` | `skill://typescript-skills/typescript-observability/INDEX.md` for diagnostic shape |

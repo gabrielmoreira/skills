@@ -43,6 +43,28 @@ export type EvalTier = (typeof TIERS)[number];
 export type EvalMode = (typeof MODES)[number];
 export type EvalDifficulty = (typeof DIFFICULTIES)[number];
 
+export const ACTIVATION_LAYERS = ["public-skill", "internal-route"] as const;
+
+export type ActivationLayer = (typeof ACTIVATION_LAYERS)[number];
+
+export type ActivationExpectation = {
+  /** Whether this evaluates public skill selection or routing inside a loaded skill. */
+  layer: ActivationLayer;
+  /** Public skill name selected by the harness before any skill body is loaded. */
+  target: string;
+  /** Whether the target should be selected for this prompt. */
+  shouldActivate: boolean;
+  /** Internal topic owners that must not be selected for this prompt. */
+  forbiddenRoutes?: string[];
+};
+
+export type ActivationDecision = {
+  scenarioId: string;
+  selectedSkills: string[];
+  primaryRoute?: string;
+  secondaryRoutes?: string[];
+};
+
 /**
  * Canonical successor-harness scenario definition.
  *
@@ -68,6 +90,8 @@ export type EvalScenario = {
   expectedPrimary?: string;
   /** Optional secondary owners that may be relevant but not primary. */
   expectedSecondary?: string[];
+  /** Optional expectation for measuring public activation or internal routing. */
+  activation?: ActivationExpectation;
   /** Positive requirements that a good answer must satisfy. */
   must: string[];
   /** Forbidden moves that should trigger a failing grade when violated. */

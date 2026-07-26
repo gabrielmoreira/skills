@@ -3,7 +3,7 @@
 Eval system for the routing packages in this repo. Two layers:
 
 - **Structural invariants** (`check-invariants.ts`) — programmatic checks of file shape, routing keywords, demarcation cross-links, and known-regression invariants. Runs in <100 ms. Pass/fail.
-- **Behavioral scenarios** (`*/evals/*.scenarios.ts`) — realistic prompts with atomic `must` / `mustNot` checks, graded by an LLM subagent. One manifest per topic bundle, plus `evals/router.scenarios.ts` for tree-level gap-detection/routing scenarios and sibling manifests in `../maintainable-code/evals/` and `../progressive-reading/evals/`.
+- **Behavioral scenarios** (`*/evals/*.scenarios.ts`) — realistic prompts with atomic `must` / `mustNot` checks, graded by an LLM subagent. Topic manifests cover answer quality; activation manifests cover whether a public skill or exact internal rule should be selected.
 
 ## Quick run
 
@@ -12,6 +12,7 @@ Eval system for the routing packages in this repo. Two layers:
 node evals/check-invariants.ts   # structural gate only
 node evals/run-evals.ts          # discover + validate ALL scenario manifests (repo-wide) + invariants
 node evals/lib/report.ts typescript-configs/evals/configs.scenarios.ts  # one manifest
+node evals/lib/score-activation.ts --scenarios evals/public-activation.scenarios.ts --decisions <decisions.json>
 ```
 
 Exit 0 = pass. Any invariant failure blocks promotion to `~/.agents/skills`.
@@ -25,6 +26,25 @@ Exit 0 = pass. Any invariant failure blocks promotion to `~/.agents/skills`.
 - `tier` — `P0` (hard-gates and collisions; must be very hard to get wrong), `P1` (day-to-day), `P2` (coverage).
 - `mode` — `router`, `apply`, `bypass`, `exception`, `complexity`, `simplification`.
 - `difficulty` — `obvious`, `mixed`, `hard` (calibration label).
+- `activation` — optional decision-only expectation: public skill activation or exact internal route selection.
+
+Activation decisions are JSON arrays:
+
+```json
+[
+  {
+    "scenarioId": "typescript-activation-unknown-webhook",
+    "selectedSkills": ["typescript-skills"]
+  },
+  {
+    "scenarioId": "internal-route-classify-caller-fault-before-retry",
+    "selectedSkills": ["typescript-skills"],
+    "primaryRoute": "skill://typescript-skills/typescript-error-handling/rules/error-classification.md"
+  }
+]
+```
+
+`score-activation.ts` reports TP/TN/FP/FN, public-skill precision and recall, false-positive rate, exact internal-route accuracy, missing decisions, unexpected decisions, and forbidden-route violations. It exits nonzero on any wrong, missing, unexpected, or forbidden decision.
 
 Design rules for prompts:
 - Several present a wrong cause as plausible — agents must not be steered.

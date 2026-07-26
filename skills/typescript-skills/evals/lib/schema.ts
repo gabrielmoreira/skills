@@ -1,4 +1,4 @@
-import { DIFFICULTIES, MODES, TIERS } from "../evals.types.ts";
+import { ACTIVATION_LAYERS, DIFFICULTIES, MODES, TIERS } from "../evals.types.ts";
 
 export function validateScenario(scenario: import("../evals.types.ts").EvalScenario) {
   const errors = [];
@@ -14,6 +14,41 @@ export function validateScenario(scenario: import("../evals.types.ts").EvalScena
   if (!scenario.prompt || typeof scenario.prompt !== "string") errors.push("prompt is required");
   if (!Array.isArray(scenario.must) || scenario.must.length === 0) errors.push("must must be a non-empty array");
   if (!Array.isArray(scenario.mustNot)) errors.push("mustNot must be an array");
+
+  if (scenario.activation !== undefined) {
+    const activation = scenario.activation;
+    if (!activation || typeof activation !== "object") {
+      errors.push("activation must be an object");
+    } else {
+      if (!ACTIVATION_LAYERS.includes(activation.layer)) {
+        errors.push(`activation.layer must be one of ${ACTIVATION_LAYERS.join(", ")}`);
+      }
+      if (typeof activation.target !== "string" || activation.target.trim() === "") {
+        errors.push("activation.target is required");
+      }
+      if (typeof activation.shouldActivate !== "boolean") {
+        errors.push("activation.shouldActivate must be boolean");
+      }
+      if (
+        activation.forbiddenRoutes !== undefined &&
+        (!Array.isArray(activation.forbiddenRoutes) ||
+          activation.forbiddenRoutes.some((route) => typeof route !== "string" || route.trim() === ""))
+      ) {
+        errors.push("activation.forbiddenRoutes must contain route names");
+      }
+      if (activation.layer === "public-skill" && activation.forbiddenRoutes !== undefined) {
+        errors.push("public-skill activation must not define forbiddenRoutes");
+      }
+      if (activation.layer === "internal-route") {
+        if (activation.shouldActivate !== true) {
+          errors.push("internal-route activation requires shouldActivate=true");
+        }
+        if (!scenario.expectedPrimary) {
+          errors.push("internal-route activation requires expectedPrimary");
+        }
+      }
+    }
+  }
 
   return errors;
 }

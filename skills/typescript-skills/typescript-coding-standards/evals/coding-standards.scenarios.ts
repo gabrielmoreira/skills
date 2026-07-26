@@ -153,14 +153,14 @@ const scenarios = [
     mode: "apply",
     difficulty: "mixed",
     prompt:
-      "A file puts small helpers first and the exported `processOrder` orchestration at the bottom. Reviewers keep scrolling up and down because `processOrder` calls `validateOrder`, `persistOrder`, and `notifyOrder`, and same-depth helpers are not in the order the reader encounters them. The author says function order inside a module is personal preference as long as the names are clear. Should we reorder it?",
+      "A file puts small helpers first and the exported `processOrder` orchestration at the bottom. Reviewers keep scrolling up and down because `processOrder` calls `validateOrder`, `persistOrder`, and `notifyOrder`. The repository has no established ordering convention. Should we reorder it?",
     expectedPrimary: "typescript-coding-standards",
     expectedSecondary: [],
     must: [
-      "Prefers a top-down or step-down layout with the outer orchestration first and deeper helpers below when practical",
+      "Prefers a top-down or step-down layout with the outer orchestration first and deeper helpers below when no local convention decides otherwise",
       "Keeps same-depth helpers in the order the reader encounters them from the caller",
       "Frames this as a readability and local-reasoning default rather than an absolute law",
-      "Allows exceptions for cases like recursion, required export order, or tightly-related tiny helpers"
+      "Allows established repository or framework order, recursion, required export order, or tightly-related tiny helpers to override the default"
     ],
     mustNot: [
       "Treats function order inside a file as irrelevant personal preference",
@@ -211,7 +211,7 @@ const scenarios = [
       "Leaves the cast in place because it is 'just tests'",
       "Accepts the '200+ methods' practicality appeal as sufficient justification"
     ],
-    tags: ["hard-gate", "test-exception", "as-any", "legacy-migrated"]
+    tags: ["bypass", "test-exception", "as-any", "legacy-migrated"]
   },
   {
     id: "id-confusion",
@@ -255,6 +255,51 @@ const scenarios = [
       "Refuses generics outright on YAGNI grounds"
     ],
     tags: ["generics", "constraints", "progressive-complexity", "legacy-migrated"]
+  },
+  {
+    id: "coding-standards-contained-assertion-for-unrepresentable-invariant",
+    bundle: "typescript-coding-standards",
+    rule: "type-narrowing-over-assertion",
+    tier: "P1",
+    mode: "exception",
+    difficulty: "hard",
+    prompt:
+      "A test-only factory builds a complete local object for a generated SDK type whose nominal marker is private and cannot be constructed outside the SDK. The object never crosses an input boundary, every meaningful field is checked by the factory, and one local `as GeneratedEvent` would be the only assertion. Must we add a runtime schema or redesign production code to avoid it?",
+    expectedPrimary: "typescript-coding-standards",
+    expectedSecondary: ["typescript-testing"],
+    must: [
+      "Allows a contained assertion because the value is trusted local test data and the remaining mismatch is an unrepresentable nominal invariant",
+      "Keeps the assertion inside one typed test factory rather than spreading casts through tests or production code",
+      "Requires the factory to construct and check the meaningful shape without `any` or a double cast",
+      "Rejects adding runtime validation when it would provide no additional safety for locally constructed data"
+    ],
+    mustNot: [
+      "Treats every assertion as forbidden regardless of provenance or compiler limitation",
+      "Generalizes the exception to network, env, file, SDK response, or other uncontrolled input",
+      "Requires production architecture changes solely to satisfy a test fixture type"
+    ],
+    tags: ["type-narrowing-over-assertion", "earned-exception", "trusted-fixture"]
+  },
+  {
+    id: "coding-standards-local-file-order-overrides-step-down",
+    bundle: "typescript-coding-standards",
+    rule: "vertical-discipline",
+    tier: "P2",
+    mode: "exception",
+    difficulty: "mixed",
+    prompt:
+      "Every module in this framework keeps route metadata and small helpers before the exported handler because tooling and maintainers expect that order. One reviewer wants this file reordered into strict top-down call order. The current flow is already easy to follow. Should we change it?",
+    expectedPrimary: "typescript-coding-standards",
+    must: [
+      "Keeps the established framework and repository ordering when the current flow is already clear",
+      "Treats step-down order as a default for files without a stronger local convention, not a universal mandate",
+      "Avoids churn that would make this file inconsistent with its neighbors"
+    ],
+    mustNot: [
+      "Requires strict call-graph order regardless of framework or repository convention",
+      "Reorders the file only to satisfy stylistic symmetry"
+    ],
+    tags: ["vertical-discipline", "earned-exception", "local-convention"]
   },
 ] satisfies EvalScenario[];
 
