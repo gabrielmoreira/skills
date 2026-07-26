@@ -8,7 +8,7 @@ references: [Parse don't validate, Twelve-Factor III (Config)]
 
 # Parse and Expose Config
 
-Decision: Parse unknown config once at the boundary into typed values. This rule owns raw-to-typed parsing, requiredness, schema choice, and parser failure shape. For module slices and AppConfig avoidance, see `rules/contextual-config.md`.
+Decision: Parse unknown config once at the boundary into typed values. This rule owns raw-to-typed parsing, requiredness, schema choice, and parser failure shape. For module slices and AppConfig avoidance, read `skill://typescript-skills/typescript-configs/rules/contextual-config.md`.
 
 Use when:
 - Code reads `process.env`, CLI args, raw config files, or untyped runtime values.
@@ -42,7 +42,7 @@ Exceptions:
 - Legacy migration may introduce a seam before full parsing; see `migration.md`.
 - Framework config providers may be the raw source boundary, but feature modules should not consume a broad framework config shape.
 
-For parser purity (no I/O, no network, no secret fetch), see `rules/validation-vs-verification.md`. For secret-loading timing, see `../typescript-security/rules/secrets-lifecycle.md`.
+For parser purity (no I/O, no network, no secret fetch), read `skill://typescript-skills/typescript-configs/rules/validation-vs-verification.md`. For secret-loading timing, read `skill://typescript-skills/typescript-security/rules/secrets-lifecycle.md`.
 
 Example:
 
@@ -66,7 +66,7 @@ const EmailConfigSchema = z.discriminatedUnion("provider", [
 ]);
 ```
 
-For root-level shape and module-slice projection, see `rules/contextual-config.md`.
+For root-level shape and module-slice projection, read `skill://typescript-skills/typescript-configs/rules/contextual-config.md`.
 
 Verify:
 - Search for `process.env` outside config boundary and tests.

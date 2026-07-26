@@ -27,7 +27,7 @@ Avoid:
 
 Exceptions: framework APIs may require classes (keep the ceremony at the edge); a class can wrap a real resource handle even with few methods; at high instance-creation rates, measure allocation before choosing class/prototype methods over closures.
 
-Example — function → `makeXxx` when dependencies should be closure-private; class only when lifecycle/protocol is the point (composition-root vs per-call assembly: `../typescript-composition/rules/ready-instance-vs-factory.md`):
+Example — function → `makeXxx` when dependencies should be closure-private; class only when lifecycle/protocol is the point (composition-root vs per-call assembly: `skill://typescript-skills/typescript-composition/rules/ready-instance-vs-factory.md`):
 
 ```ts
 export function makeReceiptSender({ mailer, audit }: { mailer: Mailer; audit: AuditLog }) {

@@ -56,7 +56,7 @@ export async function verifyReportStorage(config: ReportStorageConfig) {
 }
 ```
 
-When stage-conditional logic appears (`stage === "prod" ? ... : ...` selecting resources), stop — stage is not a behavior decision; see `rules/feature-decisions.md`. Use one explicit env input per environment-specific resource instead, and parse a named decision once when behavior really differs.
+When stage-conditional logic appears (`stage === "prod" ? ... : ...` selecting resources), stop — stage is not a behavior decision; read `skill://typescript-skills/typescript-configs/rules/feature-decisions.md`. Use one explicit env input per environment-specific resource instead, and parse a named decision once when behavior really differs.
 
 Verify:
 - Parser tests run without external resources.

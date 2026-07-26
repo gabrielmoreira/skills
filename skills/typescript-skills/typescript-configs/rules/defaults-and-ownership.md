@@ -8,7 +8,7 @@ references: [Twelve-Factor III, Secure by Default (OWASP)]
 
 # Defaults and Ownership
 
-Decision: A default is allowed only when it is production-safe and correct by nature. Each default has one owner. Environment-specific or security-bearing values are out of scope here — see `../typescript-security/rules/secrets-lifecycle.md`.
+Decision: A default is allowed only when it is production-safe and correct by nature. Each default has one owner. Environment-specific or security-bearing values are out of scope here — read `skill://typescript-skills/typescript-security/rules/secrets-lifecycle.md`.
 
 Use when:
 - Code adds `??`, `||`, schema defaults, fallback objects, implicit modes, or sample values for behavior tuning (retry count, timeout, page size, cache TTL, display limit).
@@ -16,7 +16,7 @@ Use when:
 - Requiredness differs by mode, provider, stage, or feature flag.
 - A broad app config owns defaults for unrelated modules, making ownership unclear.
 
-Out of scope (route to security) — see `../typescript-security/rules/secrets-lifecycle.md`:
+Out of scope (route to security) — read `skill://typescript-skills/typescript-security/rules/secrets-lifecycle.md`:
 - URL, host, IP, endpoint, DSN, connection string, token, password, API key, credential, or secret fallbacks.
 - Anything pointing at localhost, sandbox, staging, dev, or test resources as a code default.
 

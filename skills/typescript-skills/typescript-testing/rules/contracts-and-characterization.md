@@ -53,4 +53,4 @@ Verify:
 - Explain what caller promise each assertion protects.
 - Check whether a harmless refactor would fail the test.
 - Confirm characterization tests existed before the refactor and are revisited after cutover.
-- Confirm the test seam matches local style; if unclear, read `rules/local-test-style.md`.
+- Confirm the test seam matches local style; if unclear, read `skill://typescript-skills/typescript-testing/rules/local-test-style.md`.

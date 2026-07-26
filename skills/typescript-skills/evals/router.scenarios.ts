@@ -1,8 +1,8 @@
 import type { EvalScenario } from "./evals.types.ts";
 
 /**
- * Tree-level scenarios owned by the router itself: gap detection and
- * cross-bundle routing pressure that no single bundle owns.
+ * Root-level scenarios owned by the public skill: gap detection and
+ * cross-topic routing pressure that no single topic owns.
  */
 const scenarios = [
   {
@@ -18,7 +18,7 @@ const scenarios = [
     must: [
       "Acknowledges the standards do not have a canonical rule for Node stream backpressure",
       "Gives honest general guidance (respect highWaterMark, await drain, or use stream.pipeline)",
-      "May point to the closest adjacent skill (cleanup/cancellation) while staying clear it does not own streams"
+      "May point to the closest adjacent topic (cleanup/cancellation) while staying clear it does not own streams"
     ],
     mustNot: [
       "Invents a rule or claims an existing rule file covers stream backpressure"

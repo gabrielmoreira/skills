@@ -8,7 +8,7 @@ references: [Strangler Fig, Branch by Abstraction]
 
 # Config Migration
 
-Decision: Migrate legacy config reads through explicit seams that preserve observed behavior first, then parse and cut over callers without speculatively changing runtime assumptions. This rule owns the config-specific ladder; the general cutover policy (clean cutover by default, staged only when bounded) lives in `../../typescript-coding-standards/rules/cutovers.md`.
+Decision: Migrate legacy config reads through explicit seams that preserve observed behavior first, then parse and cut over callers without speculatively changing runtime assumptions. This rule owns the config-specific ladder; the general cutover policy (clean cutover by default, staged only when bounded) lives in `skill://typescript-skills/typescript-coding-standards/rules/cutovers.md`.
 
 Use when:
 - Env reads are scattered across feature modules, or the same env/config concern appears in several runtime paths.

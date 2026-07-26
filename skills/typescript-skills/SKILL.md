@@ -1,49 +1,53 @@
 ---
 name: typescript-skills
-description: Use when working on TypeScript code and needing to choose the smallest focused TypeScript skill for coding standards, boundaries, composition, configs, async control, error handling, observability, security, or testing.
+description: Use when TypeScript work needs focused guidance on coding standards, boundaries, composition, configs, async control, error handling, observability, security, or testing.
 ---
 
-# TypeScript Skills Router
+# TypeScript Rules Router
 
-This skill routes TypeScript work to the smallest relevant focused skill. It is not the source of truth for design rules.
+This is the only discoverable skill in this package. It routes work to internal topic indexes and canonical rule files.
 
-Default: open one primary skill first. Add secondary skills only when the task crosses a real boundary. Do not load every TypeScript skill by default.
+Internal `INDEX.md` files are not skills. Never invoke a topic name as a skill. Read the exact URI shown for that topic.
+
+`skill://` is the reference notation used by this package, not a required protocol for every harness. If the current harness does not recognize it, translate the URI to the equivalent project or installed file path—or use that harness's reference-loading mechanism—and read the target file directly. Keep internal topics as references; do not expose or invoke them as separate skills.
+
+Default: open one primary topic index first. Add a secondary topic only when the task crosses a real boundary. Do not load every topic by default.
 
 ## Open First
 
-| If the task involves... | Open |
+| If the task involves... | Read this topic index |
 | --- | --- |
-| naming, abstractions, classes, cutovers, local reasoning, `!`, `as`, forced types, blank-line groups, branded types, exhaustive switch, generics | `typescript-coding-standards/SKILL.md` |
-| provider, SDK, API, request, response, generated types, mapper, mapping, transform, translator, anti-corruption layer | `typescript-boundaries/SKILL.md` |
-| dependency construction, factory, lifecycle, singletons, runtime selection | `typescript-composition/SKILL.md` |
-| env, config parsing, defaults, typed config exposure, feature flags, config migration | `typescript-configs/SKILL.md` |
-| logging, tracing, OpenTelemetry, X-Ray, actionable diagnostics, branch observability | `typescript-observability/SKILL.md` |
-| secrets, crypto choices, redaction, credentials, secret sources | `typescript-security/SKILL.md` |
-| tests, characterization, boundary contracts, brittle assertions, config tests | `typescript-testing/SKILL.md` |
-| throw vs return, Result type, retryable, error classification, error contract, custom Error subclass, error factory/helper, swallowed fallback | `typescript-error-handling/SKILL.md` |
-| `Promise.all`, sequential awaits, bounded concurrency, AbortSignal, cleanup, retry/backoff, SIGTERM, graceful shutdown | `typescript-async/SKILL.md` |
+| naming, abstractions, classes, cutovers, local reasoning, `!`, `as`, forced types, blank-line groups, branded types, exhaustive switch, generics | `skill://typescript-skills/typescript-coding-standards/INDEX.md` |
+| provider, SDK, API, request, response, generated types, mapper, mapping, transform, translator, anti-corruption layer | `skill://typescript-skills/typescript-boundaries/INDEX.md` |
+| dependency construction, factory, lifecycle, singletons, runtime selection | `skill://typescript-skills/typescript-composition/INDEX.md` |
+| env, config parsing, defaults, typed config exposure, feature flags, config migration | `skill://typescript-skills/typescript-configs/INDEX.md` |
+| logging, tracing, OpenTelemetry, X-Ray, actionable diagnostics, branch observability | `skill://typescript-skills/typescript-observability/INDEX.md` |
+| secrets, crypto choices, redaction, credentials, secret sources | `skill://typescript-skills/typescript-security/INDEX.md` |
+| tests, characterization, boundary contracts, brittle assertions, config tests | `skill://typescript-skills/typescript-testing/INDEX.md` |
+| throw vs return, Result type, retryable, error classification, error contract, custom Error subclass, error factory/helper, swallowed fallback | `skill://typescript-skills/typescript-error-handling/INDEX.md` |
+| `Promise.all`, sequential awaits, bounded concurrency, AbortSignal, cleanup, retry/backoff, SIGTERM, graceful shutdown | `skill://typescript-skills/typescript-async/INDEX.md` |
 
 ## Tie-breakers
 
-Only genuinely ambiguous cases; everything single-skill routes via Open First.
+Only genuinely ambiguous cases belong here. Everything else routes through Open First.
 
 | Situation | Primary | Secondary |
 | --- | --- | --- |
-| Provider response shape enters business logic | `typescript-boundaries` | `typescript-coding-standards` for naming |
-| Provider selection happens at startup | `typescript-composition` | `typescript-boundaries` if provider shapes cross inward |
-| Secret source pointer appears in config | `typescript-security` | `typescript-configs` for parsing/exposure |
-| `localhost` / `sandbox` / `test-token` fallback in code | `typescript-security` | `typescript-configs` only for non-secret behavior defaults |
-| `as` cast on `JSON.parse`, env, or unknown response | `typescript-coding-standards` (hard-gate: no assertion) | `typescript-configs` for the parser shape; `typescript-boundaries` if the data is HTTP/transport |
-| Broad app/framework config enters feature modules | `typescript-configs` | `typescript-composition` if framework assembly is involved |
-| Stage-conditional resource selection (`stage === "prod" ? ... : ...`) | `typescript-configs` (`feature-decisions.md`) | `typescript-configs` (`validation-vs-verification.md`) |
-| Secret-bearing log or trace attributes | `typescript-security` | `typescript-observability` for diagnostic shape |
-| Refactor before behavior change | `typescript-testing` | relevant design skill |
-| Retry loop retries everything including 4xx | `typescript-error-handling` (`error-classification.md`) owns the decision | `typescript-async` (`retry-and-backoff.md`) owns the mechanism |
-| Handler returns library/SDK error shape directly to client | `typescript-error-handling` (`error-boundary-contract.md`) | `typescript-boundaries` for the inbound side |
-| `catch` returns fallback/default/skip with no log, span event, metric, or explicit error result | `typescript-error-handling` (`error-boundary-contract.md`) | `typescript-observability` for the signal shape |
+| Provider response shape enters business logic | `skill://typescript-skills/typescript-boundaries/INDEX.md` | `skill://typescript-skills/typescript-coding-standards/INDEX.md` for naming |
+| Provider selection happens at startup | `skill://typescript-skills/typescript-composition/INDEX.md` | `skill://typescript-skills/typescript-boundaries/INDEX.md` if provider shapes cross inward |
+| Secret source pointer appears in config | `skill://typescript-skills/typescript-security/INDEX.md` | `skill://typescript-skills/typescript-configs/INDEX.md` for parsing/exposure |
+| `localhost` / `sandbox` / `test-token` fallback in code | `skill://typescript-skills/typescript-security/INDEX.md` | `skill://typescript-skills/typescript-configs/INDEX.md` only for non-secret behavior defaults |
+| `as` cast on `JSON.parse`, env, or unknown response | `skill://typescript-skills/typescript-coding-standards/INDEX.md` (hard gate: no assertion) | `skill://typescript-skills/typescript-configs/INDEX.md` for parser shape; `skill://typescript-skills/typescript-boundaries/INDEX.md` for HTTP/transport data |
+| Broad app/framework config enters feature modules | `skill://typescript-skills/typescript-configs/INDEX.md` | `skill://typescript-skills/typescript-composition/INDEX.md` if framework assembly is involved |
+| Stage-conditional resource selection (`stage === "prod" ? ... : ...`) | `skill://typescript-skills/typescript-configs/rules/feature-decisions.md` | `skill://typescript-skills/typescript-configs/rules/validation-vs-verification.md` |
+| Secret-bearing log or trace attributes | `skill://typescript-skills/typescript-security/INDEX.md` | `skill://typescript-skills/typescript-observability/INDEX.md` for diagnostic shape |
+| Refactor before behavior change | `skill://typescript-skills/typescript-testing/INDEX.md` | the relevant design topic index |
+| Retry loop retries everything including 4xx | `skill://typescript-skills/typescript-error-handling/rules/error-classification.md` owns the decision | `skill://typescript-skills/typescript-async/rules/retry-and-backoff.md` owns the mechanism |
+| Handler returns library/SDK error shape directly to client | `skill://typescript-skills/typescript-error-handling/rules/error-boundary-contract.md` | `skill://typescript-skills/typescript-boundaries/INDEX.md` for inbound mapping |
+| `catch` returns fallback/default/skip without an explicit signal | `skill://typescript-skills/typescript-error-handling/rules/error-boundary-contract.md` | `skill://typescript-skills/typescript-observability/INDEX.md` for the signal shape |
 
-## Router Rule
+## Router Contract
 
-Use the focused skill as the source of truth. This router only chooses where to start.
+The selected topic index owns routing within its domain. The canonical rule files own design decisions.
 
-For rule authoring conventions, see `references/authoring-checklist.md`. Project history and design notes live in `docs/typescript-skills/` at the repo root.
+For rule authoring conventions, read `skill://typescript-skills/references/authoring-checklist.md`. Project history and design notes live in `docs/typescript-skills/` at the repo root.

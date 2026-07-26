@@ -1,13 +1,8 @@
----
-name: typescript-error-handling
-description: Use when TypeScript code needs to express failure with a canonical app-owned error model, family-level runtime wrappers or Result-based propagation, stable error codes, retry classification, and safe boundary translation.
----
-
-# TypeScript Error Handling
+# TypeScript Error Handling Topic Index
 
 Failure is part of the design, not an afterthought. Define a canonical, app-owned error model first; then classify failures, structure attachments, choose a propagation style (`throw` or `Result`), and project errors safely at boundaries.
 
-## Project Decision (read first)
+## Project Decision
 
 | Decision | Guidance |
 | --- | --- |
@@ -17,23 +12,23 @@ Failure is part of the design, not an afterthought. Define a canonical, app-owne
 
 Hierarchy by app size: simple script → plain `Error` or a couple of local wrappers; mid app → family wrappers in `core/errors`; large multi-package app → same family wrappers in a shared `core/errors` package with no reverse dependency. For a new mid-or-larger app, start with the family wrappers on day one.
 
-## Suggested progression
+## Suggested Progression
 
-1. Define app error semantics early — `rules/define-app-error-semantics-early.md`
-2. Classify failures consistently — `rules/error-classification.md`
-3. Structure the error shape and metadata — `rules/error-shape-and-metadata.md`
-4. Choose how failures propagate — `rules/throw-vs-result.md`
-5. Project errors safely at boundaries — `rules/error-boundary-contract.md`
+1. Define app error semantics early — `skill://typescript-skills/typescript-error-handling/rules/define-app-error-semantics-early.md`
+2. Classify failures consistently — `skill://typescript-skills/typescript-error-handling/rules/error-classification.md`
+3. Structure the error shape and metadata — `skill://typescript-skills/typescript-error-handling/rules/error-shape-and-metadata.md`
+4. Choose how failures propagate — `skill://typescript-skills/typescript-error-handling/rules/throw-vs-result.md`
+5. Project errors safely at boundaries — `skill://typescript-skills/typescript-error-handling/rules/error-boundary-contract.md`
 
-## Agent Quick Path
+## Rule Routing
 
 | If you see... | Read |
 | --- | --- |
-| starting a new app, no error types yet; factory/helper keeps losing required metadata/context | `rules/define-app-error-semantics-early.md` |
-| function that may fail, choosing throw vs return | `rules/throw-vs-result.md` |
-| "should I retry this?", retryable vs caller fault, generic `catch (e)` swallowing, silent fallback | `rules/error-classification.md` |
-| missing `errorId`/`code`, log/response cannot be correlated; unclear ownership of `details`/`context`/`normalizedCause`/`metadata`/runtime `cause` | `rules/error-shape-and-metadata.md` |
-| handler returning provider/library error shape to client or unfiltered log | `rules/error-boundary-contract.md` |
+| starting a new app, no error types yet; factory/helper keeps losing required metadata/context | `skill://typescript-skills/typescript-error-handling/rules/define-app-error-semantics-early.md` |
+| function that may fail, choosing throw vs return | `skill://typescript-skills/typescript-error-handling/rules/throw-vs-result.md` |
+| "should I retry this?", retryable vs caller fault, generic `catch (e)` swallowing, silent fallback | `skill://typescript-skills/typescript-error-handling/rules/error-classification.md` |
+| missing `errorId`/`code`, log/response cannot be correlated; unclear ownership of `details`/`context`/`normalizedCause`/`metadata`/runtime `cause` | `skill://typescript-skills/typescript-error-handling/rules/error-shape-and-metadata.md` |
+| handler returning provider/library error shape to client or unfiltered log | `skill://typescript-skills/typescript-error-handling/rules/error-boundary-contract.md` |
 
 ## Owns
 
@@ -44,9 +39,9 @@ Hierarchy by app size: simple script → plain `Error` or a couple of local wrap
 
 ## Does Not Own
 
-- Retry mechanics (backoff, jitter, caps) — `../typescript-async/rules/retry-and-backoff.md`.
-- Logging/redaction mechanics — `../typescript-observability/` and `../typescript-security/rules/redaction.md`.
-- Narrowing `catch (e: unknown)` — `../typescript-coding-standards/rules/type-narrowing-over-assertion.md`.
+- Retry mechanics (backoff, jitter, caps): read `skill://typescript-skills/typescript-async/rules/retry-and-backoff.md`.
+- Logging/redaction mechanics: read `skill://typescript-skills/typescript-observability/INDEX.md` and `skill://typescript-skills/typescript-security/rules/redaction.md`.
+- Narrowing `catch (e: unknown)`: read `skill://typescript-skills/typescript-coding-standards/rules/type-narrowing-over-assertion.md`.
 
 ## Default
 

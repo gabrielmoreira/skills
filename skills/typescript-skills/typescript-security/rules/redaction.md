@@ -10,9 +10,9 @@ references: [OWASP Logging (A09)]
 
 Decision: Redact sensitive values before logging, formatting, rethrowing, serializing, or attaching error context.
 
-This rule owns data safety in logs/errors. For deciding what is meaningful to log or trace, use `../typescript-observability/SKILL.md`.
+This rule owns data safety in logs/errors. For deciding what is meaningful to log or trace, read `skill://typescript-skills/typescript-observability/INDEX.md`.
 
-First line of defense is keeping secret values out of the typed config object in the first place — the config should hold a *pointer* (ARN, secret name, env var name) and secrets should be resolved later, on demand. Redaction is the second line of defense for when the secret unavoidably enters memory. See `rules/secrets-lifecycle.md`.
+First line of defense is keeping secret values out of the typed config object in the first place — the config should hold a *pointer* (ARN, secret name, env var name) and secrets should be resolved later, on demand. Redaction is the second line of defense for when the secret unavoidably enters memory. Read `skill://typescript-skills/typescript-security/rules/secrets-lifecycle.md`.
 
 Use when:
 - Code logs config, headers, auth objects, env, request bodies, provider responses, credentials, tokens, keys, or connection strings.

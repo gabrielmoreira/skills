@@ -36,14 +36,15 @@ export async function runInvariants() {
 const allFiles = await walk(".");
 const allMd = allFiles.filter(f => f.endsWith(".md"));
 const ruleFiles = allMd.filter(f => /typescript-[^/]+\/rules\/[^/]+\.md$/.test(f)).sort();
-const skillFiles = allMd.filter(f => /typescript-[^/]+\/SKILL\.md$/.test(f)).sort();
+const topicIndexFiles = allMd.filter(f => /typescript-[^/]+\/INDEX\.md$/.test(f)).sort();
+const skillFiles = allMd.filter(f => basename(f) === "SKILL.md").sort();
 const scenarioFiles = allFiles.filter(f => /(?:^|\/)evals\/[^/]+\.scenarios\.ts$/.test(f)).sort();
 const scenarioIds = [];
 for (const file of scenarioFiles) {
   const text = await readUtf8(file);
   for (const match of text.matchAll(/\bid:\s*"([^"]+)"/g)) scenarioIds.push(match[1]);
 }
-const bundleNames = skillFiles.map(f => f.split("/")[0]).sort();
+const bundleNames = [...new Set(ruleFiles.map(f => f.split("/")[0]))].sort();
 const rootSkill = "SKILL.md";
 
 // ----- INV-1: every canonical rule has required frontmatter fields -----
@@ -94,7 +95,7 @@ const rootSkill = "SKILL.md";
   else fail("INV-4 root router includes mapper + transform", "missing keywords on boundaries trigger");
 }
 
-// ----- INV-5: root router triggers cover all discovered bundles by keyword -----
+// ----- INV-5: root router covers every topic with an absolute index URI -----
 {
   const text = lower(await readUtf8(rootSkill));
   const required = [
@@ -110,14 +111,15 @@ const rootSkill = "SKILL.md";
   ];
   let bad = [];
   for (const bundle of bundleNames) {
-    if (!text.includes(bundle.toLowerCase())) bad.push(`${bundle} missing from router`);
+    const uri = `skill://typescript-skills/${bundle}/index.md`;
+    if (!text.includes(uri)) bad.push(`${bundle} missing absolute topic-index URI`);
   }
   for (const [bundle, keys] of required) {
     const missingKeys = keys.filter(k => !text.includes(k));
     if (missingKeys.length) bad.push(`${bundle} keywords missing: ${missingKeys.join(", ")}`);
   }
-  if (bad.length) fail("INV-5 root router covers discovered bundles + key triggers", bad.join("\n  "));
-  else pass(`INV-5 root router covers all ${bundleNames.length} bundles + key triggers`);
+  if (bad.length) fail("INV-5 root router covers every topic with absolute index URI + key triggers", bad.join("\n  "));
+  else pass(`INV-5 root router covers all ${bundleNames.length} topics with absolute index URI + key triggers`);
 }
 
 // ----- INV-6: defaults-and-ownership does NOT own URL/host/IP/token/credential fallbacks -----
@@ -273,14 +275,14 @@ const rootSkill = "SKILL.md";
   else fail("INV-19 no meta/authoring docs inside references/", found.join("\n  "));
 }
 
-// ----- INV-20: no README.md inside skill bundles (router must be SKILL.md) -----
+// ----- INV-20: only the root SKILL.md is discoverable as a skill -----
 {
-  const readmes = allMd.filter(f =>
-    basename(f).toLowerCase() === "readme.md" &&
-    /typescript-[^/]+\//.test(f)
-  );
-  if (readmes.length === 0) pass("INV-20 no README.md inside skill bundles (router is SKILL.md)");
-  else fail("INV-20 no README.md inside skill bundles (router is SKILL.md)", readmes.join("\n  "));
+  const nestedSkills = skillFiles.filter(f => f !== rootSkill);
+  if (skillFiles.length === 1 && nestedSkills.length === 0) {
+    pass("INV-20 only root SKILL.md exists");
+  } else {
+    fail("INV-20 only root SKILL.md exists", skillFiles.join("\n  "));
+  }
 }
 
 // ----- INV-21: scenario prompts do not name the expected skill or rule file -----
@@ -321,6 +323,78 @@ const rootSkill = "SKILL.md";
   const legacyShims = allFiles.filter((file) => /(^|\/)evals\/.+\.mjs$/.test(file));
   if (legacyShims.length === 0) pass("INV-23 no legacy eval .mjs shims remain");
   else fail("INV-23 no legacy eval .mjs shims remain", legacyShims.join("\n  "));
+}
+
+// ----- INV-24: every internal topic has exactly one INDEX.md -----
+{
+  const expected = bundleNames.map(bundle => `${bundle}/INDEX.md`);
+  const missing = expected.filter(file => !topicIndexFiles.includes(file));
+  const unexpected = topicIndexFiles.filter(file => !expected.includes(file));
+  if (missing.length === 0 && unexpected.length === 0) {
+    pass(`INV-24 every internal topic has exactly one INDEX.md (${topicIndexFiles.length} indexes)`);
+  } else {
+    fail("INV-24 every internal topic has exactly one INDEX.md",
+      [...missing.map(file => `missing ${file}`), ...unexpected.map(file => `unexpected ${file}`)].join("\n  "));
+  }
+}
+
+// ----- INV-25: every absolute internal skill URI resolves -----
+{
+  const prefix = "skill://typescript-skills/";
+  const bad = [];
+  let uriCount = 0;
+  for (const file of allMd) {
+    const text = await readUtf8(file);
+    for (const match of text.matchAll(/skill:\/\/typescript-skills\/[A-Za-z0-9._/-]+/g)) {
+      uriCount++;
+      const uri = match[0];
+      const target = uri.slice(prefix.length);
+      try {
+        await stat(target);
+      } catch {
+        bad.push(`${file}: ${uri}`);
+      }
+    }
+  }
+  if (bad.length === 0 && uriCount > 0) {
+    pass(`INV-25 every absolute internal skill URI resolves (${uriCount} references)`);
+  } else {
+    fail("INV-25 every absolute internal skill URI resolves",
+      bad.length > 0 ? bad.join("\n  ") : "no absolute internal skill URIs found");
+  }
+}
+
+// ----- INV-26: routers never present internal topics as discoverable skills -----
+{
+  const routerFiles = [rootSkill, ...topicIndexFiles];
+  const forbidden = [
+    /\.\.\/typescript-[^/`\s]+(?:\/SKILL\.md|\/)/i,
+    /typescript-[^/`\s]+\/SKILL\.md/i,
+    /\b(?:focused|primary|secondary|design|typescript)\s+skills?\b/i,
+    /\bsub-?skills?\b/i,
+  ];
+  const bad = [];
+  for (const file of routerFiles) {
+    const text = await readUtf8(file);
+    const found = forbidden.filter(pattern => pattern.test(text)).map(pattern => pattern.source);
+    if (found.length > 0) bad.push(`${file}: ${found.join(", ")}`);
+  }
+  if (bad.length === 0) pass(`INV-26 ${routerFiles.length} routers distinguish topics from skills`);
+  else fail("INV-26 routers distinguish topics from skills", bad.join("\n  "));
+}
+
+// ----- INV-27: internal markdown pointers use absolute skill URIs -----
+{
+  const bad = [];
+  const relativePointer = /`((?:\.\.\/|rules\/|references\/)[^`]+\.md|SKILL\.md)`/g;
+  for (const file of allMd) {
+    const text = await readUtf8(file);
+    for (const match of text.matchAll(relativePointer)) {
+      bad.push(`${file}: ${match[1]}`);
+    }
+  }
+  if (bad.length === 0) pass("INV-27 internal markdown pointers use absolute skill URIs");
+  else fail("INV-27 internal markdown pointers use absolute skill URIs", bad.join("\n  "));
 }
 
 // ----- output -----

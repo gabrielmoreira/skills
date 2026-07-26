@@ -1,11 +1,6 @@
----
-name: typescript-configs
-description: Use when TypeScript work involves env values, config parsing, contextual config objects, config defaults, validation boundaries, or migration from legacy config reads.
----
+# TypeScript Configs Topic Index
 
-# TypeScript Configs
-
-Use this skill when unknown runtime values become typed application configuration.
+Use this topic when unknown runtime values become typed application configuration.
 
 ## Application Shape Model
 
@@ -20,17 +15,17 @@ Config shape depends on app scale and framework pressure:
 
 Default for non-trivial apps: avoid a god `AppConfig` flowing everywhere. Parse raw values at the boundary, then project the smallest contextual config each module needs. Framework conventions decide where parsing/assembly starts; they do not require feature modules to consume unrelated config.
 
-## Agent Quick Path
+## Rule Routing
 
 | If you see... | Read |
 | --- | --- |
-| `process.env`, raw config strings, `!`, `as`, untyped config | `rules/parse-and-expose-config.md` |
-| broad `AppConfig` passed into feature modules or tests | `rules/contextual-config.md` |
-| schema does network/file/cloud checks | `rules/validation-vs-verification.md` |
-| default value, fallback, dev default, global config owner question, production-safe behavior tuning | `rules/defaults-and-ownership.md` |
-| URL, host, IP, endpoint, token, credential, secret-bearing fallback | `../typescript-security/rules/secrets-lifecycle.md` |
-| feature flag, mode, stage-derived behavior decision, repeated raw flag check | `rules/feature-decisions.md` |
-| legacy env reads or risky config refactor | `rules/migration.md` |
+| `process.env`, raw config strings, `!`, `as`, untyped config | `skill://typescript-skills/typescript-configs/rules/parse-and-expose-config.md` |
+| broad `AppConfig` passed into feature modules or tests | `skill://typescript-skills/typescript-configs/rules/contextual-config.md` |
+| schema does network/file/cloud checks | `skill://typescript-skills/typescript-configs/rules/validation-vs-verification.md` |
+| default value, fallback, dev default, global config owner question, production-safe behavior tuning | `skill://typescript-skills/typescript-configs/rules/defaults-and-ownership.md` |
+| URL, host, IP, endpoint, token, credential, secret-bearing fallback | `skill://typescript-skills/typescript-security/rules/secrets-lifecycle.md` |
+| feature flag, mode, stage-derived behavior decision, repeated raw flag check | `skill://typescript-skills/typescript-configs/rules/feature-decisions.md` |
+| legacy env reads or risky config refactor | `skill://typescript-skills/typescript-configs/rules/migration.md` |
 
 ## Owns
 
@@ -43,9 +38,9 @@ Default for non-trivial apps: avoid a god `AppConfig` flowing everywhere. Parse 
 
 ## Does Not Own
 
-- Secret value fetching and redaction: use `../typescript-security/SKILL.md`.
-- Dependency construction from config: use `../typescript-composition/SKILL.md`.
-- Config contract tests: use `../typescript-testing/SKILL.md`.
+- Secret value fetching and redaction: read `skill://typescript-skills/typescript-security/INDEX.md`.
+- Dependency construction from config: read `skill://typescript-skills/typescript-composition/INDEX.md`.
+- Config contract tests: read `skill://typescript-skills/typescript-testing/INDEX.md`.
 
 ## Default
 

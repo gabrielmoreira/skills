@@ -8,9 +8,9 @@
 export const TIERS = ["P0", "P1", "P2"] as const;
 
 /**
- * Pressure type the scenario applies to the skill tree.
+ * Pressure type the scenario applies to the routed topic tree.
  *
- * - `router`: mainly tests which bundle/rule should own the answer.
+ * - `router`: mainly tests which topic/rule should own the answer.
  * - `apply`: tests normal application of guidance to code/design review.
  * - `bypass`: tests resistance to plausible hard-gate bypass attempts.
  * - `exception`: tests when an exception is actually earned.
@@ -52,9 +52,9 @@ export type EvalDifficulty = (typeof DIFFICULTIES)[number];
 export type EvalScenario = {
   /** Stable unique identifier used by responses, grades, controls, and reports. */
   id: string;
-  /** Owning skill bundle, e.g. `typescript-configs`. */
+  /** Owning topic bundle, e.g. `typescript-configs`. */
   bundle: string;
-  /** Canonical rule slug inside that bundle, e.g. `parse-and-expose-config`. */
+  /** Canonical rule slug inside that topic, e.g. `parse-and-expose-config`. */
   rule: string;
   /** Relative priority for calibration and future gating. */
   tier: EvalTier;
@@ -62,7 +62,7 @@ export type EvalScenario = {
   mode: EvalMode;
   /** Optional calibration label for human review. */
   difficulty?: EvalDifficulty;
-  /** User-facing prompt. Must not leak the expected skill/rule name. */
+  /** User-facing prompt. Must not leak the expected topic/rule name. */
   prompt: string;
   /** Primary owner we expect a strong answer to route to. */
   expectedPrimary?: string;

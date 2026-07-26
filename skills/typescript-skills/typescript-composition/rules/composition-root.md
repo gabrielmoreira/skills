@@ -54,7 +54,7 @@ export function makeApp(config: AppConfig) {
 }
 ```
 
-For larger or framework-shaped apps that need lazy/tiered scope (Express request-scoped, Lambda per-invocation), see the layered-resolve pattern in `references/patterns/layered-resolve.md`. That pattern is reference material, not the canonical default — escalate to it only when `makeApp(config)` plus framework provider edges no longer fit.
+For larger or framework-shaped apps that need lazy/tiered scope (Express request-scoped, Lambda per-invocation), read `skill://typescript-skills/references/patterns/layered-resolve.md`. That pattern is reference material, not the canonical default — escalate to it only when `makeApp(config)` plus framework provider edges no longer fit.
 
 Verify:
 - Search for provider/client construction and env reads in behavior modules.

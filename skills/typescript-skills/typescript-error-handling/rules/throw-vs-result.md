@@ -11,7 +11,7 @@ references: [Java/C# checked exceptions critique, Result/Either type (Rust, Scal
 Decision: Each package picks one default propagation style — class-based (`throw`) or Result-based (`Result<T, E>` discriminated union) — and stays consistent. The canonical error semantics stay the same either way: both styles reuse the same app-owned error data. Throwing for programmer errors and invariant violations is still allowed in both styles.
 
 Use when:
-- Writing a new function that may fail, or the project's chosen default style is not visible yet (read `SKILL.md` first).
+- Writing a new function that may fail, or the project's chosen default style is not visible yet (read `skill://typescript-skills/typescript-error-handling/INDEX.md` first).
 - A pull request mixes both styles in the same package and a reviewer asks why.
 - Library code throws in a context where consumers were not expecting it.
 - A function returns `T | null` for multiple distinct failure modes and the caller cannot tell why it failed — this is usually a sign the failure should be a `Result`/discriminated value, not that the project needs a specific library.

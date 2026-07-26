@@ -1,9 +1,9 @@
 # Evals
 
-Eval system for the skills in this repo. Two layers:
+Eval system for the routing packages in this repo. Two layers:
 
 - **Structural invariants** (`check-invariants.ts`) — programmatic checks of file shape, routing keywords, demarcation cross-links, and known-regression invariants. Runs in <100 ms. Pass/fail.
-- **Behavioral scenarios** (`*/evals/*.scenarios.ts`) — realistic prompts with atomic `must` / `mustNot` checks, graded by an LLM subagent. One manifest per skill bundle, plus `evals/router.scenarios.ts` for tree-level gap-detection/routing scenarios and sibling manifests in `../maintainable-code/evals/` and `../progressive-reading/evals/`.
+- **Behavioral scenarios** (`*/evals/*.scenarios.ts`) — realistic prompts with atomic `must` / `mustNot` checks, graded by an LLM subagent. One manifest per topic bundle, plus `evals/router.scenarios.ts` for tree-level gap-detection/routing scenarios and sibling manifests in `../maintainable-code/evals/` and `../progressive-reading/evals/`.
 
 ## Quick run
 
@@ -20,7 +20,7 @@ Exit 0 = pass. Any invariant failure blocks promotion to `~/.agents/skills`.
 
 `evals/evals.types.ts` defines `EvalScenario`. The important fields:
 
-- `prompt` — realistic developer prose; must never name the expected skill or rule file (enforced by INV-21).
+- `prompt` — realistic developer prose; must never name the expected topic or rule file (enforced by INV-21).
 - `must` / `mustNot` — atomic checks so a regression identifies the exact lost behavior.
 - `tier` — `P0` (hard-gates and collisions; must be very hard to get wrong), `P1` (day-to-day), `P2` (coverage).
 - `mode` — `router`, `apply`, `bypass`, `exception`, `complexity`, `simplification`.
@@ -35,7 +35,7 @@ Design rules for prompts:
 
 For each scenario:
 
-1. Spawn one subagent with the skill tree available. Instruct it: read the root `SKILL.md` router, open the smallest relevant focused skill, read the rule files it points to, answer citing the rules used.
+1. Spawn one subagent with the package available. Instruct it: read `skill://typescript-skills`, open the smallest relevant topic index through the exact URI in the router, read the canonical rule files it points to, and answer citing the rules used. Do not invoke internal topic names as skills.
 2. Grade the response against `must` / `mustNot` with an LLM grader (see `lib/grading.ts` for the atomic grader contract). Deterministic keyword matching was tried and discarded — semantically correct answers with different vocabulary fail keyword checks (~30pp under-scoring).
 3. Score 0-3: 3 = ≥85% of checks, 2 = ≥60%, 1 = ≥30% right area, 0 = wrong direction.
 

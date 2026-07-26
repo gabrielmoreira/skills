@@ -47,7 +47,7 @@ export function makeSendReceipt({ getMailerForTenant }: {
 }
 ```
 
-For when to use a `makeXxx` capability object vs a class vs a plain function inside the unit being assembled, see `../typescript-coding-standards/rules/functions-vs-classes.md`.
+For when to use a `makeXxx` capability object vs a class vs a plain function inside the unit being assembled, read `skill://typescript-skills/typescript-coding-standards/rules/functions-vs-classes.md`.
 
 Verify:
 - Identify which inputs are known at assembly time and which vary at call time.

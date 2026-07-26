@@ -42,7 +42,7 @@ Verify:
 
 ## Style Rules
 
-- Keep `SKILL.md` files as routers, not essays.
+- Keep the root `skill://typescript-skills/SKILL.md` as a router, not an essay. Keep each internal `INDEX.md` as a topic router, not a skill.
 - Minimalism is structure proportional to pressure, not refusal to abstract. Guard both failure modes: over-engineering (jumping to framework/registry hierarchies) and under-engineering (hiding behind "simple" after repeated pressure).
 - Respect framework conventions (Next.js, React Native/Expo, NestJS); show where owned boundaries begin behind the framework edge.
 - Replace subjective terms with signals; do not rely only on words like `earned`, `small`, or `clean`.
@@ -60,11 +60,11 @@ Verify:
 
 ## Before Adding a New Rule
 
-- Search existing rules for the same decision; each topic has exactly one canonical owner (the bundle SKILL.md `Owns` sections define ownership).
+- Search existing rules for the same decision; each topic has exactly one canonical owner (the topic `INDEX.md` `Owns` sections define ownership).
 - If an existing rule owns it, edit that rule instead of adding a parallel one.
-- If the new topic crosses bundles, update root `SKILL.md` tie-breakers.
+- If the new topic crosses bundles, update the tie-breakers in `skill://typescript-skills/SKILL.md`.
 
-## Before Promoting to Installed Skills
+## Before Promoting the Installed Skill
 
 - `node evals/check-invariants.ts` exits 0.
-- Add or update scenarios in the bundle's `evals/*.scenarios.ts`; run at least one routing and one pressure scenario for the changed skill.
+- Add or update scenarios in the topic's `evals/*.scenarios.ts`; run at least one routing and one pressure scenario for the changed topic.

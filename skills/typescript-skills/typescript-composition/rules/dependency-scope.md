@@ -49,7 +49,7 @@ export function makeTenantDependencies(tenantId: string) {
 }
 ```
 
-For lazy/tiered scope (app singletons → app infra → request-scoped via `memoizeByReference`), see `references/patterns/layered-resolve.md`. Reference material; escalate from the canonical default above only when scope tiers earn it.
+For lazy/tiered scope (app singletons → app infra → request-scoped via `memoizeByReference`), read `skill://typescript-skills/references/patterns/layered-resolve.md`. Reference material; escalate from the canonical default above only when scope tiers earn it.
 
 Verify:
 - State the dependency scope in one phrase.

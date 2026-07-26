@@ -8,7 +8,7 @@ references: [Ports and Adapters (Hexagonal Architecture), Anti-Corruption Layer 
 
 # Provider Containment
 
-Decision: Keep provider, SDK, generated, and external API client shapes at the edge when their names or semantics are not the app's local meaning. This rule owns vendor/SDK/generated types only — for HTTP request/response/transport/env-like raw input, see `rules/raw-input-to-internal-model.md`.
+Decision: Keep provider, SDK, generated, and external API client shapes at the edge when their names or semantics are not the app's local meaning. This rule owns vendor/SDK/generated types only — for HTTP request/response/transport/env-like raw input, read `skill://typescript-skills/typescript-boundaries/rules/raw-input-to-internal-model.md`.
 
 Use when:
 - Business logic imports provider, SDK, or generated types, or provider enum/status/field names require provider docs to understand.
