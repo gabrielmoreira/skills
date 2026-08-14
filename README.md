@@ -167,7 +167,7 @@ puts the real files before symlinking them out.
 
 ## The skills
 
-### `evidence-backed-review`
+### [`evidence-backed-review`](skills/evidence-backed-review/SKILL.md)
 
 **Use it before you open a pull request, or when someone hands you a branch.**
 
@@ -184,7 +184,7 @@ never opened.
 - **It only opens the checks that apply.** A three-line change does not pay for a
   nine-hundred-line review.
 
-### `debugging-by-evidence`
+### [`debugging-by-evidence`](skills/debugging-by-evidence/SKILL.md)
 
 **Use it when something is broken and you do not know why yet.**
 
@@ -202,7 +202,7 @@ actually reproduced the problem in front of it.
 Good for intermittent failures, "it works on my machine", and anything that got
 slow.
 
-### `keep-git-work-recoverable`
+### [`keep-git-work-recoverable`](skills/keep-git-work-recoverable/SKILL.md)
 
 **Use it when git refuses and you are not sure what is safe to do.**
 
@@ -216,7 +216,7 @@ old worktrees you want to clean up.
   retrying with more force.
 - **Anything destructive comes back to you** with what you would lose, spelled out.
 
-### `make-the-docs-trustworthy`
+### [`make-the-docs-trustworthy`](skills/make-the-docs-trustworthy/SKILL.md)
 
 **Use it when the docs say something that is no longer true**, or when you are
 about to write something down and do not know where it goes.
@@ -230,7 +230,7 @@ about to write something down and do not know where it goes.
   superseded with a pointer forward rather than quietly deleted.
 - **Prose nobody has read is treated as a guess**, not as a source.
 
-### `maintainable-code`
+### [`maintainable-code`](skills/maintainable-code/SKILL.md)
 
 **Use it whenever you are writing, reviewing, or restructuring code.**
 
@@ -246,7 +246,7 @@ are named at the top so you can stop after those.
 - **It will not make you split things for the sake of splitting them.** A helper
   that only makes a file shorter is not an improvement.
 
-### `typescript-skills`
+### [`typescript-skills`](skills/typescript-skills/SKILL.md)
 
 **Use it when the question is specifically about TypeScript.**
 
@@ -261,7 +261,7 @@ config, async, error handling, observability, security, testing.
 - **Covers the things that bite in production.** Cancellation, cleanup order,
   retry storms, secrets in logs, provider types leaking into your domain.
 
-### `progressive-reading`
+### [`progressive-reading`](skills/progressive-reading/SKILL.md)
 
 **Use it when the agent's answers are exhausting to read.**
 
@@ -275,7 +275,7 @@ release.
 - **It knows when to stop.** Shorter is not better once the answer becomes wrong
   or too terse to follow.
 
-### `authoring-verifiable-skills`
+### [`authoring-verifiable-skills`](skills/authoring-verifiable-skills/SKILL.md)
 
 **Use it when you want to write your own skill**, or figure out why one you wrote
 never fires.
