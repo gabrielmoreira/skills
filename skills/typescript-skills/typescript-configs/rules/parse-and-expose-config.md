@@ -20,7 +20,11 @@ Use when:
 
 Do:
 - **Collect raw values in one boundary module.** Never let `process.env` reach behaviour code.
-- **Parse deliberately into real types.** Booleans, numbers, URLs, enums, durations, arrays, and required fields.
+- **Parse deliberately into real types.**
+  - Booleans and numbers.
+  - URLs and durations.
+  - Enums and arrays.
+  - Required fields.
 - **Escalate only as the shape demands.**
   - A manual parser in one boundary.
   - The framework entrypoint, where the framework owns loading.
