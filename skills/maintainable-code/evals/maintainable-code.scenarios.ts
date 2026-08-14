@@ -9,13 +9,13 @@ const scenarios = [
     mode: "apply",
     difficulty: "mixed",
     prompt:
-      "Our services all receive a single `ctx` object that carries the db pool, logger, feature flags, current user, request id, an event bus, and a grab-bag `ctx.extras`. A teammate says it's convenient because you never have to change signatures. We're adding a new `invoiceReminder` service now — should it take `ctx` too?",
+      "Our services all receive a single `ctx` object that carries the db pool, logger, feature flags, current user, request id, an event bus, and a grab-bag `ctx.extras`. A teammate says it's convenient because you never have to change signatures. We're adding a new `invoiceReminder` service now, should it take `ctx` too?",
     expectedPrimary: "maintainable-code",
     must: [
       "Recommends explicit dependencies (constructor/factory/parameters) for the new service instead of the god context",
       "Explains that a broad context hides what the function actually depends on and makes everything look coupled to the whole system",
       "Acknowledges the legitimate exception: shared contexts are acceptable as extension contracts (plugins, workflow engines, framework-like systems)",
-      "Keeps the advice proportional — does not demand a big-bang rewrite of every existing service"
+      "Keeps the advice proportional, does not demand a big-bang rewrite of every existing service"
     ],
     mustNot: [
       "Approves passing the god context because 'it is the existing pattern' without flagging the cost",
@@ -31,7 +31,7 @@ const scenarios = [
     mode: "bypass",
     difficulty: "mixed",
     prompt:
-      "We have a generic `WorkflowRunner` that executes steps from config. One customer (ACME) needs a 90-second delay before their export step. The fastest fix is `if (tenantId === 'acme') await sleep(90_000)` inside the runner — it ships today and it's just three lines. Deadline is Friday. OK to merge?",
+      "We have a generic `WorkflowRunner` that executes steps from config. One customer (ACME) needs a 90-second delay before their export step. The fastest fix is `if (tenantId === 'acme') await sleep(90_000)` inside the runner, it ships today and it's just three lines. Deadline is Friday. OK to merge?",
     expectedPrimary: "maintainable-code",
     must: [
       "Rejects hardcoding the tenant-specific case inside the generic runner",
@@ -56,7 +56,7 @@ const scenarios = [
       "A reviewer wants my 40-line `registerUser` use case split so every function is under 10 lines: `checkEmailFormat`, `checkEmailUnique`, `hashPassword`, `buildUserRecord`, `saveUser`, `emitUserCreated`, `buildResponse`. The flow is linear and each helper would be called exactly once. Is smaller always better here?",
     expectedPrimary: "maintainable-code",
     must: [
-      "Says no — a cohesive linear business flow can stay together when reading it in one place is clearer",
+      "Says no, a cohesive linear business flow can stay together when reading it in one place is clearer",
       "Distinguishes extracting real secondary detail (parsing, validation, formatting) from fragmenting the main flow into single-use micro-functions",
       "Mentions the reader cost of jumping across many tiny helpers to reconstruct one business decision"
     ],

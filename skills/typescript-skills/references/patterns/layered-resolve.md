@@ -1,4 +1,4 @@
-# Layered Resolve — Lazy Composition Root
+# Layered Resolve, Lazy Composition Root
 
 Pattern for assembling the Composition Root of Clean Architecture as lazy, tiered resolvers instead of one eager `main()`. Useful for Lambda (cold-start friendly), Express (request-scoped without a DI container), and any app where dependencies have different lifetimes.
 
@@ -14,7 +14,7 @@ Replace one eager `bootstrap()` that wires everything at startup with a tree of 
 - Request-scoped resolvers cache once per request reference (`memoizeByReference`).
 - Each tier only references tiers above it.
 
-The result is a Composition Root that is the only place that knows all adapters, all ports, and all use cases — but constructed lazily and tier-by-tier.
+The result is a Composition Root that is the only place that knows all adapters, all ports, and all use cases, but constructed lazily and tier-by-tier.
 
 ---
 
@@ -22,9 +22,9 @@ The result is a Composition Root that is the only place that knows all adapters,
 
 Tiers map to Clean Architecture rings:
 
-- **runtime** — infra/framework: env, logger, secrets, OAuth, cache.
-- **application** — adapters that satisfy ports: database, storage, connectors.
-- **request** — use cases assembled with request-scoped deps: feature flags, current user, use cases.
+- **runtime**, infra/framework: env, logger, secrets, OAuth, cache.
+- **application**, adapters that satisfy ports: database, storage, connectors.
+- **request**, use cases assembled with request-scoped deps: feature flags, current user, use cases.
 
 Reference direction is one-way: `request → application → runtime`. Never the other direction.
 
@@ -33,7 +33,7 @@ Reference direction is one-way: `request → application → runtime`. Never the
 ## Express variant
 
 ```ts
-// runtime.ts — app-scoped singletons
+// runtime.ts, app-scoped singletons
 export const resolveEnv = memoizeSingleton((): RuntimeEnv => getPlatformProcessEnv());
 export const resolveBaseLogger = memoizeSingleton(
   (): Logger => loggerFactory({ serviceName: resolveEnv().SERVICE_NAME ?? "my-app" }),
@@ -47,7 +47,7 @@ export const resolveSecretRuntime = memoizeSingleton(() =>
 ```
 
 ```ts
-// application.ts — app-scoped infra capabilities
+// application.ts, app-scoped infra capabilities
 const resolveDatabase = memoizeSingleton(() =>
   databaseFactory({ connectionString: resolveDatabaseConfig().connectionString }),
 );
@@ -62,7 +62,7 @@ export const resolveNotesStorage = memoizeSingleton(
 ```
 
 ```ts
-// request.ts — request-scoped, memoized by request reference
+// request.ts, request-scoped, memoized by request reference
 export const resolveRequestFeatureFlags = memoizeByReference(
   (request: HostRequest): RequestFeatureFlags =>
     requestFeatureFlagsFactory({
@@ -78,7 +78,7 @@ export const resolveCreateNoteUsecase = memoizeByReference(
 ```
 
 ```ts
-// server.ts — middleware projects request-scoped capabilities
+// server.ts, middleware projects request-scoped capabilities
 export const resolveContextMiddleware = memoizeSingleton(() =>
   function contextMiddleware(req: Request, _res: Response, next: NextFunction) {
     req.appContext = {
@@ -97,7 +97,7 @@ export const resolveContextMiddleware = memoizeSingleton(() =>
 Same tiers, but the handler file is the edge. Each handler singleton wraps `{ event, awsContext }` as the request reference and resolves request-scoped capabilities per invocation. The handler file exports a testable factory and a Lambda entrypoint.
 
 ```ts
-// handlers.ts — handler singletons resolve per-invocation
+// handlers.ts, handler singletons resolve per-invocation
 export const resolveCreateNoteLambdaHandler = memoizeSingleton(() => {
   return async function(event: LambdaEventLike, awsContext?: LambdaAwsContextLike) {
     const request = { event, awsContext };
@@ -111,7 +111,7 @@ export const resolveCreateNoteLambdaHandler = memoizeSingleton(() => {
 ```
 
 ```ts
-// create-note.handler.ts — testable factory + Lambda export
+// create-note.handler.ts, testable factory + Lambda export
 export function createNoteLambdaHandlerFactory({
   createNoteUsecase,
   currentUserId,
@@ -123,7 +123,7 @@ export function createNoteLambdaHandlerFactory({
   };
 }
 
-// Lambda entrypoint — one line, delegates to bootstrap
+// Lambda entrypoint, one line, delegates to bootstrap
 export const handler = async (event: any, context?: any) =>
   resolveCreateNoteLambdaHandler()(event, context);
 ```
@@ -132,7 +132,7 @@ export const handler = async (event: any, context?: any) =>
 
 ## Tests
 
-The handler factory is testable directly with explicit deps — no bootstrap import needed:
+The handler factory is testable directly with explicit deps, no bootstrap import needed:
 
 ```ts
 it("creates notes through the lambda adapter", async () => {
@@ -145,7 +145,7 @@ it("creates notes through the lambda adapter", async () => {
 });
 ```
 
-Scope memoization is a separate concern — test it only when the bootstrap infra itself is the contract:
+Scope memoization is a separate concern, test it only when the bootstrap infra itself is the contract:
 
 ```ts
 it("returns the same usecase for the same request reference", () => {
