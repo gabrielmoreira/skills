@@ -8,32 +8,37 @@ references: [Dependency Injection for Testability]
 
 # Config in Tests
 
-Decision: Inject config into tests when the module API allows it. Mutate `process.env` only for the config-reading boundary and restore it completely.
+Decision: **Inject config into the unit under test wherever its API allows it.** Mutate `process.env` only for the config-reading boundary, and restore it completely.
 
 Use when:
-- Tests set `process.env` to exercise ordinary feature behavior, or several tests repeat env setup for behavior that should accept config instead.
-- Module tests fail depending on global environment order.
-- Config is read during import time, including legacy import-time reads that cannot yet be refactored.
-- A config parser or config boundary is under test, specifically to exercise raw env/config input.
+- **Tests set `process.env` to exercise ordinary feature behaviour.**
+- **Several tests repeat the same env setup** for behaviour that could accept config instead.
+- **Module tests pass or fail depending on global environment order.**
+- **Config is read at import time**, including legacy reads that cannot be refactored yet.
+- **A config parser is under test**, specifically to exercise raw input.
 
 Do:
-- Pass typed config directly to the unit under test — factories, constructors, or functions.
-- Scale from direct config injection, to testing the config parser with a raw env object, to isolated `process.env` mutation only inside a config-boundary test helper, to module-cache reset only for legacy import-time reads during migration — then refactor toward explicit injection.
-- Test the config-reading boundary separately from ordinary behavior.
-- If env mutation is necessary, snapshot and restore env around each test.
-- Avoid import-time config reads; prefer explicit factory calls.
+- **Pass typed config straight to the unit.** A factory, a constructor, or a function.
+- **Scale up only as the need appears.**
+  - Direct config injection.
+  - Testing the parser with a raw env object.
+  - Isolated `process.env` mutation, inside a config-boundary helper only.
+  - A module-cache reset, only for a legacy import-time read during migration.
+- **Test the config-reading boundary separately from ordinary behaviour.**
+- **Snapshot and restore env around each test** where mutation is unavoidable.
+- **Move toward explicit injection** rather than settling at the env mutation.
 
 Avoid:
-- Process-wide env mutation for normal behavior tests.
-- Tests that depend on test order or previous env state.
-- Hidden defaults that make tests pass without explicit config.
-- Reusing production config objects in unit tests.
+- **Process-wide env mutation for a normal behaviour test.**
+- **A test that depends on run order or on a previous test's env.**
+- **A hidden default that lets a test pass without stating its config.**
+- **Reusing a production config object in a unit test.**
 
 Exceptions:
-- Config parser tests should set raw env/input intentionally.
-- Legacy code may require env mutation during characterization; isolate it and migrate toward injection.
+- **A config parser test SHOULD set raw input deliberately.** That is its subject.
+- **Legacy code MAY need env mutation during characterization.** Isolate it and migrate.
 
-Example:
+Example (one instance, not the set):
 
 Prefer direct injection:
 
@@ -42,7 +47,7 @@ const sender = makeEmailSender({ apiKey: "test-key", timeoutMs: 100 });
 await sender.send("user@example.com");
 ```
 
-If testing the env boundary, isolate mutation:
+Isolate the mutation where the env boundary itself is the subject:
 
 ```ts
 const originalEnv = process.env;
@@ -57,6 +62,6 @@ afterEach(() => {
 ```
 
 Verify:
-- Search tests for `process.env` writes.
-- Confirm env mutation is limited to config boundary tests or isolated legacy characterization.
-- Confirm tests can run individually and in any order.
+- **Search tests for writes to `process.env`.**
+- **Confirm any mutation sits in a config-boundary test** or in isolated legacy characterization.
+- **Confirm each test runs alone and in any order.**

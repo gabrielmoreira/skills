@@ -8,34 +8,36 @@ references: [Smoke Testing, Integration Testing]
 
 # Composition Root Tests
 
-Decision: Test composition roots lightly through public surface or smoke behavior; do not freeze incidental dependency graph details.
+Decision: **Test a composition root lightly, through its public surface or a smoke behaviour, and never freeze incidental dependency graph detail.**
 
 Use when:
-- Tests inspect private fields, constructed dependency arrays, factory names, or registration order.
-- A bootstrap/composition function wires dependencies.
-- You need confidence that the app starts with parsed config and selected providers.
-- Provider selection is runtime behavior.
+- **Tests inspect wiring internals.** Private fields, constructed dependency arrays, factory names, registration order.
+- **A bootstrap function wires dependencies together.**
+- **You need confidence the app starts** with parsed config and the selected providers.
+- **Provider selection is itself runtime behaviour.**
 
 Do:
-- Boot the root with explicit test config.
-- Assert public capabilities exist or a small behavior works; assert provider selection only when selection is an intentional contract.
-- Keep detailed behavior tests in the modules that own behavior.
-- Test handler behavior through the handler factory with explicit deps — no bootstrap import needed.
-- Test scope memoization (same reference = same instance) only when testing bootstrap infra itself.
+- **Boot the root with explicit test config.**
+- **Assert that public capabilities exist**, or that one small behaviour works.
+- **Assert provider selection only where selection is an intentional contract.**
+- **Keep detailed behaviour tests in the modules that own the behaviour.**
+- **Test a handler through its factory with explicit dependencies.** No bootstrap import is needed for that.
+- **Test scope memoization only when the subject is the bootstrap infrastructure itself.**
 
 Avoid:
-- Snapshotting entire containers or dependency graphs, or testing every edge in the wiring graph.
-- Asserting private field names or constructor order.
-- Using composition tests to compensate for untested behavior modules.
-- Dynamic-importing bootstrap modules (`await import(...)`) with `vi.resetModules()` to test handler behavior — that is a bootstrap infra test, not a handler test.
+- **Snapshotting a whole container or dependency graph.**
+- **Testing every edge in the wiring graph.**
+- **Asserting private field names or constructor order.**
+- **Using a composition test to cover behaviour that has no test of its own.**
+- **Dynamically importing bootstrap with a module reset to reach handler behaviour.** That is a bootstrap infrastructure test wearing a handler test's name.
 
 Exceptions:
-- Plugin registries, public DI containers, or generated wiring may make graph shape a contract.
-- Critical startup safety checks may deserve explicit tests for a required dependency being present.
+- **A plugin registry, a public container, or generated wiring MAY make graph shape a contract.**
+- **A critical startup safety check MAY deserve its own test**, such as a required dependency being present.
 
-Example:
+Example (one instance, not the set):
 
-Handler behavior — test the factory directly, no bootstrap:
+Handler behaviour, tested through the factory:
 
 ```ts
 it("creates notes through the lambda adapter", async () => {
@@ -48,7 +50,7 @@ it("creates notes through the lambda adapter", async () => {
 });
 ```
 
-Bootstrap infra — scope contract test, separate concern:
+Bootstrap infrastructure, which is a separate concern:
 
 ```ts
 it("returns the same usecase for the same request reference", () => {
@@ -58,6 +60,6 @@ it("returns the same usecase for the same request reference", () => {
 ```
 
 Verify:
-- Check the test would survive harmless refactors of private wiring.
-- Check failure would indicate a real startup or public contract problem.
-- Check module behavior has focused tests elsewhere.
+- **Check the test survives a harmless refactor of private wiring.**
+- **Check a failure would point at a real startup or contract problem.**
+- **Check the module's own behaviour is tested somewhere focused.**
