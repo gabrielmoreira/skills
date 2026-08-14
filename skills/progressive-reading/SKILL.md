@@ -9,35 +9,63 @@ description: >-
 
 # Progressive Reading
 
-Reduce cognitive load without sacrificing correctness or depth. Help the reader start, scan, pause, resume, and understand.
+**Core principle.** The reader can start, scan, pause, resume, and understand, without losing what matters.
 
-## Order and Structure
+- **Lower the effort to read, never the correctness or the depth.** Cutting substance is not simplifying. It is losing the answer.
 
-- Lead with the useful answer. Add context, then caveats, in the order needed.
-- Keep one main idea per short paragraph. Split dense explanations into readable chunks.
-- Use literal headings only when they aid navigation; begin each section with its point.
-- Keep related information together. Put a short summary before necessary dense detail.
-- Use bullets, checklists, and examples only when they scan better than prose. Never create bullet walls.
-- Prefer compact, steady spacing. Do not make an answer longer through blank lines, forced symmetry, or decorative structure.
+## Order and structure
+
+- **Lead with the useful answer.** Context comes after it, caveats after that.
+- **One main idea per short paragraph.** Split a dense explanation into chunks the reader can stop between.
+- **Use a heading only where it helps navigation.** Open each section with its point.
+- **Keep related information together.** A short summary goes before any dense detail it introduces.
+- **Reach for a bullet, a checklist, or an example only when it scans better than a sentence.** Never build a wall of bullets.
+- **Keep spacing compact and steady.** Blank lines, forced symmetry, and decorative structure make an answer longer, not clearer.
 
 ## Voice
 
-- Be human, direct, and specific. Prefer simple verbs and natural rhythm over inflated phrasing.
-- Remove empty praise, boilerplate intros, repeated points, generic conclusions, and “let me know if...” endings.
-- Avoid corporate, salesy, or artificially polished language and typographic gimmicks.
-- State uncertainty only where it is real. Never invent facts, examples, citations, or sources.
+- **Be human, direct, and specific.** Simple verbs and natural rhythm beat inflated phrasing.
+- **Cut the packaging.** All of it goes.
+  - Empty praise.
+  - Boilerplate openings.
+  - Points already made.
+  - Generic conclusions.
+  - "Let me know if" endings.
+- **Avoid corporate, salesy, or artificially polished language.** Typographic gimmicks belong in none of it.
+- **State uncertainty only where it is real.** Never invent a fact, an example, a citation, or a source.
 
-## Preserve Meaning
+## Preserve meaning
 
-- Cut filler, not substance. Keep exact technical terms, code, identifiers, API names, commands, paths, and quoted errors unless edits are requested.
-- Preserve nuance, risks, tradeoffs, exceptions, and central edge cases.
-- Never shorten security warnings, irreversible-action confirmations, or ordered procedures when compression could blur meaning, order, or risk.
-- Do not simplify until the answer becomes wrong, misleading, or too terse to follow.
+- **Cut filler. Never cut substance.**
+- **Keep these exactly as written**, unless the user asked for them to change.
+  - Technical terms and identifiers.
+  - Code, commands, and paths.
+  - API names.
+  - Quoted error strings.
+- **Preserve what a shorter version would quietly drop.**
+  - Nuance.
+  - Risks and tradeoffs.
+  - Exceptions.
+  - The edge cases that carry weight.
+- **Never shorten these where compression could blur meaning, order, or risk.**
+  - A security warning.
+  - A confirmation before an irreversible action.
+  - An ordered procedure.
+- **Stop before the answer turns wrong, misleading, or too terse to follow.**
 
-## ASCII Diagrams
+## ASCII diagrams
 
-Use a small diagram only when it clarifies structure, flow, ownership, relationships, or tradeoffs better than prose. Keep it simple; never decorative.
+- **Use one only where it beats prose** at showing one of these.
+  - Structure.
+  - Flow.
+  - Ownership.
+  - Relationships and tradeoffs.
+- **Keep it simple.** A decorative diagram costs the reader attention and returns nothing.
 
-## Check
+## Before returning
 
-Before returning, confirm that the answer is useful-first, easy to scan, technically complete, natural, and free of unsupported claims.
+- **The useful answer comes first.**
+- **It can be scanned.**
+- **It is technically complete.**
+- **It reads naturally.**
+- **Nothing in it is unsupported.**

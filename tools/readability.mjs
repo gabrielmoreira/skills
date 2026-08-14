@@ -72,20 +72,34 @@ const args = process.argv.slice(2);
 let files = [];
 if (args[0] === "--skill") {
   const dir = args[1];
-  files = [path.join(dir, "SKILL.md"), ...fs.readdirSync(path.join(dir, "rules")).map((f) => path.join(dir, "rules", f))];
+  const rules = path.join(dir, "rules");
+  const entry = fs.existsSync(path.join(dir, "SKILL.md")) ? "SKILL.md" : "INDEX.md";
+  files = [path.join(dir, entry)];
+  if (fs.existsSync(rules)) files.push(...fs.readdirSync(rules).map((f) => path.join(rules, f)));
 } else {
   files = args;
 }
+
+/**
+ * The router thresholds assume a gate table plus discriminators over many rules.
+ * A flat skill has no rules directory, so it is one unit of decisions and is held
+ * to the per-rule counts instead. Judging it as a router would demand forty
+ * bullets from a file that correctly has one topic.
+ */
+const isFlatEntry = (f) => {
+  if (/[\\/]rules[\\/]/.test(f)) return false;
+  return !fs.existsSync(path.join(path.dirname(f), "rules"));
+};
 
 const flag = (v, limit, over) => (over ? v > limit : v < limit) ? "  " : " !";
 
 console.log("\nfile".padEnd(34) + "words bull bold  avgP maxP  cl/s prose%");
 let bad = 0;
 for (const f of files) {
-  const isRule = /[\\/]rules[\\/]/.test(f);
+  const perUnit = /[\\/]rules[\\/]/.test(f) || isFlatEntry(f);
   const s = shape(fs.readFileSync(f, "utf8"));
-  const wantBul = isRule ? 12 : 40;
-  const wantBold = isRule ? 4 : 20;
+  const wantBul = perUnit ? 12 : 40;
+  const wantBold = perUnit ? 4 : 20;
   const marks =
     flag(s.bullets, wantBul, true) + flag(s.bold, wantBold, true) +
     flag(s.maxPara, TARGET.maxPara, false) + flag(s.clauses, TARGET.clauses, false) +
