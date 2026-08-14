@@ -175,9 +175,13 @@ npx skills@latest add gabrielmoreira/skills --list
 directory you have. Editing the skill once changes it everywhere. Add `--copy` if
 you would rather have independent real files.
 
-**A few agents will report a failure on `--global`**, Eve and PromptScript among
-them, because they only support project-level skills. The rest install fine and
-nothing is broken. Drop `--global` for those, or ignore the lines.
+**`--all` means every agent the CLI knows about**, currently 76, not the ones you
+happen to have. So it will try tools you have never installed, and two of them,
+Eve and PromptScript, are project-only by design and cannot accept a global
+install at all. Those lines are noise. Nothing failed that mattered.
+
+**Running it twice is fine.** The second run reports overwrites everywhere,
+which is the same skills replacing themselves.
 
 Useful afterwards: `npx skills list` shows what you have, `npx skills update`
 pulls newer versions, and `npx skills remove` takes one out.
