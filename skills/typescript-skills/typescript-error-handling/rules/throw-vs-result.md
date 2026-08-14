@@ -3,42 +3,47 @@ id: typescript-error-handling.throw-vs-result
 owner: typescript-error-handling
 canonical: true
 severity: default
-references: [Java/C# checked exceptions critique, Result/Either type (Rust, Scala, fp-ts), Errors are values (Go), Effect.ts, neverthrow]
+references: [Result/Either type (Rust, Scala, fp-ts), Errors are values (Go), Effect.ts, neverthrow]
 ---
 
 # Throw vs Result
 
-Decision: Follow the package's established propagation style. Use exceptions for APIs built around throwing and Result-like values when expected failures are part of ordinary control flow. Translate once where styles meet.
+Decision: **Follow the propagation style the package already has.** Exceptions where the API is built around throwing, a result value where expected failures are ordinary control flow, and one translation where the two styles meet.
 
 Use when:
-- A new fallible API has no visible local convention.
-- Throw and Result are mixed without a boundary.
-- Consumers need typed expected failures.
-- `null` or `undefined` hides distinct failure reasons.
+- **A new fallible API has no visible local convention.**
+- **Throw and result are mixed** with no boundary between them.
+- **Consumers need typed expected failures.**
+- **`null` or `undefined` is hiding several distinct failure reasons.**
 
 Do:
-- Inspect callers, framework conventions, and neighboring packages first.
-- Keep one default within a coherent package or surface.
-- Use discriminated results for expected outcomes callers routinely branch on.
-- Preserve `cause`, codes, and classification in either style.
-- Throw programmer errors and broken invariants rather than treating them as ordinary results.
+- **Look at callers, framework conventions, and neighbouring packages first.**
+- **Keep one default within a coherent package or surface.**
+- **Use a discriminated result for outcomes callers routinely branch on.**
+- **Preserve cause, code, and classification in either style.** The style changes the channel, not the content.
+- **Throw for a programmer error or a broken invariant**, rather than returning it as an ordinary result.
 
 Avoid:
-- Introducing a Result library for one isolated function.
-- Returning `Result<T, Error>` without useful failure semantics.
-- Catching only to wrap without adding context, classification, or translation.
-- Converting an entire codebase only for stylistic consistency.
+- **Introducing a result library for one isolated function.**
+- **`Result<T, Error>` with no useful failure semantics.** That is a throw with extra steps.
+- **Catching only to rewrap**, with no context, classification, or translation added.
+- **Converting a whole codebase for stylistic consistency alone.**
 
-Example:
+Exceptions:
+- **A boundary MAY convert between styles**, and that is exactly where it should happen.
+- **A framework's own convention wins** inside code that framework calls.
+
+Example (one instance, not the set):
 
 ```ts
+// A result is worth it when callers branch on the failure, not merely observe it.
 type Result<T, E> =
   | { ok: true; value: T }
   | { ok: false; error: E };
 ```
 
 Verify:
-- Callers handle every expected Result branch.
-- Thrown failures reach one intentional boundary.
-- Cross-style translation happens once.
-- The chosen style matches local ecosystem and consumer expectations.
+- **Check callers handle every expected branch.**
+- **Check thrown failures reach one intentional boundary.**
+- **Check cross-style translation happens once**, not at every hop.
+- **Check the chosen style matches the local ecosystem** and what consumers expect.

@@ -3,34 +3,45 @@ id: typescript-error-handling.define-app-error-semantics-early
 owner: typescript-error-handling
 canonical: true
 severity: default
-references: [App-level error contract design, RFC 9457 Problem Details (obsoletes RFC 7807), W3C Trace Context, ULID / UUID v7]
+references: [App-level error contract design, RFC 9457 Problem Details, W3C Trace Context, ULID / UUID v7]
 ---
 
 # Define App Error Semantics Early
 
-Decision: Establish app-owned error semantics before multiple modules invent incompatible shapes. Scale the contract to actual consumers: a script may need only `Error` and `cause`; stable codes, families, metadata, and projections are earned by cross-module or boundary needs.
+Decision: **Settle app-owned error semantics before several modules invent incompatible shapes.** Which fields carry those semantics belongs to `skill://typescript-skills/typescript-error-handling/rules/error-shape-and-metadata.md`.
 
 Use when:
-- Several modules create, classify, log, or expose the same failures.
-- Raw strings, vendor errors, or ad hoc Result variants are spreading.
-- Required diagnostic or correlation data is repeatedly lost.
+- **Several modules create, classify, log, or expose the same failures.**
+- **Ad hoc failure shapes are spreading.** Raw strings, vendor errors, one-off result variants.
+- **Required diagnostic or correlation data keeps getting lost** on the way out.
+- **A new package needs to exchange failures with an existing one.**
 
 Do:
-- Define stable app-owned `code` values and a small semantic payload.
-- Keep runtime `cause` for in-process diagnostics; serialize only an explicit safe projection.
-- Add broad families such as business, validation, infrastructure, or security only when callers branch on them.
-- Make always-required creation data required in helpers.
-- Place a shared contract in a dependency-neutral module when packages must exchange it.
+- **Define stable app-owned `code` values** and a small semantic payload beside them.
+- **Scale the contract to its actual consumers.** A script may need only `Error` and `cause`.
+- **Keep the runtime `cause` for in-process diagnostics**, and serialize only an explicit safe projection.
+- **Add a broad family only when callers branch on it.** Business, validation, infrastructure, security.
+- **Make always-required creation data required in the helper**, so it cannot be forgotten.
+- **Put a shared contract in a dependency-neutral module** where packages must exchange it.
 
 Avoid:
-- Designing an error framework for a small local script.
-- Treating subclass identity, message text, HTTP status, or vendor codes as the durable domain contract.
-- An optional-everything error object that lets creators omit essential context.
-- Mixing propagation styles casually inside one package.
+- **Designing an error framework for a small local script.**
+- **Treating any of these as the durable contract.**
+  - Subclass identity.
+  - Message text.
+  - An HTTP status.
+  - A vendor code.
+- **An optional-everything error object**, which lets a creator omit the context that mattered.
+- **Mixing propagation styles casually inside one package.**
 
-Example:
+Exceptions:
+- **A single-module script MAY use `Error` and `cause` alone.** That is the contract, and it is enough.
+- **A library MAY expose only codes**, leaving families to the application that consumes it.
+
+Example (one instance, not the set):
 
 ```ts
+// The whole contract, at the size its consumers need today.
 type AppErrorData = {
   code: string;
   message: string;
@@ -40,10 +51,10 @@ type AppErrorData = {
 const error = new Error("Charge failed", { cause });
 ```
 
-Add `kind`, correlation data, retry policy, or protocol projections only when a caller or boundary needs them.
+- **Add `kind`, correlation data, retry policy, or a protocol projection** only once a caller or a boundary needs it.
 
 Verify:
-- The model is no larger than its current consumers require.
-- Codes are stable and app-owned; causes remain available internally.
-- Public projections do not expose internal or vendor data.
-- New modules reuse the contract instead of inventing parallel shapes.
+- **Check the model is no larger than its current consumers require.**
+- **Check codes are stable and app-owned**, and causes stay available internally.
+- **Check no public projection exposes internal or vendor data.**
+- **Check a new module reuses the contract** rather than inventing a parallel one.

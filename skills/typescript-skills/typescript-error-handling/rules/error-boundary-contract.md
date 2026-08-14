@@ -3,35 +3,40 @@ id: typescript-error-handling.error-boundary-contract
 owner: typescript-error-handling
 canonical: true
 severity: default
-references: [Anti-Corruption Layer (DDD), Hexagonal Architecture edge translation, RFC 9457 Problem Details (obsoletes RFC 7807), GraphQL error extensions]
+references: [Anti-Corruption Layer (DDD), Hexagonal Architecture edge translation, RFC 9457 Problem Details]
 ---
 
 # Error Boundary Contract
 
-Decision: A boundary owns the error shape it exposes. Translate internal or provider failures once into a stable, safe contract for HTTP, GraphQL, RPC, jobs, CLIs, or library consumers.
+Decision: **A boundary owns the error shape it exposes**, and translates internal or provider failures once into a stable, safe contract.
 
 Use when:
-- Handlers expose raw messages, stacks, paths, or provider codes.
-- Equivalent failures produce inconsistent outward shapes.
-- Domain code contains protocol-specific status or response logic.
-- A fallback changes behavior without an observable signal.
+- **A handler exposes something internal.** A raw message, a stack, a path, a provider code.
+- **Equivalent failures produce inconsistent outward shapes.**
+- **Domain code carries protocol-specific status or response logic.**
+- **A fallback changes behaviour with no observable signal.**
 
 Do:
-- Centralize translation at the boundary or framework error hook.
-- Map stable app codes or families to protocol status and safe messages.
-- Return a correlation identifier when operations need support or incident lookup.
-- Preserve full internal diagnostics in protected logs or traces after redaction.
-- Define what unknown failures expose and fail closed.
+- **Centralize translation at the boundary**, or at the framework's error hook.
+- **Map a stable app code or family to a protocol status and a safe message.**
+- **Return a correlation identifier** where support or incident lookup will need one.
+- **Keep full internal diagnostics in protected logs or traces**, after redaction.
+- **Define what an unknown failure exposes, and fail closed.** The default is what a caller sees on the worst day.
 
 Avoid:
-- Returning the canonical internal object verbatim.
-- Enumerating provider exceptions throughout handlers.
-- Logging and responding independently with different classification.
-- Swallowing or defaulting without an explicit owned decision.
+- **Returning the canonical internal object verbatim.**
+- **Enumerating provider exceptions across handlers.** That is the boundary leaking inward.
+- **Logging and responding independently**, which lets the two disagree about what happened.
+- **Swallowing or defaulting** without an owned, visible decision.
 
-Example:
+Exceptions:
+- **A library MAY rethrow its own typed failures** and leave protocol mapping to its consumer.
+- **An internal service MAY expose more detail to a trusted caller**, where the trust boundary is explicit.
+
+Example (one instance, not the set):
 
 ```ts
+// One translator, one place, a safe default for anything unmapped.
 function toHttpProblem(error: AppError): HttpProblem {
   return {
     status: statusByCode[error.code] ?? 500,
@@ -42,7 +47,7 @@ function toHttpProblem(error: AppError): HttpProblem {
 ```
 
 Verify:
-- One translator owns each outward boundary.
-- Responses contain no secrets, stack traces, internal paths, or vendor payloads.
-- Known codes map consistently; unknown failures use a safe default.
-- Internal diagnostics retain correlation and cause.
+- **Check one translator owns each outward boundary.**
+- **Check responses carry no secrets, stacks, internal paths, or vendor payloads.**
+- **Check known codes map consistently**, and unknown failures take a safe default.
+- **Check internal diagnostics keep both correlation and cause.**

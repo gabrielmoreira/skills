@@ -1,6 +1,14 @@
 # TypeScript Error Handling Topic Index
 
-Use when a TypeScript system needs stable failure semantics across modules or boundaries. Scale the model to the application: a small script may need only `Error` and `cause`; shared codes, families, metadata, and projections should appear when callers require them.
+**Use this topic when a system needs failure semantics that stay stable across modules and boundaries.**
+
+**Scale the model to the application.** A small script may need only `Error` and `cause`. Shared codes, families, metadata, and projections are earned when callers actually need them.
+
+**This table is a gate, not a checklist.** Match the left column against what you can see in the code.
+
+- **One rule per row.** Enter at the matched row.
+- **Semantics against shape.** Semantics decides what a failure means. Shape decides which fields carry it.
+- **Classification against boundary.** Classification decides what a caller may do. The boundary decides what the outside world sees.
 
 | If you see... | Read |
 | --- | --- |
@@ -10,6 +18,15 @@ Use when a TypeScript system needs stable failure semantics across modules or bo
 | unstable codes, correlation, details, metadata, or cause ownership | `skill://typescript-skills/typescript-error-handling/rules/error-shape-and-metadata.md` |
 | provider or internal error leaking through a handler | `skill://typescript-skills/typescript-error-handling/rules/error-boundary-contract.md` |
 
-Default for a non-trivial application: use one app-owned semantic shape and one propagation style per package. Prefer stable codes over class identity, retain runtime causes for diagnostics, translate at boundaries, and keep swallow or fallback decisions observable. Add families or attachments only when they carry a real contract.
+**Default stance for a non-trivial application.**
 
-Retry mechanics belong to async; redaction belongs to security.
+- **One app-owned semantic shape, and one propagation style per package.**
+- **Prefer a stable code over class identity.**
+- **Keep runtime causes for diagnostics, and translate at the boundary.**
+- **Keep every swallow and every fallback observable.**
+
+**Edges.**
+
+- **Retry mechanics belong to async.** This topic only decides what is retryable.
+- **Redaction belongs to security.**
+- **Which failures a test must prove belongs to testing.**
