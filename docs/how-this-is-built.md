@@ -91,9 +91,40 @@ Everything runs on bare node. No install, no toolchain, no dependency.
 | `mutate-skill.mjs` | that each invariant fires for its own reason |
 | `readability.mjs` | prose share, bullets, bold, clause density, paragraph length |
 | `check-yaml-parity.mjs` | the built-in frontmatter parser against a full YAML one |
+| `route-baseline.mjs` | how many scenarios a router with no understanding solves |
+| `run-activation.mjs` | routing and activation against a model, two arms |
+| `tests/grading.test.mjs` | the graders, which are the code most able to lie |
 
 **A skill may add its own invariants on top of the portable ones.** Two do. They
 run from the same entry point, whatever they are written in.
+
+## An eval that passes without the skill never failed
+
+**Every routing scenario runs twice.** Once with the router in context, once
+with only the list of file names. The second run is the control, and without it
+a pass says nothing about whether the writing did any work.
+
+- **A scenario that passes both ways was routed by the file name.** It is
+  reported separately rather than counted, because counting it inflates a score
+  the skill did not earn.
+- **This is `watch-it-fail` pointed at the eval itself.** A test nobody watched
+  fail proves nothing, and an eval that passes with the skill removed is exactly
+  that test.
+
+**`route-baseline.mjs` asks the same question for free.** A bag-of-words router
+scores each gate row against the prompt and picks the best. Where it already
+lands on the expected rule, the scenario measures shared vocabulary rather than
+routing. It solves 26% of them today, and `typescript-skills` is the worst at
+55%.
+
+**One sample is a coin toss reported as a fact.** Scenarios run `--samples`
+times, and a split result is `UNSTABLE`, which is neither a pass nor a failure
+but a statement that the routing is not reliable.
+
+**Only objective checks are graded.** A path either appears in the answer or it
+does not. The `must` and `mustNot` lists need a judge model, a judge is a weaker
+instrument than a string match, and scoring both together hides which one
+produced the number.
 
 ## Frontmatter validation is built in
 

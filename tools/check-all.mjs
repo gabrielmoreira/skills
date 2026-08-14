@@ -124,6 +124,16 @@ const parity = run("check-yaml-parity.mjs", []);
 const paritySkipped = parity.out.startsWith("SKIPPED");
 if (!parity.ok) failed++;
 
+// The graders decide what counts as a pass, so they are the one piece of this
+// repository where a defect reports a number that merely looks measured.
+const graders = run("tests/grading.test.mjs", []);
+if (!graders.ok) failed++;
+
+// How many scenarios a router with no understanding already solves. Not a gate:
+// a giveaway scenario is weak evidence, not a broken file.
+const baseline = run("route-baseline.mjs", []);
+const baselineLine = baseline.out.trim().split("\n").find((l) => l.includes("routed scenarios:")) ?? "not measured";
+
 // ---------------------------------------------------------------- output
 
 const w = Math.max(12, ...rows.map((r) => r.name.length));
@@ -153,6 +163,9 @@ console.log(`  invariants        ${totals.inv} passed, ${totals.invFail} failed`
 console.log(`  mutations         ${fast ? "skipped" : `${totals.mut} of ${totals.mutTotal} caught`}`);
 console.log(`  shape             ${totals.shape} of ${totals.files} files inside every target`);
 console.log(`  frontmatter       ${paritySkipped ? "built-in check only, no full parser installed" : parity.out.trim().split("\n").pop()}`);
+console.log(`  graders           ${graders.ok ? "passed" : "FAILED"}`);
+console.log(`  scenarios         ${baselineLine}`);
+console.log(`  behaviour         not measured here; see tools/run-activation.mjs`);
 
 if (!reportOnly) {
   for (const r of rows.filter((x) => x.bad)) {

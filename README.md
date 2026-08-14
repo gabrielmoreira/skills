@@ -321,15 +321,33 @@ Everything runs on bare node. No install, no toolchain, no dependency.
 node tools/check-all.mjs --report
 ```
 
-It prints structural invariants, mutation results, page shape, and frontmatter
-validity for every skill. [`docs/how-this-is-built.md`](docs/how-this-is-built.md)
-explains what each check protects and why the collection is built this way.
+It prints structural invariants, mutation results, page shape, frontmatter
+validity, and how many scenarios a router with no understanding already solves.
+[`docs/how-this-is-built.md`](docs/how-this-is-built.md) explains what each check
+protects and why the collection is built this way.
+
+To run the scenarios against a model, which needs a network and a key:
+
+```bash
+node tools/run-activation.mjs --skill test-first-by-evidence --samples 3
+```
+
+Every scenario runs twice: once with the router in context, once with only the
+list of file names. A scenario that passes both ways was routed by the file
+name, not by the writing, and it is reported separately. Start with `--dry-run`,
+which assembles every prompt and sends nothing.
 
 ## What is not proved
 
-**Activation and routing are declared, not measured.** Every skill carries
-scenarios and every rule has at least one, and none of them have been executed
-against a model. The structure is checked; the behaviour is not.
+**Behaviour is measured by a runner nobody has run yet.** The two-arm design,
+the repeats, and the graders are tested; the scores are not in the repository,
+because no run has produced any. `evals/baseline.json` appears the first time
+someone runs `--write-baseline`, and until then the honest count of scenarios
+executed against a model is zero.
+
+**A quarter of the routed scenarios are giveaways.** The suite reports how many
+a bag-of-words router solves with no understanding at all. Those pass for
+reasons that have nothing to do with the skill.
 
 The current state is always what the suite prints, never what this file claims.
 
