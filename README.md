@@ -147,17 +147,21 @@ npx skills@latest add gabrielmoreira/skills
 
 That installs into the current project and asks which skills and which agents.
 
-**Everything, every agent, no prompts:**
+**Everything, user level, only the agents you actually use:**
 
 ```bash
-npx skills@latest add gabrielmoreira/skills --all
+npx skills@latest add gabrielmoreira/skills --skill '*' --global -y \
+  -a claude-code -a codex -a cursor
 ```
 
-**User level instead of project level**, so it is available everywhere:
+**Repeat `-a` for each agent.** A comma-separated list is read as one name and
+rejected, with an error that lists the very names you passed. Run
+`npx skills@latest add gabrielmoreira/skills -a x` to see every valid key.
 
-```bash
-npx skills@latest add gabrielmoreira/skills --all --global
-```
+**There is also `--all`**, which is `--skill '*' --agent '*' -y`. It targets all
+76 agents the CLI knows about rather than the ones you have, so it will try tools
+you never installed and print a failure block for the two that are project-only
+by design, Eve and PromptScript. Naming your agents avoids that entirely.
 
 **One skill only:**
 
@@ -174,11 +178,6 @@ npx skills@latest add gabrielmoreira/skills --list
 **Where it lands.** One copy under `~/.agents/skills/`, symlinked into every agent
 directory you have. Editing the skill once changes it everywhere. Add `--copy` if
 you would rather have independent real files.
-
-**`--all` means every agent the CLI knows about**, currently 76, not the ones you
-happen to have. So it will try tools you have never installed, and two of them,
-Eve and PromptScript, are project-only by design and cannot accept a global
-install at all. Those lines are noise. Nothing failed that mattered.
 
 **Running it twice is fine.** The second run reports overwrites everywhere,
 which is the same skills replacing themselves.
