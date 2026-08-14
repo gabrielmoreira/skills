@@ -19,6 +19,7 @@ It names no tool, so a host with a question tool uses one and a host without sen
 | When | Skill |
 | --- | --- |
 | a change must be judged before it lands: a branch, a diff, uncommitted work | `evidence-backed-review` |
+| a feature or a bugfix is about to be implemented, or a test was written after the code | `test-first-by-evidence` |
 | something is wrong and the cause is not yet known | `debugging-by-evidence` |
 | a repository operation refused, or the working state is unclear | `keep-git-work-recoverable` |
 | written material must be created, corrected, or removed | `make-the-docs-trustworthy` |

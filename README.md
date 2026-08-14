@@ -16,6 +16,7 @@ for a nine-hundred-line review.
 | Skill | Helps you with |
 | --- | --- |
 | [`evidence-backed-review`](#evidence-backed-review) | judging a branch or a pull request before it lands |
+| [`test-first-by-evidence`](#test-first-by-evidence) | writing the test before the code, and proving it can fail |
 | [`debugging-by-evidence`](#debugging-by-evidence) | finding the cause of a bug instead of guessing at it |
 | [`keep-git-work-recoverable`](#keep-git-work-recoverable) | getting unstuck when git refuses, without losing work |
 | [`make-the-docs-trustworthy`](#make-the-docs-trustworthy) | docs that went stale, and where to put what you write |
@@ -65,6 +66,7 @@ for a personal one that follows you everywhere:
 | When | Skill |
 | --- | --- |
 | a change must be judged before it lands: a branch, a diff, uncommitted work | `evidence-backed-review` |
+| a feature or a bugfix is about to be implemented | `test-first-by-evidence` |
 | something is wrong and the cause is not yet known | `debugging-by-evidence` |
 | a repository operation refused, or the working state is unclear | `keep-git-work-recoverable` |
 | written material must be created, corrected, or removed | `make-the-docs-trustworthy` |
@@ -183,6 +185,28 @@ never opened.
   team's wiki, the repository of whoever consumes your API.
 - **It only opens the checks that apply.** A three-line change does not pay for a
   nine-hundred-line review.
+
+### [`test-first-by-evidence`](skills/test-first-by-evidence/SKILL.md)
+
+**Use it when you are about to implement a feature or a bugfix.**
+
+It writes the test first and makes the agent actually run it and watch it fail.
+A test you never saw fail might be testing the wrong thing, and you would have no
+way to know.
+
+- **A test that passes on its first run is not a test yet.** It describes what the
+  code already does.
+- **A test that errors is not a red either.** A broken test proves nothing about
+  the code.
+- **Code written before its test gets deleted**, not kept as reference. Keeping it
+  means you will adapt it, which is testing after with extra steps.
+- **It knows where the test goes.** The narrowest seam that can see the behaviour,
+  chosen by what the test needs to run rather than by a label.
+- **It stops you writing tests that cannot fail.** Assert on results, not on
+  whether a mock got called, and be able to name the production change that would
+  break each test.
+- **A test that is hard to write is a design report.** Mocking six things means the
+  code takes its dependencies from the wrong place.
 
 ### [`debugging-by-evidence`](skills/debugging-by-evidence/SKILL.md)
 
