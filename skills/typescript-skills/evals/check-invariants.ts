@@ -1,12 +1,19 @@
 #!/usr/bin/env node
 // Programmatic invariants for the typescript-skills tree.
-// Run from repo root: node evals/check-invariants.ts
-// Exit code 0 = all pass, non-zero = failures listed.
+//
+//   node skills/typescript-skills/evals/check-invariants.ts
+//
+// Runs from anywhere. Exit code 0 = all pass, non-zero = failures listed.
 
 import { readdir, readFile, stat } from "node:fs/promises";
-import { join, basename, sep } from "node:path";
-import { pathToFileURL } from "node:url";
+import { join, basename, sep, dirname, resolve } from "node:path";
+import { pathToFileURL, fileURLToPath } from "node:url";
 import { listScenarioControlIds, validateScenarioControls } from "./control-matrix.ts";
+
+// Every path below is relative to the skill this file belongs to. Anchoring on
+// the script rather than on the caller's directory is what makes the check
+// portable: it used to pass only when invoked from one specific folder.
+process.chdir(resolve(dirname(fileURLToPath(import.meta.url)), ".."));
 
 const failures = [];
 const passes = [];

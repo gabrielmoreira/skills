@@ -21,12 +21,8 @@ const REQUIRED_FRONTMATTER = ["id", "owner", "canonical", "severity", "reference
 const MANDATED_BLOCKS = ["Decision:", "Use when:", "Do:", "Avoid:", "Verify:"];
 const OPTIONAL_BLOCKS = ["Exceptions:", "Example:"];
 
-const RULE_MAX_WORDS = 450;
-const RULE_MIN_LINES = 30;
-const RULE_MAX_LINES = 70;
-// The gate table moved into SKILL.md, so the ceiling now covers routing as
-// well as prose. A routing table is routing, not explanation.
-const SKILL_MAX_LINES = 160;
+// No size thresholds live here. `tools/verify-skill.mjs` owns them, and a
+// second copy in this file drifted from the shared one three times.
 
 // --- portability denylists -------------------------------------------------
 // Sources a skill must never embed: one machine's layout, a private host, or a
@@ -339,34 +335,26 @@ const scannedDocs = [
 }
 
 // ---------------------------------------------------------------------------
-// INV-08 rule size: under 400 words, between 30 and 70 lines
+// INV-08 and INV-09 are gone. They measured rule and router size, which the
+// portable checker already owns as C-07, and they kept a second copy of the
+// four thresholds. Those copies drifted three separate times: each change to
+// the shared budget left this file asserting the old number, and the last one
+// failed a router for nine lines that a folded description had added to its
+// frontmatter.
+//
+// Sizes belong to `tools/verify-skill.mjs`. What stays here is what only this
+// skill can check.
 // ---------------------------------------------------------------------------
-const ruleSizes = [];
-{
-  const bad = [];
-  for (const name of ruleNames) {
-    const text = ruleText.get(name);
-    const lines = lineCount(text);
-    const words = stripFences(stripFrontmatter(text)).split(/\s+/).filter(Boolean).length;
-    ruleSizes.push({ name, lines, words });
-    if (words >= RULE_MAX_WORDS) bad.push(`rules/${name}.md ${words} words (limit ${RULE_MAX_WORDS})`);
-    if (lines < RULE_MIN_LINES || lines > RULE_MAX_LINES) bad.push(`rules/${name}.md ${lines} lines (allowed ${RULE_MIN_LINES}-${RULE_MAX_LINES})`);
-  }
-  if (bad.length) fail(`INV-08 rule size within targets (<${RULE_MAX_WORDS} words, ${RULE_MIN_LINES}-${RULE_MAX_LINES} lines)`, bad.join("\n        "));
-  else pass(`INV-08 rule size within targets (<${RULE_MAX_WORDS} words, ${RULE_MIN_LINES}-${RULE_MAX_LINES} lines)`, `${ruleNames.length} rules`);
-}
-
-// ---------------------------------------------------------------------------
-// INV-09 router sizes: SKILL.md under 100 lines, INDEX.md between 12 and 25
-// ---------------------------------------------------------------------------
+const ruleSizes = ruleNames.map((name) => {
+  const text = ruleText.get(name);
+  return {
+    name,
+    lines: lineCount(text),
+    words: stripFences(stripFrontmatter(text)).split(/\s+/).filter(Boolean).length,
+  };
+});
 const skillLines = lineCount(skillText);
 const indexLines = lineCount(indexText);
-{
-  const bad = [];
-  if (skillLines >= SKILL_MAX_LINES) bad.push(`SKILL.md ${skillLines} lines (limit ${SKILL_MAX_LINES})`);
-  if (bad.length) fail("INV-09 router sizes within targets", bad.join("\n        "));
-  else pass("INV-09 router sizes within targets", `SKILL.md ${skillLines} lines`);
-}
 
 // ---------------------------------------------------------------------------
 // INV-10 code fences balanced in every shipped markdown file

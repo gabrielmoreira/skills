@@ -43,6 +43,21 @@ const run = (script, args) => {
   }
 };
 
+/**
+ * A skill may carry its own invariants on top of the portable ones, the way a
+ * language skill checks things only it can check. Whatever it is written in, it
+ * runs from here, so there is one command rather than one per skill.
+ */
+const OWN_SUITES = ["invariants.mjs", "check-invariants.ts", "invariants.ts", "check-invariants.mjs"];
+
+async function ownSuite(dir) {
+  for (const f of OWN_SUITES) {
+    const p = join(dir, "evals", f);
+    if (await exists(p)) return p;
+  }
+  return null;
+}
+
 /** Every directory under skills/ that carries an entry file. */
 async function discover() {
   const out = [];
@@ -86,10 +101,23 @@ for (const dir of skills) {
   const sIn = num(s.out, /(\d+)\/\d+ files inside/);
   const sAll = num(s.out, /\d+\/(\d+) files inside/);
 
-  const bad = vFail > 0 || mBad || sIn < sAll;
+  const suite = await ownSuite(dir);
+  let o = null, oPass = 0, oFail = 0;
+  if (suite) {
+    try {
+      const out = execFileSync("node", [suite], { encoding: "utf8", stdio: "pipe", cwd: dir });
+      o = { ok: true, out };
+    } catch (e) {
+      o = { ok: false, out: (e.stdout ?? "") + (e.stderr ?? "") };
+    }
+    oPass = sum(o.out, /(\d+) passed, \d+ failed/);
+    oFail = sum(o.out, /\d+ passed, (\d+) failed/);
+  }
+
+  const bad = vFail > 0 || mBad || sIn < sAll || oFail > 0 || (o && !o.ok);
   if (bad) failed++;
 
-  rows.push({ name, vPass, vFail, mCaught, mTotal, sIn, sAll, bad, detail: { v, m, s } });
+  rows.push({ name, vPass, vFail, mCaught, mTotal, sIn, sAll, oPass, oFail, hasOwn: !!suite, bad, detail: { v, m, s, o } });
 }
 
 const parity = run("check-yaml-parity.mjs", []);
@@ -100,13 +128,14 @@ if (!parity.ok) failed++;
 
 const w = Math.max(12, ...rows.map((r) => r.name.length));
 console.log("");
-console.log(`${"skill".padEnd(w)}  invariants   mutations       shape`);
-console.log("-".repeat(w + 36));
+console.log(`${"skill".padEnd(w)}  portable     mutations   shape     own checks`);
+console.log("-".repeat(w + 48));
 for (const r of rows) {
   const inv = r.vFail ? `${r.vPass} ok ${r.vFail} FAIL` : `${r.vPass} ok`;
   const mut = fast ? "skipped" : r.mTotal ? `${r.mCaught}/${r.mTotal}` : "none";
   const shp = `${r.sIn}/${r.sAll}`;
-  console.log(`${r.name.padEnd(w)}  ${inv.padEnd(12)} ${mut.padEnd(11)} ${shp.padEnd(8)}${r.bad ? " <-" : ""}`);
+  const own = !r.hasOwn ? "-" : r.oFail ? `${r.oPass} ok ${r.oFail} FAIL` : `${r.oPass} ok`;
+  console.log(`${r.name.padEnd(w)}  ${inv.padEnd(12)} ${mut.padEnd(11)} ${shp.padEnd(9)} ${own}${r.bad ? "  <-" : ""}`);
 }
 
 const totals = rows.reduce((a, r) => ({
