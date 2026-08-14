@@ -56,7 +56,8 @@ export function parseEmailConfig(env: NodeJS.ProcessEnv): EmailConfig {
 }
 ```
 
-- **Keep the parser pure**, per `skill://typescript-skills/typescript-configs/rules/validation-vs-verification.md`.
+- **Keep the parser pure**, per `skill://typescript-skills/typescript-configs/rules/validation-vs-verification.md`. No I/O, no network, no secret fetch.
+- **Parse the pointer to a secret, never the secret itself.** When it is fetched belongs to `skill://typescript-skills/typescript-security/rules/secrets-lifecycle.md`.
 
 Verify:
 - **Search for `process.env` outside the config boundary and its tests.**
