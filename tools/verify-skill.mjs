@@ -42,6 +42,8 @@ const ABSOLUTE_PATHS = [
   { label: "windows absolute path", re: /\b[A-Za-z]:[\\/](?:Users|Program|Windows)\b/i },
   { label: "posix home or system path", re: /(?:^|[\s"'`(])(?:\/(?:Users|home|opt|srv|mnt|var|etc)\/|~\/)/m },
 ];
+// A loopback or documentation host is not a coupling to anyone's service.
+const LOCAL_HOST = /^https?:\/\/(?:localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\]|example\.(?:com|org|net))(?:[:/]|$)/i;
 const CORPORATE_SUFFIX = /\b[A-Z][A-Za-z0-9]+\s+(?:Inc\.?|LLC|Ltd\.?|GmbH|S\.A\.|Corp\.?|Corporation|Labs|Studio|Studios|Technologies|Holdings)\b/;
 const AT_HANDLE = /(?:^|\s)@[A-Za-z][A-Za-z0-9_-]{2,}/;
 
@@ -393,10 +395,16 @@ async function verify(skillDir) {
   { // C-06 portability
     const bad = [], suspects = [];
     for (const [label, text] of docs) {
-      const prose = stripFences(text);
+      // Vendor coupling is a property of what a rule tells you to do, so this
+      // reads instruction prose only. The `references:` field exists to cite
+      // outside sources by name, and a worked example has to name something
+      // concrete to be worth reading: a rule about containing a payment
+      // provider's vocabulary needs that provider in its example.
+      const prose = stripFences(stripFrontmatter(text));
+      // A machine path is a leak wherever it appears, an example included.
       for (const { label: k, re } of ABSOLUTE_PATHS) { const m = text.match(re); if (m) bad.push(`${label}: ${k}, ${m[0].trim()}`); }
-      for (const m of text.matchAll(/https?:\/\/\S+/g)) bad.push(`${label}: embedded URL, ${m[0]}`);
-      const lower = text.toLowerCase();
+      for (const m of prose.matchAll(/https?:\/\/\S+/g)) { if (!LOCAL_HOST.test(m[0])) bad.push(`${label}: embedded URL, ${m[0]}`); }
+      const lower = prose.toLowerCase();
       for (const t of PACKAGE_MANAGERS) if (new RegExp(`(?:^|[^a-z0-9-])${t}(?:[^a-z0-9-]|$)`).test(lower)) bad.push(`${label}: package-manager name, ${t}`);
       for (const t of CI_VENDORS) if (lower.includes(t)) bad.push(`${label}: CI vendor name, ${t}`);
       for (const t of COMPANY_NAMES) if (new RegExp(`(?:^|[^a-z0-9.-])${t.replace(/\./g, "\\.")}(?:[^a-z0-9-]|$)`).test(lower)) bad.push(`${label}: company or product name, ${t}`);

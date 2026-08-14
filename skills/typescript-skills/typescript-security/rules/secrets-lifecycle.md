@@ -40,7 +40,7 @@ Exceptions:
 Common bypass attempts and rebuttals:
 
 - "It's just for local dev, CI sets the real value": local dev provides the value through explicit `.env` or framework-local config. A code default puts the localhost URL into production binary; one missing CI variable and prod silently calls localhost. Required + fail-fast removes that whole class of incident.
-- "It's not a secret, it's a public AWS/SQS/queue URL": environment-specific coordinates are still explicit inputs. Public ≠ shared between stages. Hard-coding `sqs://prod-queue` is one fat-finger away from staging-to-prod data crossover.
+- "It's not a secret, it's a public queue URL": environment-specific coordinates are still explicit inputs. Public ≠ shared between stages. Hard-coding `sqs://prod-queue` is one fat-finger away from staging-to-prod data crossover.
 - "We've used this default for years, it's fine": defaults are production policy, not history. The day prod silently routes to the dev endpoint is the day the default's cost shows up. Required values pay nothing in production and prevent the failure entirely.
 
 Redaction is the second line of defense once a secret is in memory. Read `skill://typescript-skills/typescript-security/rules/redaction.md`.
