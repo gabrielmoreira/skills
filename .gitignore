@@ -158,3 +158,6 @@ eval-redesign-roadmap.md
 
 # Personal draft, not part of the collection.
 docs/how-i-use-ai.md
+
+# Behaviour runs write a per-run artifact; only the baseline is committed.
+evals/last-run.json

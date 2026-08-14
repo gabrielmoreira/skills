@@ -92,8 +92,9 @@ Everything runs on bare node. No install, no toolchain, no dependency.
 | `readability.mjs` | prose share, bullets, bold, clause density, paragraph length |
 | `check-yaml-parity.mjs` | the built-in frontmatter parser against a full YAML one |
 | `route-baseline.mjs` | how many scenarios a router with no understanding solves |
-| `run-activation.mjs` | routing and activation against a model, two arms |
+| `run-activation.mjs` | activation and routing against a real agent, two arms |
 | `tests/grading.test.mjs` | the graders, which are the code most able to lie |
+| `tests/no-local-paths.test.mjs` | that no committed file names the machine that wrote it |
 
 **A skill may add its own invariants on top of the portable ones.** Two do. They
 run from the same entry point, whatever they are written in.
@@ -125,6 +126,41 @@ but a statement that the routing is not reliable.
 does not. The `must` and `mustNot` lists need a judge model, a judge is a weaker
 instrument than a string match, and scoring both together hides which one
 produced the number.
+
+## Watch what it does, not what it says
+
+**The runner drives a real agent** with its own system prompt and its real
+tools, because a stripped one measures a situation nobody is in.
+
+- **That rules out hiding files from the control arm.** An agent with a read
+  tool opens whatever it likes, so the arm hides the skill instead: both arms
+  get the same prompt and the same tools, and differ only in whether the
+  collection is loaded.
+- **Grading moved from self-report to observation.** Asking which file it would
+  open measures what it says. Watching which files it opens measures what it
+  does, and only the second is evidence.
+- **Skills load from the working tree**, so a run measures what was just
+  edited rather than an installed copy that may be months behind.
+- **The agent gets a throwaway directory.** It writes real files, so it is given
+  one it is welcome to ruin.
+
+**The user's own instruction file has to be excluded.** A machine already using
+these skills has an `AGENTS.md` that names them, and loading it measures the
+instructions rather than the skill. Proved rather than assumed: with that file
+loaded the agent recites the routing table when asked what skills it has, and
+without it says it has none.
+
+## Nothing may name the machine that produced it
+
+**Results are built from absolute paths**, a working directory and a skills
+directory, and both are personal. Stripping them by hand is a discipline, and a
+discipline that has to be remembered fails on the run nobody was watching.
+
+- **Paths are derived at runtime**, never stored, so the overlay a run needs is
+  generated from the script's own location.
+- **Results are redacted before they are written.**
+- **A check scans every tracked file** for anything shaped like a home
+  directory, and fails the suite naming the file and the line.
 
 ## Frontmatter validation is built in
 

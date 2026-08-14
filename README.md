@@ -326,28 +326,35 @@ validity, and how many scenarios a router with no understanding already solves.
 [`docs/how-this-is-built.md`](docs/how-this-is-built.md) explains what each check
 protects and why the collection is built this way.
 
-To run the scenarios against a model, which needs a network and a key:
+The suite reports the behaviour numbers but does not produce them, because a
+behaviour run costs minutes and a network. To produce them:
 
 ```bash
-node tools/run-activation.mjs --skill test-first-by-evidence --samples 3
+node tools/run-activation.mjs --backend omp --skill test-first-by-evidence --write-baseline
 ```
 
-Every scenario runs twice: once with the router in context, once with only the
-list of file names. A scenario that passes both ways was routed by the file
-name, not by the writing, and it is reported separately. Start with `--dry-run`,
-which assembles every prompt and sends nothing.
+That drives a real agent, with its own system prompt and its real tools, and
+watches which files it opens. Every scenario runs twice: once with this
+collection loaded, once with no skills at all. The difference between the two is
+what the skills are worth, and a scenario that passes both ways is reported
+separately because the agent would have done it anyway.
+
+Skills are loaded from this working tree, never from an installed copy, so a run
+always measures what you just edited. Start with `--dry-run`, which assembles
+every call and sends nothing.
 
 ## What is not proved
 
-**Behaviour is measured by a runner nobody has run yet.** The two-arm design,
-the repeats, and the graders are tested; the scores are not in the repository,
-because no run has produced any. `evals/baseline.json` appears the first time
-someone runs `--write-baseline`, and until then the honest count of scenarios
-executed against a model is zero.
+**Most scenarios have still never been run.** The baseline covers what has been
+measured and the suite prints its age. Everything outside it is a claim.
 
 **A quarter of the routed scenarios are giveaways.** The suite reports how many
 a bag-of-words router solves with no understanding at all. Those pass for
 reasons that have nothing to do with the skill.
+
+**A behaviour run measures one agent on one day.** It says nothing about a
+different harness, a different model, or the same model next month, which is
+why the baseline records all three.
 
 The current state is always what the suite prints, never what this file claims.
 

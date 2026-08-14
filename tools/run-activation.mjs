@@ -40,6 +40,7 @@ import { readdir, readFile, writeFile, mkdir } from "node:fs/promises";
 import { join, resolve, basename } from "node:path";
 import { pathToFileURL } from "node:url";
 import { spawn } from "node:child_process";
+import { tmpdir } from "node:os";
 
 const ROOT = resolve(process.env.SKILL_COLLECTION_ROOT ?? "skills");
 const BASELINE = resolve("evals/baseline.json");
@@ -48,13 +49,19 @@ const BASELINE = resolve("evals/baseline.json");
 
 function parseArgs(argv) {
   const a = {
-    samples: 3, model: "claude-haiku-4-5-20251001", skills: [], limit: Infinity,
+    samples: 3, model: null, skills: [], limit: Infinity,
     kind: "all", backend: null, dryRun: false, check: false, writeBaseline: false,
     concurrency: 4, verbose: false,
+    // omp only
+    thinking: "high", maxTime: 90, rules: false, fixture: null,
   };
   for (let i = 0; i < argv.length; i++) {
     const k = argv[i];
     if (k === "--samples") a.samples = Number(argv[++i]);
+    else if (k === "--thinking") a.thinking = argv[++i];
+    else if (k === "--max-time") a.maxTime = Number(argv[++i]);
+    else if (k === "--fixture") a.fixture = argv[++i];
+    else if (k === "--with-rules") a.rules = true;
     else if (k === "--model") a.model = argv[++i];
     else if (k === "--skill") a.skills.push(argv[++i]);
     else if (k === "--limit") a.limit = Number(argv[++i]);
@@ -68,7 +75,68 @@ function parseArgs(argv) {
     else throw new Error(`unknown argument: ${k}`);
   }
   if (!["all", "routing", "activation"].includes(a.kind)) throw new Error(`--kind must be all, routing or activation`);
+  a.backend ??= process.env.ANTHROPIC_API_KEY ? "api" : "omp";
+  a.model ??= a.backend === "omp" ? "github-copilot/gpt-5.6-terra" : "claude-haiku-4-5-20251001";
   return a;
+}
+
+// --------------------------------------------------------------- omp arms
+//
+// The omp backend measures the skill where it actually runs: real system
+// prompt, real tools, real agent loop. That rules out hiding files from a
+// control arm, since a model with a read tool can open anything.
+//
+// So the arm hides the skill instead. Both arms get the same prompt, the same
+// tools and the same model, and differ only in whether the collection is
+// loaded at all. The difference between them is what the skill is worth.
+//
+// Skills load from this repository rather than from an installed copy, so a run
+// always measures the working tree and never a stale install.
+
+const OVERLAYS = {
+  with: (skillsDir) =>
+    `skills:\n  enabled: true\n  enableCodexUser: false\n  enableClaudeUser: false\n  enableClaudeProject: false\n  enablePiUser: false\n  enablePiProject: false\n  enableAgentsUser: false\n  enableAgentsProject: false\n  customDirectories:\n    - ${skillsDir.replace(/\\/g, "/")}\n`,
+  without: () => `skills:\n  enabled: false\n`,
+};
+
+/**
+ * What the agent actually did, read off the event stream.
+ *
+ * Asking a model which file it would open measures what it says. Watching
+ * which files it opens measures what it does, and only the second one is
+ * evidence. omp addresses skills as skill://<name>/<path>, so both the
+ * activation and the routing decision are visible as ordinary read calls.
+ */
+export function observe(stream) {
+  const skills = new Set();
+  const rules = new Set();
+  const seq = [];
+  for (const line of stream.split("\n")) {
+    let j;
+    try {
+      j = JSON.parse(line);
+    } catch {
+      continue;
+    }
+    if (j.type !== "tool_execution_start") continue;
+    const path = String(j.args?.path ?? "");
+    seq.push({ tool: j.toolName, path });
+    const m = path.match(/^skill:\/\/([a-z0-9-]+)(?:\/(.+))?$/);
+    if (!m) continue;
+    skills.add(m[1]);
+    if (m[2]) rules.add(m[2]);
+  }
+  return { skills: [...skills], rules: [...rules], seq };
+}
+
+/** Did the test file appear before the implementation was edited? */
+export function testCameFirst(seq) {
+  const isTest = (p) => /\.(test|spec)\./.test(p);
+  const wrote = seq.filter((s) => s.tool === "write" || s.tool === "edit");
+  const firstTest = wrote.findIndex((s) => isTest(s.path));
+  const firstOther = wrote.findIndex((s) => !isTest(s.path) && /\.(js|ts|mjs|cjs|tsx|jsx|py|go|rs)$/.test(s.path));
+  if (firstTest === -1) return null;
+  return firstOther === -1 || firstTest < firstOther;
 }
 
 // ------------------------------------------------------------------ prompts
@@ -136,7 +204,37 @@ function cliBackend(model, system, user) {
   });
 }
 
+/**
+ * One omp session per call. Tools stay on and the system prompt stays untouched,
+ * because the point is to measure the agent that actually runs, not a stripped
+ * one. stdin is closed: omp waits for EOF on a piped stdin and hangs otherwise.
+ */
+function ompRun(a, arm, prompt, paths) {
+  return new Promise((ok, bad) => {
+    const args = [
+      "-p", prompt,
+      "--model", a.model,
+      "--thinking", a.thinking,
+      "--config", paths.overlay[arm],
+      "--cwd", paths.fixture,
+      "--mode", "json",
+      "--max-time", String(a.maxTime),
+      "--no-session", "--no-extensions",
+    ];
+    // Without this the user's own AGENTS.md is loaded, and its routing table
+    // already names these skills. That measures the instructions, not the skill.
+    if (!a.rules) args.push("--no-rules");
+    const child = spawn("omp", args, { stdio: ["ignore", "pipe", "pipe"] });
+    let out = "";
+    child.stdout.on("data", (d) => (out += d));
+    child.stderr.on("data", (d) => (out += d));
+    child.on("error", bad);
+    child.on("close", () => ok(out));
+  });
+}
+
 async function pickBackend(forced) {
+  if (forced === "omp") return { name: "omp", clean: true, agentic: true };
   const choice = forced ?? (process.env.ANTHROPIC_API_KEY ? "api" : "cli");
   if (choice === "api") {
     if (!process.env.ANTHROPIC_API_KEY) throw new Error("--backend api needs ANTHROPIC_API_KEY");
@@ -181,6 +279,28 @@ export function gradeRouting(answer, scenario) {
   return { pass: hit && !violated.length, got, want, violated };
 }
 
+/**
+ * Grading by observation. The agent either opened the skill or it did not, and
+ * either opened the expected rule or it did not. Neither is an opinion.
+ */
+export function gradeObserved(seen, scenario, skillName) {
+  const want = (scenario.expectedAll?.length ? scenario.expectedAll : [scenario.expectedPrimary])
+    .filter(Boolean)
+    .map(normalise);
+  const forbidden = (scenario.activation?.forbiddenRoutes ?? []).map(normalise);
+  const opened = seen.skills.includes(skillName);
+  const hit = want.every((w) => seen.rules.some((g) => samePath(g, w)));
+  const violated = forbidden.filter((f) => seen.rules.some((g) => samePath(g, f)));
+  return { opened, pass: opened && hit && !violated.length, got: seen.rules, want, violated };
+}
+
+/** Nothing written to disk may carry the path of the machine that wrote it. */
+export function redact(value, roots) {
+  let s = typeof value === "string" ? value : JSON.stringify(value);
+  for (const [from, to] of roots) s = s.split(from).join(to).split(from.replace(/\//g, "\\")).join(to);
+  return typeof value === "string" ? s : JSON.parse(s);
+}
+
 // ---------------------------------------------------------------- scenarios
 
 async function loadSkill(dir) {
@@ -222,6 +342,18 @@ function casesFor(skill, args) {
   const out = [];
   for (const s of skill.scenarios) {
     if (typeof s.prompt !== "string") continue;
+
+    // The agentic backend sends the developer's message unchanged. Wrapping it
+    // in a question about file paths would replace the thing being measured.
+    if (args.backend === "omp") {
+      const wants = s.expectedPrimary || s.activation?.layer === "public-skill";
+      if (!wants) continue;
+      for (const arm of ["with", "without"]) {
+        out.push({ kind: "observed", arm, skill: skill.name, id: s.id, scenario: s, user: s.prompt });
+      }
+      continue;
+    }
+
     if (s.expectedPrimary && args.kind !== "activation") {
       out.push({ kind: "routing", arm: "gated", skill: skill.name, id: s.id, scenario: s, system: ROUTING_SYSTEM, user: routingPrompt(skill.entry, s.prompt) });
       out.push({ kind: "routing", arm: "blind", skill: skill.name, id: s.id, scenario: s, system: ROUTING_SYSTEM, user: blindPrompt(skill.paths, s.prompt) });
@@ -273,7 +405,7 @@ async function main() {
     const sample = selected[0];
     if (sample) {
       console.log(`--- first call: ${sample.skill} / ${sample.id} / ${sample.kind} / ${sample.arm} ---`);
-      console.log(`[system] ${sample.system}\n`);
+      console.log(sample.system ? `[system] ${sample.system}\n` : "[system] omp's own, untouched\n");
       console.log(sample.user.length > 1200 ? `${sample.user.slice(0, 1200)}\n... (${sample.user.length} chars)` : sample.user);
     }
     const byArm = selected.reduce((m, c) => ((m[`${c.kind}/${c.arm}`] = (m[`${c.kind}/${c.arm}`] ?? 0) + 1), m), {});
@@ -290,15 +422,34 @@ async function main() {
   }
   console.log(`backend ${backend.name}  model ${args.model}  ${selected.length} calls x ${args.samples} samples\n`);
 
+  // Both of these are absolute paths on whoever's machine is running, so they
+  // are built here and never written into the repository. The overlay is
+  // generated from this script's own location, so it is derived, never stored.
+  const paths = backend.agentic ? await prepareOmp(args) : null;
+  const roots = paths ? [[paths.fixture.replace(/\\/g, "/"), "<fixture>"], [ROOT.replace(/\\/g, "/"), "<skills>"]] : [];
+
   const results = await pool(selected, args.concurrency, async (c) => {
     let passes = 0;
     const answers = [];
+    let seq = null;
     for (let i = 0; i < args.samples; i++) {
       let answer;
       try {
-        answer = await backend.call(args.model, c.system, c.user);
+        answer = backend.agentic
+          ? await ompRun(args, c.arm, c.user, paths)
+          : await backend.call(args.model, c.system, c.user);
       } catch (e) {
         answers.push(`ERROR ${e.message}`);
+        continue;
+      }
+      if (c.kind === "observed") {
+        const seen = observe(answer);
+        seq ??= seen.seq.slice(0, 12).map((s) => redact(`${s.tool} ${s.path}`, roots));
+        const want = c.scenario.activation?.shouldActivate === false;
+        const graded = gradeObserved(seen, c.scenario, c.skill);
+        // A negative scenario passes by the skill staying shut.
+        if (want ? !graded.opened : graded.pass) passes++;
+        answers.push(redact(JSON.stringify({ skills: seen.skills, rules: seen.rules }), roots));
         continue;
       }
       answers.push(answer.trim().slice(0, 300));
@@ -309,11 +460,11 @@ async function main() {
         if (yes !== null && yes === c.scenario.activation.shouldActivate) passes++;
       }
     }
-    return { skill: c.skill, id: c.id, kind: c.kind, arm: c.arm, passes, samples: args.samples, verdict: verdictOf(passes, args.samples), answers: args.verbose ? answers : undefined };
+    return { skill: c.skill, id: c.id, kind: c.kind, arm: c.arm, negative: c.scenario.activation?.shouldActivate === false, passes, samples: args.samples, verdict: verdictOf(passes, args.samples), seq, answers: args.verbose ? answers : undefined };
   });
 
   report(results, args);
-  const record = { ranAt: new Date().toISOString(), model: args.model, backend: backend.name, clean: backend.clean, samples: args.samples, results: results.map(({ answers, ...r }) => r) };
+  const record = { ranAt: new Date().toISOString(), model: args.model, backend: backend.name, clean: backend.clean, rules: args.rules, samples: args.samples, results: results.map(({ answers, ...r }) => r) };
   await mkdir(resolve("evals"), { recursive: true });
   await writeFile(resolve("evals/last-run.json"), `${JSON.stringify(record, null, 2)}\n`);
   if (args.writeBaseline) {
@@ -323,7 +474,62 @@ async function main() {
   if (args.check) process.exit(await checkAgainstBaseline(results) ? 0 : 1);
 }
 
+/**
+ * The overlays and the throwaway working directory, both outside the
+ * repository. The agent writes real files, so it gets a directory it is
+ * welcome to ruin rather than the collection it is being measured against.
+ */
+async function prepareOmp(args) {
+  const base = args.fixture ? resolve(args.fixture) : join(tmpdir(), `skill-evals-${process.pid}`);
+  const fixture = join(base, "workspace");
+  await mkdir(fixture, { recursive: true });
+  const overlay = {};
+  for (const arm of ["with", "without"]) {
+    const p = join(base, `${arm}.yml`);
+    await writeFile(p, arm === "with" ? OVERLAYS.with(ROOT) : OVERLAYS.without());
+    overlay[arm] = p;
+  }
+  return { base, fixture, overlay };
+}
+
+function reportObserved(results) {
+  const key = (r) => `${r.skill}/${r.id}`;
+  const withS = new Map(results.filter((r) => r.arm === "with").map((r) => [key(r), r]));
+  const without = new Map(results.filter((r) => r.arm === "without").map((r) => [key(r), r]));
+  const all = [...withS.keys()].map((k) => ({ k, w: withS.get(k), o: without.get(k), neg: withS.get(k).negative }));
+
+  // The control only means something for a scenario the skill should catch.
+  // A skill that was never loaded cannot fire wrongly, so every negative passes
+  // the control for free, and counting those would credit the skill with work
+  // the absence of the skill did.
+  const pos = all.filter((r) => !r.neg);
+  const neg = all.filter((r) => r.neg);
+  const pass = pos.filter((r) => r.w.verdict === "PASS").length;
+  const controlPass = pos.filter((r) => r.o?.verdict === "PASS").length;
+  const both = pos.filter((r) => r.w.verdict === "PASS" && r.o?.verdict === "PASS").length;
+
+  console.log("observed behaviour");
+  console.log(`  with the skills    ${pass}/${pos.length}`);
+  console.log(`  without them       ${controlPass}/${pos.length}`);
+  console.log(`  the skills earn    ${pass - controlPass >= 0 ? "+" : ""}${pass - controlPass}`);
+  console.log(`  passed both ways   ${both}   the agent did this anyway`);
+  if (neg.length) {
+    console.log(`  stayed shut        ${neg.filter((r) => r.w.verdict === "PASS").length}/${neg.length}   near misses, control not applicable`);
+  }
+  console.log(`  unstable           ${results.filter((r) => r.verdict === "UNSTABLE").length}`);
+
+  const bad = all.filter((r) => r.w.verdict !== "PASS");
+  if (bad.length) {
+    console.log("\nnot passing with the skills loaded");
+    for (const r of bad) {
+      console.log(`  ${r.w.verdict.padEnd(8)} ${r.k}${r.neg ? " (should stay shut)" : ""}  ${r.w.passes}/${r.w.samples}`);
+      for (const s of r.w.seq ?? []) console.log(`           ${s}`);
+    }
+  }
+}
+
 function report(results, args) {
+  if (results.some((r) => r.kind === "observed")) return reportObserved(results);
   const key = (r) => `${r.skill}/${r.id}`;
   const gated = new Map(results.filter((r) => r.kind === "routing" && r.arm === "gated").map((r) => [key(r), r]));
   const blind = new Map(results.filter((r) => r.kind === "routing" && r.arm === "blind").map((r) => [key(r), r]));

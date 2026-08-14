@@ -19,6 +19,7 @@
  * rather than as a feeling.
  */
 import { readdir, stat } from "node:fs/promises";
+import { readFileSync } from "node:fs";
 import { dirname, join, resolve, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
@@ -129,10 +130,37 @@ if (!parity.ok) failed++;
 const graders = run("tests/grading.test.mjs", []);
 if (!graders.ok) failed++;
 
+// The behaviour runner writes results built from absolute paths. This is what
+// makes forgetting to strip them impossible rather than merely discouraged.
+const paths = run("tests/no-local-paths.test.mjs", []);
+if (!paths.ok) failed++;
+
 // How many scenarios a router with no understanding already solves. Not a gate:
 // a giveaway scenario is weak evidence, not a broken file.
 const baseline = run("route-baseline.mjs", []);
 const baselineLine = baseline.out.trim().split("\n").find((l) => l.includes("routed scenarios:")) ?? "not measured";
+
+/**
+ * Behaviour is read from the committed baseline rather than measured here: a
+ * run costs minutes and a network, and this suite has to stay something you can
+ * run on every save. Reporting the baseline's age is what stops a stale one
+ * from passing for a current one.
+ */
+function behaviourLine() {
+  let base;
+  try {
+    base = JSON.parse(readFileSync(join(ROOT, "evals/baseline.json"), "utf8"));
+  } catch {
+    return "never run; node tools/run-activation.mjs --backend omp --write-baseline";
+  }
+  const rows = base.results.filter((r) => r.arm === "with" || r.arm === "gated");
+  const pass = rows.filter((r) => r.verdict === "PASS").length;
+  const control = base.results.filter((r) => r.arm === "without" || r.arm === "blind");
+  const controlPass = control.filter((r) => r.verdict === "PASS").length;
+  const days = Math.floor((Date.now() - Date.parse(base.ranAt)) / 86400000);
+  const age = days === 0 ? "today" : `${days}d old`;
+  return `${pass}/${rows.length} with the skills, ${controlPass}/${control.length} without, ${base.model}, ${age}`;
+}
 
 // ---------------------------------------------------------------- output
 
@@ -164,8 +192,9 @@ console.log(`  mutations         ${fast ? "skipped" : `${totals.mut} of ${totals
 console.log(`  shape             ${totals.shape} of ${totals.files} files inside every target`);
 console.log(`  frontmatter       ${paritySkipped ? "built-in check only, no full parser installed" : parity.out.trim().split("\n").pop()}`);
 console.log(`  graders           ${graders.ok ? "passed" : "FAILED"}`);
+console.log(`  local paths       ${paths.ok ? "none committed" : "FOUND"}`);
 console.log(`  scenarios         ${baselineLine}`);
-console.log(`  behaviour         not measured here; see tools/run-activation.mjs`);
+console.log(`  behaviour         ${behaviourLine()}`);
 
 if (!reportOnly) {
   for (const r of rows.filter((x) => x.bad)) {
