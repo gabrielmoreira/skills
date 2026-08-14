@@ -8,40 +8,49 @@ references: [OWASP Cryptographic Failures]
 
 # Crypto Choices
 
-Decision: Model crypto and security behavior as explicit modes or algorithms, not ambiguous booleans or hidden defaults.
+Decision: **Model crypto and security behaviour as an explicit mode or a named algorithm, never as an ambiguous boolean or a hidden default.**
 
 Use when:
-- Code adds `secure`, `encrypted`, `useTls`, `verify`, `legacy`, or similar boolean flags.
-- Security behavior changes by environment or mode, or test/local mode differs from production mode.
-- Algorithm, key type, signing strategy, token format, or verification policy is implicit, or multiple valid algorithms/protocols/key sources exist.
-- Multiple flags can combine into unclear or impossible states.
+- **Code adds a security-shaped boolean.** `secure`, `encrypted`, `useTls`, `verify`, `legacy`.
+- **Security behaviour changes by environment or mode**, or local differs from production.
+- **Something security-relevant is implicit.**
+  - The algorithm.
+  - The key type.
+  - The signing strategy.
+  - The token format or verification policy.
+- **Several valid algorithms, protocols, or key sources exist.**
+- **Flags can combine into unclear or impossible states.**
 
 Do:
-- If there is one safe production behavior, make it explicit and reject missing/unknown choices.
-- Use explicit discriminated modes for meaningful security choices; name algorithms, verification policy, and legacy compatibility deliberately.
-- Scale from a single explicit production mode, to a discriminated union of supported modes, to a documented compatibility mode (owner, tests, warning, removal condition) only when legacy data or rollout needs it.
-- Reject invalid combinations during parsing or construction.
-- Keep insecure/test modes visibly named and bounded.
+- **Where one production behaviour is safe, make it explicit** and reject anything missing or unknown.
+- **Use a discriminated union for a meaningful security choice**, so the mode names the behaviour.
+- **Name the algorithm, the verification policy, and any legacy compatibility deliberately.**
+- **Scale up only as the need appears.**
+  - One explicit production mode.
+  - A discriminated union of supported modes.
+  - A documented compatibility mode, once legacy data or a rollout genuinely needs it.
+- **Reject an invalid combination during parsing or construction**, before behaviour runs.
+- **Keep an insecure or test mode visibly named and bounded.**
 
 Avoid:
-- Boolean flags that hide which security behavior is active.
-- Defaults that silently choose weaker behavior.
-- Multiple optional fields that allow impossible security states.
-- Environment-specific security branches scattered across behavior code.
+- **A boolean that hides which security behaviour is active.**
+- **A default that silently picks the weaker option.**
+- **Several optional fields that together allow an impossible state.**
+- **Environment-specific security branches scattered through behaviour code.**
 
 Exceptions:
-- A boolean is acceptable only when there are exactly two obvious states and no security nuance is hidden.
-- Compatibility modes may exist temporarily with owner, tests, warning, and removal condition.
+- **A boolean is fine with exactly two obvious states** and no security nuance hidden behind it.
+- **A compatibility mode MAY exist temporarily**, with an owner, tests, a warning, and a stated removal condition.
 
-Example:
+Example (one instance, not the set):
 
-Bad: boolean hides policy.
+Bad: the boolean hides the policy.
 
 ```ts
 type TokenConfig = { secure: boolean; secret: string };
 ```
 
-Good: mode names the behavior.
+Good: the mode names the behaviour.
 
 ```ts
 type TokenConfig =
@@ -50,6 +59,6 @@ type TokenConfig =
 ```
 
 Verify:
-- List every possible mode and confirm each is deliberate.
-- Check invalid combinations fail before behavior runs.
-- Check tests cover each supported mode and at least one rejected invalid combination.
+- **List every mode that can be reached and confirm each one is deliberate.**
+- **Check an invalid combination fails before behaviour runs.**
+- **Check tests cover each supported mode**, plus at least one rejected combination.

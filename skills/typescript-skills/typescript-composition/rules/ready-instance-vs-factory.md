@@ -8,38 +8,42 @@ references: [Dependency Injection (Fowler), Factory Method (GoF)]
 
 # Ready Instance vs Factory
 
-Decision: Pass ready dependencies inward by default; pass factories only when construction must vary at call time or scope time.
+Decision: **Pass a ready dependency inward by default, and a factory only where construction must vary at call time or scope time.**
 
 Use when:
-- A function accepts a factory but the created dependency is stable, or accepts a ready dependency but needs request, tenant, transaction, or per-call inputs to construct it.
-- Tests are hard because dependencies are constructed internally.
-- A factory hides provider selection or lifecycle policy, or construction depends on per-call, request, tenant, transaction, or lazy optional inputs.
-- The dependency must be opened/closed around an operation, or the behavior must create multiple scoped instances during one call.
+- **A function takes a factory** but the thing it builds never varies.
+- **A function takes a ready dependency** but needs per-call, request, tenant, or transaction input to build it.
+- **Tests are hard** because the dependency is constructed inside.
+- **A factory hides provider selection or lifecycle policy.**
+- **A dependency must be opened and closed around one operation.**
+- **Behaviour must create several scoped instances during a single call.**
 
 Do:
-- Pass a ready dependency when all construction inputs are known before behavior runs; pass a factory when construction depends on per-call data, request scope, tenant, transaction, or lazy resource acquisition.
-- Keep factory naming specific — prefer `makeXxx` for in-process construction, such as `makeTenantMailer`; use domain verbs like `openTransaction` when lifecycle semantics are stronger than construction.
-- Keep factory ownership at the composition boundary when it encodes runtime policy.
+- **Pass a ready dependency when every construction input is known before behaviour runs.**
+- **Pass a factory when construction depends on something only the call knows.** Per-call data, request scope, tenant, transaction, or a lazily acquired resource.
+- **Name a factory for what it builds.** Prefer `makeXxx` for in-process construction, such as `makeTenantMailer`.
+- **Use a domain verb such as `openTransaction`** where the lifecycle meaning is stronger than the construction.
+- **Keep factory ownership at the composition boundary** whenever it encodes runtime policy.
 
 Avoid:
-- Factories that always return the same singleton.
-- Ready instances that accidentally capture the wrong scope.
-- Factories named generically enough to hide lifecycle or provider choice.
-- Behavior modules that both choose a factory and use the dependency.
+- **A factory that always returns the same singleton.**
+- **A ready instance that captured the wrong scope.**
+- **A factory named generically enough to hide a lifecycle or a provider choice.**
+- **A behaviour module that both picks the factory and uses what it makes.**
 
 Exceptions:
-- Lazy factories are acceptable for expensive optional dependencies if the lifecycle and error path are explicit.
-- Framework dependency injection containers may supply factories; behavior should still depend on the smallest capability it needs.
+- **A lazy factory is fine for an expensive optional dependency**, where the lifecycle and the error path are both explicit.
+- **A framework container MAY supply factories.** Behaviour still depends on the smallest capability it needs.
 
-Example:
+Example (one instance, not the set):
 
 ```ts
-// Prefer ready dependency:
+// Prefer a ready dependency:
 export function makeSendReceipt({ mailer }: { mailer: Mailer }) {
   return (order: Order) => mailer.send(order.email);
 }
 
-// Escalate to factory when scope varies per tenant:
+// Escalate to a factory once scope varies per tenant:
 export function makeSendReceipt({ getMailerForTenant }: {
   getMailerForTenant: (tenantId: string) => Mailer;
 }) {
@@ -47,9 +51,9 @@ export function makeSendReceipt({ getMailerForTenant }: {
 }
 ```
 
-For when to use a `makeXxx` capability object vs a class vs a plain function inside the unit being assembled, read `skill://typescript-skills/typescript-coding-standards/rules/functions-vs-classes.md`.
+- **For choosing between a capability object, a class, and a plain function** inside the unit being assembled, read `skill://typescript-skills/typescript-coding-standards/rules/functions-vs-classes.md`.
 
 Verify:
-- Identify which inputs are known at assembly time and which vary at call time.
-- Check dependency scope matches captured data.
-- Check tests can pass a fake ready instance or controlled factory without global mutation.
+- **Separate the inputs known at assembly time from those that vary at call time.**
+- **Check the scope of the dependency matches the data it captured.**
+- **Check a test can pass a fake ready instance or a controlled factory** without touching global state.

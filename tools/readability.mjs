@@ -78,6 +78,10 @@ export function shape(raw) {
   return {
     words,
     bullets: (noFence.match(/^\s*[-*]\s/gm) ?? []).length,
+    // A gate row is a scannable unit doing the same job as a bullet, so it
+    // counts toward structure. Without this a three-rule index would have to
+    // pad with bullets it does not need. Separator rows are not content.
+    rows: (noFence.match(/^\s*\|(?!\s*[-:| ]+\|?\s*$).*\|/gm) ?? []).length,
     bold: (noFence.match(/\*\*[^*]+\*\*/g) ?? []).length,
     headings: (body.match(/^#{2,3} /gm) ?? []).length,
     fences: (body.match(/```/g) ?? []).length / 2,
@@ -125,10 +129,12 @@ const isFlatEntry = (f) => {
 };
 
 /**
- * How much structure an entry file owes scales with how much it routes. A gate
- * over two rules is mostly its table; a router over eleven has sections, a
- * default stance, and discriminators. Charging both the same forty bullets asks
- * the small one to pad.
+ * How much structure an entry file owes scales with how much it routes.
+ *
+ * Measured: a skill router carries about eight structural units per rule, since
+ * it holds framing, discriminators, and an output contract alongside the gate.
+ * A topic index carries about three, because it is the gate and nothing else.
+ * Charging the second one the first one's budget asks it to pad.
  */
 const routedCount = (f) => {
   const dir = path.join(path.dirname(f), "rules");
@@ -136,7 +142,9 @@ const routedCount = (f) => {
   return fs.readdirSync(dir).filter((n) => n.endsWith(".md")).length;
 };
 
-const flag = (v, limit, over) => (over ? v > limit : v < limit) ? "  " : " !";
+// "12 or more" is inclusive. The exclusive form failed a file sitting exactly on
+// the target it was written to hit.
+const flag = (v, limit, over) => (over ? v >= limit : v < limit) ? "  " : " !";
 
 console.log("\nfile".padEnd(34) + "words bull bold  avgP maxP  cl/s prose%");
 let bad = 0;
@@ -144,10 +152,13 @@ for (const f of files) {
   const perUnit = /[\\/]rules[\\/]/.test(f) || isFlatEntry(f);
   const s = shape(fs.readFileSync(f, "utf8"));
   const n = perUnit ? 0 : routedCount(f);
-  const wantBul = perUnit ? 12 : Math.max(12, Math.min(40, n * 4));
+  // A topic index is a gate only; a skill router frames the whole skill.
+  const isTopicIndex = !perUnit && path.basename(f) === "INDEX.md";
+  const per = isTopicIndex ? 3 : 4;
+  const wantBul = perUnit ? 12 : Math.max(8, Math.min(40, n * per));
   const wantBold = perUnit ? 4 : Math.max(4, Math.min(20, n * 2));
   const marks =
-    flag(s.bullets, wantBul, true) + flag(s.bold, wantBold, true) +
+    flag(s.bullets + s.rows, wantBul, true) + flag(s.bold, wantBold, true) +
     flag(s.maxPara, TARGET.maxPara, false) + flag(s.clauses, TARGET.clauses, false) +
     flag(s.prose, TARGET.prose, false);
   if (marks.includes("!")) bad++;

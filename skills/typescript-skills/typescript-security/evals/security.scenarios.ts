@@ -53,7 +53,7 @@ const scenarios = [
     mode: "apply",
     difficulty: "mixed",
     prompt:
-      "To debug flaky auth we added `logger.error('auth failed', { requestHeaders: req.headers, config })` in the catch block. It has been very useful — we can finally see what differs between failing and passing requests. Any concerns before we leave it in?",
+      "To debug flaky auth we added `logger.error('auth failed', { requestHeaders: req.headers, config })` in the catch block. It has been very useful, we can finally see what differs between failing and passing requests. Any concerns before we leave it in?",
     expectedPrimary: "typescript-security",
     expectedSecondary: ["typescript-observability"],
     must: [

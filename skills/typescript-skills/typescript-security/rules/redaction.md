@@ -8,46 +8,52 @@ references: [OWASP Logging (A09)]
 
 # Redaction
 
-Decision: Redact sensitive values before logging, formatting, rethrowing, serializing, or attaching error context.
+Decision: **Redact a sensitive value before it is logged, formatted, rethrown, serialized, or attached as error context.**
 
-This rule owns data safety in logs/errors. For deciding what is meaningful to log or trace, read `skill://typescript-skills/typescript-observability/INDEX.md`.
-
-First line of defense is keeping secret values out of the typed config object in the first place — the config should hold a *pointer* (ARN, secret name, env var name) and secrets should be resolved later, on demand. Redaction is the second line of defense for when the secret unavoidably enters memory. Read `skill://typescript-skills/typescript-security/rules/secrets-lifecycle.md`.
+- **This rule owns data safety in logs and errors.** What is worth logging at all belongs to `skill://typescript-skills/typescript-observability/INDEX.md`.
+- **Redaction is the second line of defence, not the first.** Keeping the value out of the typed config belongs to `skill://typescript-skills/typescript-security/rules/secrets-lifecycle.md`, where config holds a pointer and the secret is resolved later.
 
 Use when:
-- Code logs config, headers, auth objects, env, request bodies, provider responses, credentials, tokens, keys, or connection strings.
-- Errors include raw input or config context, especially when sensitive objects are nested or reused across error paths.
-- Debug output is added near authentication, crypto, webhooks, or secret loading.
-- A pointer may reveal sensitive account, tenant, environment, or resource data.
-- Observability spans/logs need meaningful context that may include sensitive fields unless classified first.
+- **Code logs something that may carry a secret.**
+  - Config, env, or headers.
+  - Auth objects, credentials, tokens, or keys.
+  - Request bodies, provider responses, or connection strings.
+- **An error carries raw input or config context**, especially where the same object is reused across error paths.
+- **Debug output is added near authentication, crypto, webhooks, or secret loading.**
+- **A pointer may itself reveal account, tenant, environment, or resource detail.**
+- **A span or log needs context that may include sensitive fields** unless they are classified first.
 
 Do:
-- Log only allowlisted safe fields at the callsite instead of logging whole objects; prefer allowlisting over blocklisting sensitive names.
-- Redact by key and by value category, and redact before constructing the final error/log message.
-- Preserve enough non-sensitive context for debugging.
-- Scale from an allowlist at one callsite, to a shared redaction helper for repeated nested shapes, to a central logging policy once many modules emit structured sensitive context.
-- Test redaction for representative secrets and nested objects.
-- Keep redaction policy reusable by observability adapters.
+- **Log an allowlist of safe fields at the callsite**, rather than the whole object.
+- **Prefer allowlisting over blocklisting names.** A blocklist misses the field added next week.
+- **Redact by key and by value category**, before the final message is built.
+- **Keep enough non-sensitive context to debug with.**
+- **Scale up only as the need appears.**
+  - An allowlist at one callsite.
+  - A shared helper once a nested shape repeats.
+  - A central policy once many modules emit structured sensitive context.
+- **Test redaction against representative secrets and nested objects.**
+- **Keep the policy reusable by observability adapters.**
 
 Avoid:
-- `JSON.stringify(config)` or logging whole request/provider objects.
-- Rethrowing errors with raw secret-bearing context.
-- Partial slicing that reveals token prefixes/suffixes without policy.
-- Assuming development logs are safe.
+- **`JSON.stringify(config)`, or logging a whole request or provider object.**
+- **Rethrowing an error that still carries secret-bearing context.**
+- **Slicing a token to show a prefix or suffix** with no policy behind it.
+- **Assuming development logs are safe.**
 
 Exceptions:
-- Explicitly non-sensitive identifiers may be logged when needed for traceability.
-- Short-lived local debugging may log extra context only outside committed code and must not be left behind.
+- **An identifier classified as non-sensitive MAY be logged** where traceability needs it.
+- **Short-lived local debugging MAY log more**, outside committed code, and never left behind.
 
-Example:
+Example (one instance, not the set):
 
-Bad: broad object logging.
+Bad: the whole object goes out.
 
 ```ts
 logger.error("secret loading failed", { config });
 ```
 
-Good: allowlist and redact before logging.
+Good: allowlist, then redact.
 
 ```ts
 logger.error("secret loading failed", {
@@ -58,7 +64,7 @@ logger.error("secret loading failed", {
 ```
 
 Verify:
-- Search for broad stringification/logging near sensitive objects.
-- Confirm tests fail if a representative token/key/password appears in output, in error paths as well as success paths.
-- Check whether the secret should have been excluded from the in-memory config object in the first place; redaction is the second line of defense, not the first. If the typed config carries the secret value (not a pointer), fix that before adding redaction.
-- Check meaningful logging/tracing still has enough safe context after redaction.
+- **Search for broad stringification near sensitive objects.**
+- **Confirm a test fails if a representative token appears in output**, on error paths as well as success paths.
+- **Check whether the secret should have been in memory at all.** Where the typed config carries the value rather than a pointer, fix that before adding redaction.
+- **Check logging still has enough safe context** once redaction has run.

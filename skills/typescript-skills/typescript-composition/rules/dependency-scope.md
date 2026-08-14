@@ -8,32 +8,41 @@ references: [Object Lifetime (Seemann), Unit of Work]
 
 # Dependency Scope
 
-Decision: Lifecycle, cache, singleton, pool, and request-scope policy must be explicit at assembly boundaries.
+Decision: **Lifecycle, cache, singleton, pool, and request-scope policy MUST be explicit at the assembly boundary.**
 
 Use when:
-- Code adds a singleton, module-level cache, pool, memoized client, or request-scoped object.
-- A dependency includes credentials, tenant, user, request, transaction, or cleanup state.
-- Tests leak state between cases, or performance optimization changes dependency lifetime.
-- Construction is expensive and safe to reuse, or a cache needs invalidation, bounds, or cleanup.
+- **Code adds something that outlives one call.**
+  - A singleton or a module-level cache.
+  - A pool or a memoized client.
+  - A request-scoped object.
+- **A dependency captures state that belongs to someone.**
+  - Credentials.
+  - Tenant, user, or request.
+  - A transaction, or something needing cleanup.
+- **Tests leak state between cases.**
+- **A performance change alters how long a dependency lives.**
+- **Construction is expensive and looks safe to reuse.**
+- **A cache needs invalidation, bounds, or cleanup.**
 
 Do:
-- Use a ready dependency with the narrowest lifetime that matches its captured data; choose scope deliberately (app, worker, request, tenant, transaction, or call).
-- Create long-lived dependencies at the edge and pass them inward.
-- Keep request/tenant/user state out of app-singleton dependencies.
-- Expose cleanup when dependencies own resources.
+- **Give a dependency the narrowest lifetime that matches the data it captured.**
+- **Choose the scope deliberately, and be able to name it.** App, worker, request, tenant, transaction, or call.
+- **Build long-lived dependencies at the edge** and pass them inward.
+- **Keep request, tenant, and user state out of app singletons.**
+- **Expose cleanup where a dependency owns a resource.**
 
 Avoid:
-- Hidden module-level singletons inside behavior code.
-- Caches without invalidation, ownership, or scope.
-- Reusing request-scoped dependencies as app-scoped instances.
-- Using performance as an excuse for implicit global state.
+- **A hidden module-level singleton inside behaviour code.**
+- **A cache with no invalidation, no owner, and no scope.**
+- **Reusing a request-scoped dependency as an app-scoped one.**
+- **Performance as the reason for implicit global state.**
 
 Exceptions:
-- Pure immutable constants may be module-level.
-- SDK clients documented as safe app singletons may be app-scoped when constructed at the edge.
-- Memoization is acceptable for pure deterministic functions with bounded key space or explicit cache policy.
+- **A pure immutable constant MAY be module-level.**
+- **An SDK client documented as safe to share MAY be app-scoped**, when it is constructed at the edge.
+- **Memoization is fine for a pure deterministic function** with a bounded key space or an explicit cache policy.
 
-Example:
+Example (one instance, not the set):
 
 ```ts
 // Bad: tenant state captured in an app singleton.
@@ -43,16 +52,16 @@ export function getClient(tenantId: string) {
   return cachedClient;
 }
 
-// Good: scope follows captured data.
+// Good: scope follows the data it captured.
 export function makeTenantDependencies(tenantId: string) {
   return { client: makeClient({ tenantId }) };
 }
 ```
 
-For lazy/tiered scope (app singletons → app infra → request-scoped via `memoizeByReference`), read `skill://typescript-skills/references/patterns/layered-resolve.md`. Reference material; escalate from the canonical default above only when scope tiers earn it.
+- **Where scope genuinely needs tiers**, read `skill://typescript-skills/references/patterns/layered-resolve.md`. Reference material. Escalate from the default above only once the tiers earn it.
 
 Verify:
-- State the dependency scope in one phrase.
-- Check whether dependency input includes tenant/user/request/transaction data.
-- Check tests can isolate state without module reset hacks.
-- Check resource owners have cleanup or process-lifetime justification.
+- **State the scope of each dependency in one phrase.** Being unable to is the finding.
+- **Check whether its construction input carries tenant, user, request, or transaction data.**
+- **Check tests can isolate state** without a module reset hack.
+- **Check every resource owner has cleanup**, or a stated reason it lives for the process.

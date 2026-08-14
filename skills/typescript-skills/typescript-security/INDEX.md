@@ -1,6 +1,11 @@
 # TypeScript Security Topic Index
 
-Use for security-sensitive TypeScript decisions around secrets, cryptography, and logging.
+**Use this topic for security-sensitive decisions about secrets, cryptography, and what reaches logs.**
+
+**This table is a gate, not a checklist.** Match the left column against what you can see in the code.
+
+- **One rule per row.** Enter at the matched row.
+- **Read all three where a change touches secret loading**, since they run in sequence: keep the value out, name the algorithm, redact what is left.
 
 | If you see... | Read |
 | --- | --- |
@@ -8,4 +13,10 @@ Use for security-sensitive TypeScript decisions around secrets, cryptography, an
 | ambiguous crypto mode or implicit algorithm | `skill://typescript-skills/typescript-security/rules/crypto-choices.md` |
 | sensitive values in logs or errors | `skill://typescript-skills/typescript-security/rules/redaction.md` |
 
-Default: keep secrets and environment-specific coordinates out of code defaults, broad config, logs, and errors. Make risk-bearing choices explicit.
+**Default stance.** Keep secrets and environment-specific coordinates out of code defaults, broad config, logs, and errors. Make every risk-bearing choice explicit.
+
+**Edges.**
+
+- **What is worth logging at all belongs to observability.**
+- **Where config is parsed and shaped belongs to configs.**
+- **Which errors are exposed to a caller belongs to error handling.**

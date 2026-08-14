@@ -8,40 +8,47 @@ references: [Composition Root (Mark Seemann), Clean Architecture, Ports and Adap
 
 # Composition Root
 
-Decision: Runtime decisions belong at the composition root or edge assembly layer, not inside behavior code.
+Decision: **Runtime decisions belong at the composition root or the edge assembly layer, never inside behaviour code.**
 
 Use when:
-- Business logic chooses provider/client/adapter based on env, tenant, mode, region, or feature flag.
-- A module constructs external clients while also doing domain behavior, or startup wiring, provider selection, and behavior are mixed.
-- Tests need to control dependencies but code discovers them internally.
-- Multiple entrypoints need the same dependencies, or request/tenant/provider scope changes construction.
-- Framework conventions dictate where modules/providers/hooks are registered, and framework entrypoints are becoming thin pass-throughs for app-wide config or global singletons.
+- **Business logic picks a provider, client, or adapter** from env, tenant, mode, region, or a feature flag.
+- **A module builds external clients and does domain work in the same file.**
+- **Startup wiring, provider selection, and behaviour are mixed together.**
+- **Tests need to control a dependency** that the code discovers internally.
+- **Several entrypoints need the same dependencies**, or scope changes construction per request or tenant.
+- **Framework entrypoints are turning into pass-throughs** for app-wide config or global singletons.
 
 Do:
-- Build and select dependencies at startup, request assembly, worker bootstrap, or controller edge; pass ready dependencies into behavior modules.
-- Keep config reading before construction and behavior after construction.
-- Name assembly functions clearly — prefer `makeXxx` for in-process construction (`makeApp`, `makeWorker`, `makeSendReceipt`); reserve `create` for domain/CRUD semantics when that distinction matters.
-- Respect framework conventions for registration, routing, and lifecycle; apply module boundaries behind those conventions.
+- **Build and select dependencies at one of these**, then pass ready ones inward.
+  - Startup.
+  - Request assembly.
+  - Worker bootstrap.
+  - The controller edge.
+- **Read config before construction, and run behaviour after it.**
+- **Name assembly functions for what they assemble.** Prefer `makeXxx` for in-process construction, such as `makeApp` or `makeSendReceipt`.
+- **Reserve `create` for domain or CRUD meaning**, where that distinction matters.
+- **Respect the framework's conventions** for registration, routing, and lifecycle, and put module boundaries behind them.
 
 Avoid:
-- Importing configured clients directly inside behavior modules, or reading env/config deep in behavior to choose dependencies.
-- Reconstructing provider clients per call without scope reason.
-- Hiding provider selection behind convenience singletons.
+- **Importing a configured client inside a behaviour module.**
+- **Reading env or config deep in behaviour to pick a dependency.**
+- **Rebuilding a provider client per call** with no scope reason.
+- **Hiding provider selection behind a convenience singleton.**
 
 Exceptions:
-- Very small scripts may assemble inline if no reusable behavior module exists.
-- Framework-required composition can live in framework entrypoints, modules, providers, hooks, or plugins; keep framework details there and pass focused capabilities/config inward.
+- **A very small script MAY assemble inline** where no reusable behaviour module exists.
+- **Framework-required composition MAY live in framework entrypoints**, modules, providers, hooks, or plugins. Keep the framework detail there and pass focused capabilities inward.
 
-Example:
+Example (one instance, not the set):
 
 ```ts
-// Bad: behavior chooses runtime dependency.
+// Bad: behaviour chooses its own runtime dependency.
 export async function sendReceipt(order: Order) {
   const mailer = process.env.MAILER === "ses" ? makeSesMailer() : makeSmtpMailer();
   await mailer.send(order.email);
 }
 
-// Good: assembly chooses; behavior receives capability.
+// Good: assembly chooses, behaviour receives a capability.
 export function makeSendReceipt({ mailer }: { mailer: Mailer }) {
   return async (order: Order) => {
     await mailer.send(order.email);
@@ -54,9 +61,9 @@ export function makeApp(config: AppConfig) {
 }
 ```
 
-For larger or framework-shaped apps that need lazy/tiered scope (Express request-scoped, Lambda per-invocation), read `skill://typescript-skills/references/patterns/layered-resolve.md`. That pattern is reference material, not the canonical default — escalate to it only when `makeApp(config)` plus framework provider edges no longer fit.
+- **Where lazy or tiered scope is genuinely needed**, read `skill://typescript-skills/references/patterns/layered-resolve.md`. That is reference material, not the default. Escalate to it only once `makeApp(config)` plus framework provider edges stop fitting.
 
 Verify:
-- Search for provider/client construction and env reads in behavior modules.
-- Check behavior functions accept dependencies rather than discovering them.
-- Check provider selection can be tested without mutating global state.
+- **Search behaviour modules for client construction and env reads.**
+- **Check behaviour functions accept dependencies** rather than discovering them.
+- **Check provider selection is testable** without mutating global state.
