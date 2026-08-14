@@ -4,14 +4,166 @@ Eight skills for coding agents. Each one covers a moment you already recognise: 
 branch to review, a bug with no reproduction, a git command that refuses, docs
 that went stale.
 
-They are built around one idea:
-
 > The work should leave enough behind that the next person can pick it up cold.
 
 That next person is usually you, on Monday.
 
 **Each skill opens only the parts that apply.** A three-line change does not pay
 for a nine-hundred-line review.
+
+## What is in here
+
+| Skill | Helps you with |
+| --- | --- |
+| [`evidence-backed-review`](#evidence-backed-review) | judging a branch or a pull request before it lands |
+| [`debugging-by-evidence`](#debugging-by-evidence) | finding the cause of a bug instead of guessing at it |
+| [`keep-git-work-recoverable`](#keep-git-work-recoverable) | getting unstuck when git refuses, without losing work |
+| [`make-the-docs-trustworthy`](#make-the-docs-trustworthy) | docs that went stale, and where to put what you write |
+| [`maintainable-code`](#maintainable-code) | code someone can come back to |
+| [`typescript-skills`](#typescript-skills) | the same, specifically for TypeScript |
+| [`progressive-reading`](#progressive-reading) | answers that are readable instead of exhausting |
+| [`authoring-verifiable-skills`](#authoring-verifiable-skills) | writing your own skill, and proving it works |
+
+## Install
+
+Everything, for every agent you have, available in all your projects:
+
+```bash
+npx skills@latest add gabrielmoreira/skills --skill '*' --global -y
+```
+
+**That is it.** It detects your agents, puts one copy under `~/.agents/skills/`,
+and symlinks it into each agent's own directory. Editing a skill once changes it
+everywhere.
+
+**It will print eight lines about PromptScript.** They are harmless: PromptScript
+only supports project-level skills, and the CLI adds it to every global install
+whether you have it or not. To silence them, name your agents instead:
+
+```bash
+npx skills@latest add gabrielmoreira/skills --skill '*' --global -y \
+  -a claude-code -a codex -a cursor
+```
+
+**Repeat `-a` for each one.** A comma-separated list is read as a single name and
+rejected, with an error that lists back the exact names you passed.
+
+## Then set up your AGENTS.md
+
+**Installing is only half of it.** Without a routing table, an agent has to guess
+from descriptions alone, and on a machine carrying hundreds of skills that is a
+coin flip. This is the step that makes them actually fire.
+
+**Write an `AGENTS.md`** at the root of your project, or at `~/.agents/AGENTS.md`
+for a personal one that follows you everywhere:
+
+```md
+## Skills
+
+**Reach for one when the work matches.** Name the one you opened and why, in one line.
+
+| When | Skill |
+| --- | --- |
+| a change must be judged before it lands: a branch, a diff, uncommitted work | `evidence-backed-review` |
+| something is wrong and the cause is not yet known | `debugging-by-evidence` |
+| a repository operation refused, or the working state is unclear | `keep-git-work-recoverable` |
+| written material must be created, corrected, or removed | `make-the-docs-trustworthy` |
+| code should stay simple, testable, and sustainable | `maintainable-code` |
+| TypeScript needs focused guidance | `typescript-skills` |
+| an answer must be easier to start, scan, pause, and resume | `progressive-reading` |
+| a skill itself must be written, split, renamed, or checked | `authoring-verifiable-skills` |
+
+- **Not finding a match is an answer.** Do not stretch one to fit.
+- **Two or more matching is normal.** Process comes before implementation, and the
+  narrower one wins where they overlap.
+```
+
+**Trim the rows to what you installed.** A row pointing at a skill that is not
+there is worse than no row.
+
+### Claude Code reads CLAUDE.md, not AGENTS.md
+
+Rather than keeping two files in sync, make one a redirect. A line starting with
+`@` imports another file, so this is the entire contents of `CLAUDE.md`:
+
+```md
+@AGENTS.md
+```
+
+For a personal setup, the global `~/.claude/CLAUDE.md` can point outside any
+project:
+
+```md
+@~/.agents/AGENTS.md
+```
+
+Now every agent reads the same instructions and there is one file to edit.
+
+### Going further
+
+[`AGENTS.md`](AGENTS.md) here is a complete working example of the rest of an
+agent instruction file. [`docs/agents-md.md`](docs/agents-md.md) walks through it
+block by block and says which parts are worth copying and which are one person's
+taste.
+
+<details>
+<summary><b>Other ways to install</b></summary>
+
+**Project level**, committed with the repo, instead of global:
+
+```bash
+npx skills@latest add gabrielmoreira/skills --skill '*' -y
+```
+
+**One skill only:**
+
+```bash
+npx skills@latest add gabrielmoreira/skills --skill evidence-backed-review
+```
+
+**Interactive**, which asks you which skills and which agents:
+
+```bash
+npx skills@latest add gabrielmoreira/skills
+```
+
+**See what is in here first**, without installing:
+
+```bash
+npx skills@latest add gabrielmoreira/skills --list
+```
+
+**Real files instead of symlinks:** add `--copy`.
+
+**Afterwards:** `npx skills list` shows what you have, `npx skills update` pulls
+newer versions, `npx skills remove` takes one out. Running the install twice is
+fine; the second run reports overwrites, which is the same skills replacing
+themselves.
+
+**About `--all`:** it expands to `--skill '*' --agent '*' -y`, and that `'*'`
+means all 76 agents the CLI knows rather than the ones you have. It will try
+tools you never installed and print a larger failure block. Prefer the commands
+above.
+
+### Manual install, without the CLI
+
+Each skill is a self-contained folder with `SKILL.md` at its root. Copy the ones
+you want into the directory your agent reads.
+
+```bash
+git clone https://github.com/gabrielmoreira/skills.git
+
+# Claude Code, user level
+cp -r skills/skills/* ~/.claude/skills/
+
+# Claude Code, project level
+mkdir -p .claude/skills && cp -r skills/skills/* .claude/skills/
+```
+
+`~/.agents/skills/` is the shared location many agents read, and is where the CLI
+puts the real files before symlinking them out.
+
+</details>
 
 ## The skills
 
@@ -135,133 +287,6 @@ never fires.
 - **One decision per rule**, with a word budget, so nothing turns into an essay.
 - **A check nobody has watched fail proves nothing.** It shows you how to break
   your own skill on purpose and confirm the right check catches it.
-
-## Install
-
-Use the [`skills`](https://github.com/vercel-labs/skills) CLI. It detects which
-agents you have and installs into each one's directory.
-
-```bash
-npx skills@latest add gabrielmoreira/skills
-```
-
-That installs into the current project and asks which skills and which agents.
-
-**Everything, user level, only the agents you actually use:**
-
-```bash
-npx skills@latest add gabrielmoreira/skills --skill '*' --global -y \
-  -a claude-code -a codex -a cursor
-```
-
-**Repeat `-a` for each agent.** A comma-separated list is read as one name and
-rejected, with an error that lists the very names you passed. Run
-`npx skills@latest add gabrielmoreira/skills -a x` to see every valid key.
-
-**There is also `--all`**, which is `--skill '*' --agent '*' -y`. It targets all
-76 agents the CLI knows about rather than the ones you have, so it will try tools
-you never installed and print a failure block for the two that are project-only
-by design, Eve and PromptScript. Naming your agents avoids that entirely.
-
-**One skill only:**
-
-```bash
-npx skills@latest add gabrielmoreira/skills --skill evidence-backed-review
-```
-
-**See what is in here before installing anything:**
-
-```bash
-npx skills@latest add gabrielmoreira/skills --list
-```
-
-**Where it lands.** One copy under `~/.agents/skills/`, symlinked into every agent
-directory you have. Editing the skill once changes it everywhere. Add `--copy` if
-you would rather have independent real files.
-
-**Running it twice is fine.** The second run reports overwrites everywhere,
-which is the same skills replacing themselves.
-
-Useful afterwards: `npx skills list` shows what you have, `npx skills update`
-pulls newer versions, and `npx skills remove` takes one out.
-
-### Manual install
-
-**If you would rather not use the CLI**, each skill is a self-contained folder
-with `SKILL.md` at its root. Copy the ones you want into the directory your agent
-reads.
-
-```bash
-git clone https://github.com/gabrielmoreira/skills.git
-
-# Claude Code, user level
-cp -r skills/skills/* ~/.claude/skills/
-
-# Claude Code, project level
-mkdir -p .claude/skills && cp -r skills/skills/* .claude/skills/
-```
-
-**Other agents follow the same shape.** Point them at wherever they look.
-`~/.agents/skills/` is the shared location many of them read, which is where the
-CLI puts the real files before symlinking them out.
-
-## Then wire it up
-
-**Installing is not enough.** Without a routing table, activation rests on
-description matching alone, and on a machine carrying hundreds of skills that is
-a coin flip.
-
-**Write an `AGENTS.md`** at the root of your project, or at `~/.agents/AGENTS.md`
-for a personal one that follows you everywhere. Start with this:
-
-```md
-## Skills
-
-**Reach for one when the work matches.** Name the one you opened and why, in one line.
-
-| When | Skill |
-| --- | --- |
-| a change must be judged before it lands: a branch, a diff, uncommitted work | `evidence-backed-review` |
-| something is wrong and the cause is not yet known | `debugging-by-evidence` |
-| a repository operation refused, or the working state is unclear | `keep-git-work-recoverable` |
-| written material must be created, corrected, or removed | `make-the-docs-trustworthy` |
-| code should stay simple, testable, and sustainable | `maintainable-code` |
-| TypeScript needs focused guidance | `typescript-skills` |
-| an answer must be easier to start, scan, pause, and resume | `progressive-reading` |
-| a skill itself must be written, split, renamed, or checked | `authoring-verifiable-skills` |
-
-- **Not finding a match is an answer.** Do not stretch one to fit.
-- **Two or more matching is normal.** Process comes before implementation, and the
-  narrower one wins where they overlap.
-```
-
-**Trim the rows to the skills you installed.** A row pointing at a skill that is
-not there is worse than no row.
-
-### Point Claude Code at it
-
-**Claude Code reads `CLAUDE.md`, not `AGENTS.md`.** Rather than keeping two files
-in sync, make one a redirect. A line starting with `@` imports another file:
-
-```md
-@AGENTS.md
-```
-
-That is the entire contents of `CLAUDE.md`. For a personal setup, the global
-`~/.claude/CLAUDE.md` can point at a file outside any project:
-
-```md
-@~/.agents/AGENTS.md
-```
-
-Now every agent reads the same instructions, and there is one file to edit.
-
-### Going further
-
-[`AGENTS.md`](AGENTS.md) in this repo is a complete working example of the rest of
-an agent instruction file. [`docs/agents-md.md`](docs/agents-md.md) walks through
-it block by block and says which parts are worth copying and which are one
-person's taste.
 
 ## Checking what you installed
 
