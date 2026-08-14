@@ -1,10 +1,14 @@
 # Agent instructions
 
-Staged, not installed. It names no tool, so a host with a question tool uses one and a host
-without sends the same text.
+**This is one complete working file, included as an example.** Do not copy it whole.
+[`docs/agents-md.md`](docs/agents-md.md) goes block by block and says which parts
+travel and which are one person's taste. The short version: take the Skills table,
+probably Evidence and Deviation, and read the rest.
 
 **Loaded every session.** Every line is paid for on every request. A line that does not change
 behaviour is deleted, not kept for completeness.
+
+It names no tool, so a host with a question tool uses one and a host without sends the same text.
 
 ---
 
