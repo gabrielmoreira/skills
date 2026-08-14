@@ -1,56 +1,207 @@
 # Agent Skills That Restore Context
 
-Eight skills for coding agents, built around one idea:
+Eight skills for coding agents. Each one covers a moment you already recognise: a
+branch to review, a bug with no reproduction, a git command that refuses, docs
+that went stale.
 
-> The work should restore context for whoever comes next.
+They are built around one idea:
 
-Code that works can still make the reader hold too much in working memory. So can
-a change with no stated reason, a failure with no reproduction, a repository in a
-state nobody can name, and prose that stopped being true.
+> The work should leave enough behind that the next person can pick it up cold.
 
-Every skill here is a router over rules. A rule opens only when its signal is
-present, so a small task does not pay for a large one.
+That next person is usually you, on Monday.
+
+**Each skill opens only the parts that apply.** A three-line change does not pay
+for a nine-hundred-line review.
+
+## The skills
+
+### `evidence-backed-review`
+
+**Use it before you open a pull request, or when someone hands you a branch.**
+
+It reads the change and tells you what is wrong with it. The point is that it also
+tells you what it did not look at, instead of saying "looks good" about parts it
+never opened.
+
+- **Every finding has a file and a line.** It never edits your code.
+- **It checks the things people skip.** Does this match what was actually asked
+  for. Can it be abused. Do the tests prove what they claim. Does it break someone
+  else's caller. Are the docs now wrong.
+- **It reads outside the repo when it can.** Your company's standards, another
+  team's wiki, the repository of whoever consumes your API.
+- **It only opens the checks that apply.** A three-line change does not pay for a
+  nine-hundred-line review.
+
+### `debugging-by-evidence`
+
+**Use it when something is broken and you do not know why yet.**
+
+It stops the agent from guessing. No theory is allowed until a command has
+actually reproduced the problem in front of it.
+
+- **Reading code produces theories nothing can disprove.** So it runs something
+  first.
+- **It says which stage it is in**, and each stage allows only certain moves. It
+  cannot name a cause before it has one that survived a test.
+- **It writes down the rival explanations** and what would kill each one, instead
+  of trying the first idea that came to mind.
+- **The regression test goes where the bug is**, not where you noticed it.
+
+Good for intermittent failures, "it works on my machine", and anything that got
+slow.
+
+### `keep-git-work-recoverable`
+
+**Use it when git refuses and you are not sure what is safe to do.**
+
+A blocked branch switch, a detached head, a branch name that will not resolve, or
+old worktrees you want to clean up.
+
+- **Nothing uncommitted gets thrown away.** Ever.
+- **Nothing gets deleted without proof it landed somewhere.** "It looks merged" is
+  not proof, and squashed work is not an ancestor.
+- **A refusal is information, not an obstacle.** It reads the error instead of
+  retrying with more force.
+- **Anything destructive comes back to you** with what you would lose, spelled out.
+
+### `make-the-docs-trustworthy`
+
+**Use it when the docs say something that is no longer true**, or when you are
+about to write something down and do not know where it goes.
+
+- **It searches before it writes.** A second copy of a fact is not extra
+  documentation. It is a future contradiction, and nobody will know which copy is
+  the stale one.
+- **It deletes what a command already prints.** If `--help` says it, the page
+  restating it is just something else to keep in sync.
+- **It names what kind of change it is making**, so a decision record gets
+  superseded with a pointer forward rather than quietly deleted.
+- **Prose nobody has read is treated as a guess**, not as a source.
+
+### `maintainable-code`
+
+**Use it whenever you are writing, reviewing, or restructuring code.**
+
+Ten principles for code that someone can come back to. The two that matter most
+are named at the top so you can stop after those.
+
+- **Look at what is already there before changing it.** Most of the cost is
+  building a second way to do something the codebase already does.
+- **Keep the effects visible.** Network, files, time, randomness, and anything
+  stateful goes through the front door.
+- **The main path should read top to bottom.** Fewer layers, and the important
+  decision where you would look for it.
+- **It will not make you split things for the sake of splitting them.** A helper
+  that only makes a file shorter is not an improvement.
+
+### `typescript-skills`
+
+**Use it when the question is specifically about TypeScript.**
+
+Forty-one rules across nine topics: coding standards, boundaries, composition,
+config, async, error handling, observability, security, testing.
+
+- **It opens one topic, not nine.** The router exists to keep the cost down.
+- **Every rule tells you what to choose, when, what to avoid, and how to check it
+  afterwards.**
+- **Real examples with real code**, including the wrong version next to the right
+  one.
+- **Covers the things that bite in production.** Cancellation, cleanup order,
+  retry storms, secrets in logs, provider types leaking into your domain.
+
+### `progressive-reading`
+
+**Use it when the agent's answers are exhausting to read.**
+
+Dense walls of text, buried conclusions, or replies that sound like a press
+release.
+
+- **Answer first, then context, then caveats.**
+- **One idea per paragraph**, short enough to stop between.
+- **It cuts filler and keeps substance.** Security warnings, ordered steps, and
+  exact commands or error strings stay exactly as they were.
+- **It knows when to stop.** Shorter is not better once the answer becomes wrong
+  or too terse to follow.
+
+### `authoring-verifiable-skills`
+
+**Use it when you want to write your own skill**, or figure out why one you wrote
+never fires.
+
+- **Start with the description**, because a skill that never activates does
+  nothing, and that failure is invisible.
+- **Route on what the agent can actually see** in the code, not on concepts it
+  would have to already know to match.
+- **One decision per rule**, with a word budget, so nothing turns into an essay.
+- **A check nobody has watched fail proves nothing.** It shows you how to break
+  your own skill on purpose and confirm the right check catches it.
 
 ## Install
 
-**Copy the skills you want into the directory your agent reads.** Each skill is a
-self-contained folder, so you can take one or all eight.
+Use the [`skills`](https://github.com/vercel-labs/skills) CLI. It detects which
+agents you have and installs into each one's directory.
+
+```bash
+npx skills@latest add gabrielmoreira/skills
+```
+
+That installs into the current project and asks which skills and which agents.
+
+**Everything, every agent, no prompts:**
+
+```bash
+npx skills@latest add gabrielmoreira/skills --all
+```
+
+**User level instead of project level**, so it is available everywhere:
+
+```bash
+npx skills@latest add gabrielmoreira/skills --all --global
+```
+
+**One skill only:**
+
+```bash
+npx skills@latest add gabrielmoreira/skills --skill evidence-backed-review
+```
+
+**See what is in here before installing anything:**
+
+```bash
+npx skills@latest add gabrielmoreira/skills --list
+```
+
+Useful afterwards: `npx skills list` shows what you have, `npx skills update`
+pulls newer versions, and `npx skills remove` takes one out. Add `--copy` to the
+install if you would rather have real files than symlinks.
+
+### Manual install
+
+**If you would rather not use the CLI**, each skill is a self-contained folder
+with `SKILL.md` at its root. Copy the ones you want into the directory your agent
+reads.
 
 ```bash
 git clone https://github.com/gabrielmoreira/skills.git
-cd skills
+
+# Claude Code, user level
+cp -r skills/skills/* ~/.claude/skills/
+
+# Claude Code, project level
+mkdir -p .claude/skills && cp -r skills/skills/* .claude/skills/
 ```
 
-**Claude Code**, user level, available in every project:
-
-```bash
-cp -r skills/* ~/.claude/skills/
-```
-
-**Claude Code**, project level, committed with the repo:
-
-```bash
-mkdir -p .claude/skills && cp -r /path/to/skills/skills/* .claude/skills/
-```
-
-**Any agent that reads a skills directory** follows the same shape: one folder
-per skill, `SKILL.md` at its root. Point it at wherever it looks. Common
+**Other agents follow the same shape.** Point them at wherever they look. Common
 locations are `~/.agents/skills/` and `~/.codex/skills/`.
 
-**Any agent that reads only `AGENTS.md`** can still use them. Copy the folders
-somewhere in the repo and add the routing table below, with the paths adjusted.
+## Then wire it up
 
-**One skill only**, for example the review one:
+**Installing is not enough.** Without a routing table, activation rests on
+description matching alone, and on a machine carrying hundreds of skills that is
+a coin flip.
 
-```bash
-cp -r skills/evidence-backed-review ~/.claude/skills/
-```
-
-## Wire it into your agent
-
-**Without a routing table, activation rests on description matching alone.** On a
-machine carrying hundreds of skills that is a coin flip. Paste this into your
-`AGENTS.md` or `CLAUDE.md`:
+**Write an `AGENTS.md`** at the root of your project, or at `~/.agents/AGENTS.md`
+for a personal one that follows you everywhere. Start with this:
 
 ```md
 ## Skills
@@ -76,119 +227,30 @@ machine carrying hundreds of skills that is a coin flip. Paste this into your
 **Trim the rows to the skills you installed.** A row pointing at a skill that is
 not there is worse than no row.
 
+### Point Claude Code at it
+
+**Claude Code reads `CLAUDE.md`, not `AGENTS.md`.** Rather than keeping two files
+in sync, make one a redirect. A line starting with `@` imports another file:
+
+```md
+@AGENTS.md
+```
+
+That is the entire contents of `CLAUDE.md`. For a personal setup, the global
+`~/.claude/CLAUDE.md` can point at a file outside any project:
+
+```md
+@~/.agents/AGENTS.md
+```
+
+Now every agent reads the same instructions, and there is one file to edit.
+
+### Going further
+
 [`AGENTS.md`](AGENTS.md) in this repo is a complete working example of the rest of
 an agent instruction file. [`docs/agents-md.md`](docs/agents-md.md) walks through
 it block by block and says which parts are worth copying and which are one
 person's taste.
-
-## The skills
-
-### `evidence-backed-review`
-
-**Judges a change before it lands.** A branch, a pull request, a diff, or
-uncommitted work.
-
-- **Says what it did not inspect**, instead of calling the whole thing clean.
-- **Every finding lands at `file:line`.** It never edits.
-- **Eleven axes, gated.** Security and abuse paths, whether tests prove what they
-  claim, broken contracts and callers outside the repository, stale docs, and
-  whether the change is what was actually asked for.
-- **Reads what the repository cannot tell it.** Company standards, a team wiki, a
-  consumer's own repository, where those are reachable.
-
-Reach for it before opening a pull request, or when handed a branch to judge.
-
-### `debugging-by-evidence`
-
-**Finds the cause and proves it before any fix.**
-
-- **No hypothesis before a command that already reproduces the symptom.** Reading
-  the code produces theories nothing can falsify.
-- **Five loop states**, and each licenses only what it names. You cannot name a
-  cause from a state that has not reached it.
-- **Ranks rival explanations** with what would falsify each, rather than testing
-  the first idea.
-- **Puts the regression test where the bug actually is**, not where it surfaced.
-
-Reach for it when something is broken, intermittent, or newly slow.
-
-### `keep-git-work-recoverable`
-
-**Establishes where you are before doing anything a repository refuses.**
-
-- **Nothing uncommitted is discarded**, and nothing is removed without positive
-  evidence it landed.
-- **A refusal is information.** Retrying it unchanged is the failure this prevents.
-- **Every claim resting on the remote is tagged.** Observed, unverified, or
-  unknown, and an unverified claim never justifies a deletion.
-- **Destructive moves go to you**, with what would be lost named.
-
-Reach for it on a blocked switch, a detached head, a branch that will not resolve,
-or before cleaning up old work.
-
-### `make-the-docs-trustworthy`
-
-**Corrects, places, or removes written material** so a later reader can act on it
-without checking it first.
-
-- **Search before you write.** A second copy of a fact adds no source, and the two
-  disagree eventually.
-- **Prose nobody has read is a hypothesis, not a source.**
-- **Names the change class.** Correct, add, supersede, relocate, or delete. A
-  decision record is superseded, never deleted.
-- **Drops what a command or a config file already prints.**
-
-Reach for it when docs are out of date, when deciding where something goes, or
-when writing a decision down.
-
-### `maintainable-code`
-
-**Keeps real complexity visible and removes the rest.**
-
-- **Ten principles**, ordered, with the two that carry the most weight named at the
-  top: investigate before changing, and make effects and dependencies explicit.
-- **Clear main flow**, with as few layers as the problem needs.
-- **No hidden I/O**, no god config, no fragmenting one decision across helpers.
-- **Organised around the axis of change**, not around file type.
-
-Reach for it when designing, reviewing, or refactoring anything.
-
-### `typescript-skills`
-
-**The same ideas in one ecosystem.** A router over nine topics and forty-one rules.
-
-- **Coding standards, boundaries, composition, configs, async, error handling,
-  observability, security, testing.**
-- **One topic opens at a time.** The router exists to stop you reading all nine.
-- **Each rule states a decision, the conditions that trigger it, what to avoid, and
-  a check that can come back negative.**
-- **Carries its own twenty-seven invariants** on top of the portable ones.
-
-Reach for it on any TypeScript design, review, or debugging question.
-
-### `progressive-reading`
-
-**Makes an answer easier to start, scan, pause, and resume.**
-
-- **Useful answer first**, then context, then caveats.
-- **One idea per short paragraph.**
-- **Cuts filler, never substance.** Security warnings, ordered procedures, and
-  exact technical strings are preserved as written.
-- **Stops before the answer turns wrong or too terse to follow.**
-
-Reach for it when replies feel dense, robotic, or hard to re-enter.
-
-### `authoring-verifiable-skills`
-
-**How every skill here is written and proved.** Start here before adding one.
-
-- **The activation surface first**, because a skill that never fires does nothing.
-- **The gate, not a checklist.** Route on what an agent can see, never on concepts
-  it would have to already know.
-- **One decision per rule**, in five blocks, inside a word budget.
-- **A check with no mutation is an opinion with a pass label.**
-
-Reach for it when writing, splitting, renaming, or checking a skill.
 
 ## Checking what you installed
 
