@@ -1,6 +1,12 @@
 # TypeScript Boundaries Topic Index
 
-Use when external shapes meet owned code. Keep foreign semantics at the edge and expose smaller local models inward.
+**Use this topic where an external shape meets owned code.** Keep foreign semantics at the edge and expose a smaller local model inward.
+
+**This table is a gate, not a checklist.** Match the left column against what you can see in the code.
+
+- **One rule per row.** Enter at the matched row.
+- **Containment against raw input.** Split by what the shape is: a vendor or generated type, against untrusted transport data. A payload may need both parsing and translation.
+- **Mapping against naming.** Mapping decides whether a translation layer is earned. Naming decides what the result is called.
 
 | If you see... | Read |
 | --- | --- |
@@ -9,6 +15,11 @@ Use when external shapes meet owned code. Keep foreign semantics at the edge and
 | proposed mapper or adapter | `skill://typescript-skills/typescript-boundaries/rules/earned-mapping.md` |
 | local model named with provider vocabulary | `skill://typescript-skills/typescript-boundaries/rules/local-naming.md` |
 
-Provider containment covers foreign SDK types; raw-input handling covers untrusted transport data. A payload may need both parsing and translation.
+**Default stance.** Translate at the edge when ownership or meaning changes. Do not add a mapper that only renames fields.
 
-Default: translate at the edge when ownership or meaning changes. Do not add a mapper that only renames fields.
+**Edges.**
+
+- **General naming inside owned code belongs to coding standards.**
+- **Retry and cancellation around a provider call belong to async.**
+- **What a caller sees when translation fails belongs to error handling.**
+- **Which dependency is selected, and how long it lives, belongs to composition.**

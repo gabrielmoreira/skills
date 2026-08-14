@@ -8,30 +8,56 @@ references: [Anti-Corruption Layer (DDD), Parse don't validate]
 
 # Raw Input to Internal Model
 
-Decision: Parse and narrow raw input at the boundary before owned behavior depends on it. This rule owns HTTP request/response/transport shapes, env-like raw input, webhook payloads, CLI args, and untyped JSON — for vendor/SDK/generated types, read `skill://typescript-skills/typescript-boundaries/rules/provider-containment.md`.
+Decision: **Parse and narrow raw input at the boundary before any owned behaviour depends on it.** This rule owns transport shapes, env-like input, webhook payloads, CLI args, and untyped JSON. Vendor and generated types belong to `skill://typescript-skills/typescript-boundaries/rules/provider-containment.md`.
 
 Use when:
-- Request body, query, headers, webhook payload, CLI args, env-like input, or untyped JSON is passed inward.
-- Code trusts `unknown`, `any`, stringly typed fields, or external optional fields.
-- Internal behavior checks raw transport details repeatedly.
+- **Untrusted data is being passed inward.**
+  - A request body, query, or headers.
+  - A webhook payload.
+  - CLI args or env-like input.
+  - Untyped JSON.
+- **Code trusts `unknown`, `any`, or a stringly typed field.**
+- **Code trusts an external optional field** without deciding what its absence means.
+- **Internal behaviour keeps re-checking raw transport detail.**
 
 Do:
-- Treat raw input as untrusted until parsed.
-- Produce a small internal model with requiredness, types, and failure shape made explicit.
-- Keep transport-specific names and optionality at the edge unless they are local meaning.
-- Return or throw errors that callers can distinguish from success.
+- **Treat raw input as untrusted until it has been parsed.**
+- **Produce a small internal model** that makes requiredness, types, and failure shape explicit.
+- **Keep transport names and optionality at the edge**, unless they genuinely are the local meaning.
+- **Return or throw something a caller can tell apart from success.**
 
 Avoid:
-- Passing `req.body`, raw JSON, or unparsed webhook payload into business logic.
-- Using `as`, non-null assertions, or comments to claim validity.
-- Normalizing different input shapes deep in owned behavior.
-- Returning plausible defaults when parsing failed.
+- **Passing `req.body`, raw JSON, or an unparsed payload into business logic.**
+- **Using `as`, a non-null assertion, or a comment to claim validity.** None of them check anything.
+- **Normalising different input shapes deep inside owned behaviour.**
+- **Returning a plausible default when parsing actually failed.**
 
 Exceptions:
-- A pass-through proxy may preserve raw shape if it does not interpret it; name it as pass-through.
-- Characterization tests may capture raw legacy behavior before migration.
+- **A pass-through proxy MAY preserve the raw shape** where it does not interpret it. Name it as pass-through.
+- **A characterization test MAY capture raw legacy behaviour** before a migration.
+
+Example (one instance, not the set):
+
+```ts
+// Bad: the assertion claims a guarantee nothing checked.
+export function handle(req: Request) {
+  const order = req.body as CreateOrder;
+  return createOrder(order);
+}
+
+// Good: parse at the edge, and let failure be visible.
+export function handle(req: Request) {
+  const parsed = parseCreateOrder(req.body);
+  if (!parsed.ok) return badRequest(parsed.issues);
+  return createOrder(parsed.value);
+}
+```
 
 Verify:
-- Search for raw request/response/env objects outside boundary modules.
-- Check parser tests cover valid input, invalid input, missing required fields, and failure shape.
-- Check behavior code accepts an owned type, not raw transport.
+- **Search for raw request, response, or env objects outside boundary modules.**
+- **Check parser tests cover four cases.**
+  - Valid input.
+  - Invalid input.
+  - A missing required field.
+  - The failure shape itself.
+- **Check behaviour code accepts an owned type**, never raw transport.

@@ -8,30 +8,37 @@ references: [Ports and Adapters (Hexagonal Architecture), Anti-Corruption Layer 
 
 # Provider Containment
 
-Decision: Keep provider, SDK, generated, and external API client shapes at the edge when their names or semantics are not the app's local meaning. This rule owns vendor/SDK/generated types only — for HTTP request/response/transport/env-like raw input, read `skill://typescript-skills/typescript-boundaries/rules/raw-input-to-internal-model.md`.
+Decision: **Keep a provider, SDK, generated, or external client shape at the edge whenever its names or semantics are not the app's local meaning.** This rule owns vendor and generated types. Transport and env-like raw input belong to `skill://typescript-skills/typescript-boundaries/rules/raw-input-to-internal-model.md`.
 
 Use when:
-- Business logic imports provider, SDK, or generated types, or provider enum/status/field names require provider docs to understand.
-- Provider SDK shapes contain fields the application should not expose inward, or the app needs a smaller local view of a larger external shape.
-- Owned behavior starts importing provider types, several callsites repeat provider-field checks, or the provider shape is larger or more unstable than the local contract.
-- Provider states need local interpretation.
+- **Business logic imports a provider, SDK, or generated type.**
+- **A provider enum, status, or field name needs provider docs to understand.**
+- **An SDK shape carries fields the app should not expose inward.**
+- **The app needs a smaller view of a larger external shape.**
+- **Several callsites repeat the same provider-field check.**
+- **The provider shape is larger or less stable than the local contract.**
+- **A provider state needs local interpretation before anything can act on it.**
 
 Do:
-- Convert external shapes in adapters, controllers, clients, or boundary modules: keep the provider type in one edge module, return a smaller local object, and escalate to a named mapper when translation is repeated or lossy.
-- Pass owned local models into behavior code.
-- Keep provider-specific fields only where traceability or adapter behavior needs them, and make failure/unknown-state semantics explicit during translation.
-- Publish a local interface only when multiple providers or package boundaries require it.
+- **Convert the external shape at the edge.** An adapter, a controller, a client, or a boundary module.
+- **Keep the provider type in one edge module** and return a smaller local object.
+- **Escalate to a named mapper** once translation repeats or turns lossy.
+- **Pass owned local models into behaviour code.**
+- **Keep a provider field only where traceability or adapter behaviour needs it.**
+- **Make failure and unknown-state semantics explicit during translation.**
+- **Publish a local interface only when several providers or packages depend on the contract.**
 
 Avoid:
-- Letting provider types become domain types by convenience, or passing raw SDK responses into services.
-- Copying every provider field into a local model without local meaning.
-- Renaming only to hide the provider while preserving foreign semantics.
+- **Letting a provider type become a domain type by convenience.**
+- **Passing a raw SDK response into a service.**
+- **Copying every provider field into a local model** that has no local meaning for it.
+- **Renaming to hide the provider** while keeping its semantics intact.
 
 Exceptions:
-- A provider type may stay local to an edge module when no owned behavior depends on it.
-- A provider field may be preserved for telemetry/audit if it is named as provider metadata and not used as domain meaning.
+- **A provider type MAY stay inside an edge module** where no owned behaviour depends on it.
+- **A provider field MAY be preserved for telemetry or audit**, named as provider metadata and never used as domain meaning.
 
-Example:
+Example (one instance, not the set):
 
 ```ts
 // Bad: provider semantics leak inward.
@@ -41,7 +48,7 @@ export function canShip(intent: Stripe.PaymentIntent) {
   return intent.status === "succeeded";
 }
 
-// Good: edge translates to local meaning.
+// Good: the edge translates to local meaning.
 type PaymentSettlement = { paymentId: string; isSettled: boolean; providerStatus: string };
 
 export function toPaymentSettlement(intent: Stripe.PaymentIntent): PaymentSettlement {
@@ -50,6 +57,6 @@ export function toPaymentSettlement(intent: Stripe.PaymentIntent): PaymentSettle
 ```
 
 Verify:
-- Search provider imports outside adapter/edge modules.
-- Check that internal model names make sense without provider documentation.
-- Check unknown provider states have explicit behavior.
+- **Search for provider imports outside adapter and edge modules.**
+- **Check internal model names make sense without opening provider documentation.**
+- **Check an unknown provider state has explicit behaviour** rather than falling through.
