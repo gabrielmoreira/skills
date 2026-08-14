@@ -39,6 +39,7 @@ const decision = (t) => {
 const MUTATIONS = [
   {
     check: "C-01",
+    needsRules: true,
     what: "a rule loses a required frontmatter field",
     apply(dir) {
       const f = rulesOf(dir)[0];
@@ -50,6 +51,7 @@ const MUTATIONS = [
   },
   {
     check: "C-02",
+    needsRules: true,
     what: "a rule puts Avoid before Do",
     apply(dir) {
       const f = rulesOf(dir)[0];
@@ -62,6 +64,7 @@ const MUTATIONS = [
   },
   {
     check: "C-03",
+    needsRules: true,
     what: "the index routes a rule that does not exist",
     apply(dir) {
       const p = path.join(dir, "SKILL.md");
@@ -76,6 +79,7 @@ const MUTATIONS = [
   },
   {
     check: "C-04",
+    needsRules: true,
     what: "a rule points at a sibling that does not exist",
     apply(dir) {
       const f = rulesOf(dir)[0];
@@ -87,6 +91,7 @@ const MUTATIONS = [
   },
   {
     check: "C-05",
+    needsRules: true,
     what: "demarcation becomes one-way",
     apply(dir) {
       // Find a reciprocated pair, then delete one direction.
@@ -108,6 +113,7 @@ const MUTATIONS = [
   },
   {
     check: "C-06",
+    needsRules: true,
     what: "a vendor name is embedded in a rule",
     apply(dir) {
       const f = rulesOf(dir)[0];
@@ -119,6 +125,7 @@ const MUTATIONS = [
   },
   {
     check: "C-07",
+    needsRules: true,
     what: "a rule blows the word budget",
     apply(dir) {
       const f = rulesOf(dir)[0];
@@ -135,6 +142,7 @@ const MUTATIONS = [
   },
   {
     check: "C-08",
+    needsRules: true,
     what: "a code fence is left unbalanced",
     apply(dir) {
       const f = rulesOf(dir)[0];
@@ -144,6 +152,7 @@ const MUTATIONS = [
   },
   {
     check: "C-09",
+    needsRules: true,
     what: "guidance is softened into a hedge",
     apply(dir) {
       const f = rulesOf(dir)[0];
@@ -155,6 +164,7 @@ const MUTATIONS = [
   },
   {
     check: "C-10",
+    needsRules: true,
     what: "a rule claims an overall run status",
     apply(dir) {
       const f = rulesOf(dir)[0];
@@ -165,8 +175,35 @@ const MUTATIONS = [
     },
   },
   {
+    check: "C-12",
+    what: "a rule's frontmatter stops being valid YAML",
+    needsRules: true,
+    apply(dir) {
+      const f = rulesOf(dir)[0];
+      const t = readRule(dir, f);
+      if (!/^---\n/.test(t)) return false;
+      // An unterminated quote: valid-looking to a line-by-line reader, and a
+      // hard parse error to anything that actually parses YAML.
+      writeRule(dir, f, t.replace(/^---\n/, '---\nnote: "unterminated\n'));
+      return true;
+    },
+  },
+  {
+    check: "C-13",
+    what: "the entry loses the name that routes to it",
+    apply(dir) {
+      const p = path.join(dir, "SKILL.md");
+      if (!fs.existsSync(p)) return false;
+      const t = fs.readFileSync(p, "utf8");
+      if (!/^name:.*$/m.test(t)) return false;
+      fs.writeFileSync(p, t.replace(/^name:.*$\n/m, ""), "utf8");
+      return true;
+    },
+  },
+  {
     check: "C-11",
     what: "a rule loses its only positive scenario",
+    needsRules: true,
     apply(dir) {
       const evals = path.join(dir, "evals");
       if (!fs.existsSync(evals)) return false;
@@ -222,7 +259,12 @@ for (const target of process.argv.slice(2)) {
 
   console.log(`\n=== ${name} ===\n`);
   const problems = [];
+  // A flat skill has no rules to mutate. Reporting those mutations as stale
+  // would be a false alarm: they are inapplicable, not broken.
+  const hasRules = fs.existsSync(path.join(src, "rules"));
+  const inapplicable = [];
   for (const m of MUTATIONS) {
+    if (m.needsRules && !hasRules) { inapplicable.push(m.check); continue; }
     copy(src, dir);
     if (!m.apply(dir)) {
       problems.push(`${m.check}: mutation no longer applies, this check has not been seen firing`);
@@ -235,8 +277,10 @@ for (const target of process.argv.slice(2)) {
   }
   fs.rmSync(work, { recursive: true, force: true });
 
+  if (inapplicable.length) console.log(`  N/A     ${inapplicable.join(", ")}  no rules/ directory in this skill`);
   for (const p of problems) console.log(`  PROBLEM  ${p}`);
-  console.log(`\n  ${MUTATIONS.length - problems.length}/${MUTATIONS.length} caught`);
+  const applicable = MUTATIONS.length - inapplicable.length;
+  console.log(`\n  ${applicable - problems.length}/${applicable} caught`);
   failures += problems.length;
 }
 

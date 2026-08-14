@@ -30,6 +30,9 @@ const RULE_MAX_LINES = 70;
 // the old 100-line limit.
 const SKILL_MAX_LINES = 160;
 const SKILL_MIN_ROWS = 4;
+// A description is the whole activation surface. Anything shorter than this is
+// a label, and a label cannot separate this skill from the five that overlap it.
+const DESC_MIN_CHARS = 40;
 
 const PACKAGE_MANAGERS = ["npm", "pnpm", "yarn", "bun", "pip", "pipenv", "poetry", "conda", "cargo", "gradle", "maven", "composer", "nuget", "bundler", "rubygems", "apt-get", "homebrew", "chocolatey", "winget", "deno"];
 const CI_VENDORS = ["jenkins", "circleci", "circle ci", "travis ci", "teamcity", "buildkite", "github actions", "gitlab ci", "azure pipelines", "azure devops", "bitbucket pipelines", "appveyor", "spinnaker", "argocd", "argo cd", "drone ci", "codebuild", "codepipeline", "cloudbuild"];
@@ -62,15 +65,146 @@ const stripFrontmatter = (t) => {
 };
 const lineCount = (t) => t.replace(/\n$/, "").split("\n").length;
 
-function parseFrontmatter(text) {
-  const m = text.match(/^---\n([\s\S]*?)\n---/);
-  if (!m) return null;
-  const f = {};
-  for (const line of m[1].split("\n")) {
-    const kv = line.match(/^([A-Za-z_][A-Za-z0-9_-]*):\s*(.*)$/);
-    if (kv) f[kv[1]] = kv[2].trim();
+/**
+ * Strict parser for the frontmatter subset skills actually use.
+ *
+ * The point is what it does with something it does not understand: it fails.
+ * A parser that skips the line it cannot read reports a valid document while
+ * the key nobody validated quietly does nothing, which is how a broken
+ * `description` ships and the skill silently stops activating.
+ *
+ * Understood: `key: value`, quoted scalars, block scalars (`|` and `>` with
+ * optional chomping), block sequences, one level of nested mapping, comments
+ * and blank lines. Everything else is an error with a line number.
+ */
+function parseYamlFrontmatter(text) {
+  const err = (line, msg) => ({ ok: false, error: msg, line });
+
+  if (!text.startsWith("---")) return err(1, "file does not open with ---");
+  const m = text.match(/^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/);
+  if (!m) return err(1, "frontmatter block is not closed by a --- line");
+
+  const body = m[1];
+  const lines = body.split(/\r?\n/);
+  const data = {};
+  const KEY = /^([A-Za-z_][A-Za-z0-9_-]*):(?:[ \t]+(.*))?$/;
+  const indentOf = (l) => l.length - l.trimStart().length;
+
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i];
+    const at = i + 2; // 1-based, plus the opening --- line
+    if (!raw.trim() || raw.trimStart().startsWith("#")) continue;
+    if (/^\s*\t/.test(raw)) return err(at, "tab used for indentation, which YAML forbids");
+    if (indentOf(raw) !== 0) return err(at, `unexpected indentation: "${raw.trim()}"`);
+
+    const kv = raw.match(KEY);
+    if (!kv) return err(at, `not a "key: value" pair: "${raw.trim()}"`);
+    const [, key, rawVal] = kv;
+    if (key in data) return err(at, `duplicate key "${key}"`);
+    const value = (rawVal ?? "").trim();
+
+    // A block scalar header consumes every more-indented line that follows.
+    if (/^[|>][-+]?\d*$/.test(value)) {
+      const folded = value.startsWith(">");
+      const parts = [];
+      while (i + 1 < lines.length && (!lines[i + 1].trim() || indentOf(lines[i + 1]) > 0)) {
+        parts.push(lines[++i].trim());
+      }
+      data[key] = folded ? parts.join(" ").replace(/\s+/g, " ").trim() : parts.join("\n");
+      continue;
+    }
+
+    // An empty value opens a nested block: a sequence or a mapping.
+    if (value === "") {
+      const child = [];
+      while (i + 1 < lines.length && (!lines[i + 1].trim() || indentOf(lines[i + 1]) > 0)) {
+        const l = lines[++i];
+        if (l.trim()) child.push(l.trim());
+      }
+      if (!child.length) return err(at, `key "${key}" has no value and no indented block`);
+      if (child.every((l) => l.startsWith("- "))) {
+        data[key] = child.map((l) => unquote(l.slice(2).trim()));
+      } else if (child.every((l) => KEY.test(l))) {
+        const obj = {};
+        for (const l of child) { const c = l.match(KEY); obj[c[1]] = unquote((c[2] ?? "").trim()); }
+        data[key] = obj;
+      } else {
+        return err(at, `block under "${key}" mixes list items and mapping keys`);
+      }
+      continue;
+    }
+
+    const scalar = unquoteChecked(value);
+    if (scalar.error) return err(at, `key "${key}": ${scalar.error}`);
+    data[key] = scalar.value;
   }
-  return f;
+
+  return { ok: true, data };
+}
+
+const unquote = (v) => {
+  if ((v.startsWith('"') && v.endsWith('"') && v.length > 1) || (v.startsWith("'") && v.endsWith("'") && v.length > 1)) {
+    return v.slice(1, -1);
+  }
+  return v;
+};
+
+// Characters YAML will not accept at the start of a plain scalar. Backtick and
+// at-sign are reserved outright; the rest are indicators.
+const RESERVED_START = /^[`@|>%&*!]/;
+
+function plainScalarError(v) {
+  if (RESERVED_START.test(v)) return `plain value starts with the reserved character ${v[0]}, so it must be quoted`;
+  if (/:\s/.test(v)) return `unquoted ": " in a plain scalar, which YAML reads as a nested key`;
+  return null;
+}
+
+/** Split a flow sequence on its top-level commas, respecting quotes and nesting. */
+function flowItems(inner) {
+  const out = [];
+  let depth = 0, quote = null, cur = "";
+  for (const ch of inner) {
+    if (quote) { cur += ch; if (ch === quote) quote = null; continue; }
+    if (ch === '"' || ch === "'") { quote = ch; cur += ch; continue; }
+    if (ch === "[" || ch === "{") depth++;
+    if (ch === "]" || ch === "}") depth--;
+    if (ch === "," && depth === 0) { out.push(cur.trim()); cur = ""; continue; }
+    cur += ch;
+  }
+  if (cur.trim()) out.push(cur.trim());
+  return out;
+}
+
+function unquoteChecked(v) {
+  const q = v[0];
+
+  // A flow sequence is checked element by element. Treating the whole bracket
+  // as one opaque scalar is how a reserved character inside it goes unseen.
+  if (v.startsWith("[") && v.endsWith("]")) {
+    const items = flowItems(v.slice(1, -1));
+    for (const it of items) {
+      if (it.startsWith('"') || it.startsWith("'")) {
+        if (it.length < 2 || !it.endsWith(it[0])) return { error: `unterminated quote in list item ${JSON.stringify(it)}` };
+        continue;
+      }
+      const e = plainScalarError(it);
+      if (e) return { error: `list item ${JSON.stringify(it)}: ${e}` };
+    }
+    return { value: items.map(unquote) };
+  }
+
+  if (q !== '"' && q !== "'") {
+    const e = plainScalarError(v);
+    return e ? { error: e } : { value: v };
+  }
+  if (v.length < 2 || !v.endsWith(q)) return { error: `unterminated ${q === '"' ? "double" : "single"} quote` };
+  return { value: v.slice(1, -1) };
+}
+
+/** Back-compatible accessor: the parsed map, or null when it does not parse. */
+function parseFrontmatter(text) {
+  const r = parseYamlFrontmatter(text);
+  return r.ok ? r.data : null;
 }
 
 function decisionBlock(text) {
@@ -98,6 +232,33 @@ function foreignPointers(text) {
 
 const exists = async (p) => { try { await stat(p); return true; } catch { return false; } };
 
+/**
+ * Three shapes are legal, and the checker must know which one it is looking at
+ * rather than assume the one it was written for.
+ *
+ *   routed   an entry file plus rules/, one rule per gate row
+ *   flat     an entry file and nothing else, for a skill with one topic
+ *   multi    an entry file routing to topic directories, each of them routed
+ *
+ * `evals` and `references` are never topics. They are the skill's own machinery.
+ */
+const NOT_TOPICS = new Set(["evals", "references", "rules", "node_modules"]);
+
+async function detectShape(dir) {
+  const entry = (await exists(join(dir, "SKILL.md"))) ? "SKILL.md"
+    : (await exists(join(dir, "INDEX.md"))) ? "INDEX.md"
+      : null;
+  if (!entry) return { kind: "unreadable", reason: "no SKILL.md and no INDEX.md" };
+  if (await exists(join(dir, "rules"))) return { kind: "routed", entry };
+
+  const topics = [];
+  for (const d of await readdir(dir, { withFileTypes: true })) {
+    if (!d.isDirectory() || NOT_TOPICS.has(d.name)) continue;
+    if (await exists(join(dir, d.name, "rules"))) topics.push(d.name);
+  }
+  return topics.length ? { kind: "multi", entry, topics } : { kind: "flat", entry };
+}
+
 async function verify(skillDir) {
   const SKILL_DIR = resolve(skillDir);
   const NAME = basename(SKILL_DIR);
@@ -109,19 +270,36 @@ async function verify(skillDir) {
   const COLLECTION = process.env.SKILL_COLLECTION_ROOT
     ? resolve(process.env.SKILL_COLLECTION_ROOT)
     : dirname(SKILL_DIR);
-  const passes = [], failures = [], notes = [];
+  const passes = [], failures = [], notes = [], skipped = [];
   const pass = (n, d) => passes.push({ n, d });
   const fail = (n, d) => failures.push({ n, d });
   const note = (n, d) => notes.push({ n, d });
+  // An absent signal is reported as not-applicable, naming the signal. A check
+  // that silently passes because it had nothing to look at is a false green.
+  const na = (n, d) => skipped.push({ n, d });
 
+  const shape = await detectShape(SKILL_DIR);
+  const blank = { NAME, shape, passes, failures, notes, skipped, sizes: [], ruleText: new Map(), ruleNames: [] };
+  if (shape.kind === "unreadable") {
+    fail("C-00 the skill has an entry file", `${NAME}: ${shape.reason}`);
+    return blank;
+  }
+
+  const routed = shape.kind === "routed";
   const rulesDir = join(SKILL_DIR, "rules");
-  const ruleNames = (await readdir(rulesDir)).filter((f) => f.endsWith(".md")).map((f) => f.replace(/\.md$/, "")).sort();
+  const ruleNames = routed
+    ? (await readdir(rulesDir)).filter((f) => f.endsWith(".md")).map((f) => f.replace(/\.md$/, "")).sort()
+    : [];
   const ruleText = new Map();
   for (const n of ruleNames) ruleText.set(n, await readFile(join(rulesDir, `${n}.md`), "utf8"));
-  const skillText = await readFile(join(SKILL_DIR, "SKILL.md"), "utf8");
-  const docs = [["SKILL.md", skillText], ...ruleNames.map((n) => [`rules/${n}.md`, ruleText.get(n)])];
+  const skillText = await readFile(join(SKILL_DIR, shape.entry), "utf8");
+  const docs = [[shape.entry, skillText], ...ruleNames.map((n) => [`rules/${n}.md`, ruleText.get(n)])];
+  const ENTRY = shape.entry;
 
-  { // C-01 frontmatter
+  const NO_RULES = "no rules/ directory, so there is nothing of this kind to check";
+
+  if (!routed) na("C-01 frontmatter complete, id matches filename and owner", NO_RULES);
+  else { // C-01 frontmatter
     const bad = [];
     for (const n of ruleNames) {
       const fm = parseFrontmatter(ruleText.get(n));
@@ -135,7 +313,8 @@ async function verify(skillDir) {
     bad.length ? fail("C-01 frontmatter complete, id matches filename and owner", bad.join("\n        ")) : pass("C-01 frontmatter complete, id matches filename and owner", `${ruleNames.length} rules`);
   }
 
-  { // C-02 mandated blocks
+  if (!routed) na("C-02 five mandated blocks present and ordered", NO_RULES);
+  else { // C-02 mandated blocks
     const bad = [];
     for (const n of ruleNames) {
       const t = ruleText.get(n);
@@ -150,17 +329,18 @@ async function verify(skillDir) {
     bad.length ? fail("C-02 five mandated blocks present and ordered", bad.join("\n        ")) : pass("C-02 five mandated blocks present and ordered", `${ruleNames.length} rules`);
   }
 
-  { // C-03 index routes each rule once
+  if (!routed) na(`C-03 ${ENTRY} routes every rule exactly once`, NO_RULES);
+  else { // C-03 index routes each rule once
     const bad = [], pointed = [];
     for (const row of skillText.split("\n").filter((l) => l.trimStart().startsWith("|"))) {
       for (const m of row.matchAll(/rules\/([a-z0-9-]+)\.md/g)) pointed.push(m[1]);
     }
-    for (const n of pointed) if (!(await exists(join(rulesDir, `${n}.md`)))) bad.push(`SKILL.md points at rules/${n}.md which does not exist`);
+    for (const n of pointed) if (!(await exists(join(rulesDir, `${n}.md`)))) bad.push(`${ENTRY} points at rules/${n}.md which does not exist`);
     const counts = new Map();
     for (const n of pointed) counts.set(n, (counts.get(n) ?? 0) + 1);
-    for (const [n, c] of counts) if (c > 1) bad.push(`SKILL.md routes rules/${n}.md ${c} times`);
-    for (const n of ruleNames) if (!counts.has(n)) bad.push(`rules/${n}.md has no row in SKILL.md`);
-    bad.length ? fail("C-03 SKILL.md routes every rule exactly once", bad.join("\n        ")) : pass("C-03 SKILL.md routes every rule exactly once", `${counts.size} rows`);
+    for (const [n, c] of counts) if (c > 1) bad.push(`${ENTRY} routes rules/${n}.md ${c} times`);
+    for (const n of ruleNames) if (!counts.has(n)) bad.push(`rules/${n}.md has no row in ${ENTRY}`);
+    bad.length ? fail(`C-03 ${ENTRY} routes every rule exactly once`, bad.join("\n        ")) : pass(`C-03 ${ENTRY} routes every rule exactly once`, `${counts.size} rows`);
   }
 
   { // C-04 references resolve, local and cross-skill
@@ -173,7 +353,8 @@ async function verify(skillDir) {
     bad.length ? fail("C-04 every rule reference resolves", bad.join("\n        ")) : pass("C-04 every rule reference resolves", `${total} pointers`);
   }
 
-  { // C-05 bidirectional demarcation
+  if (!routed) na("C-05 demarcation references are reciprocated", NO_RULES);
+  else { // C-05 bidirectional demarcation
     const bad = [];
     let pairs = 0;
     const dec = new Map(ruleNames.map((n) => [n, decisionBlock(ruleText.get(n))]));
@@ -226,11 +407,29 @@ async function verify(skillDir) {
       if (total >= RULE_MAX_TOTAL) bad.push(`rules/${n}.md ${total} words read (limit ${RULE_MAX_TOTAL}), the example is carrying the file`);
       if (lines < RULE_MIN_LINES || lines > RULE_MAX_LINES) bad.push(`rules/${n}.md ${lines} lines (allowed ${RULE_MIN_LINES}-${RULE_MAX_LINES})`);
     }
-    const sl = lineCount(skillText);
-    const rows = skillText.split("\n").filter((l) => /^\|.*rules\/[a-z0-9-]+\.md/.test(l.trim())).length;
-    if (rows < SKILL_MIN_ROWS) bad.push(`SKILL.md routes only ${rows} rules; a gate with fewer than ${SKILL_MIN_ROWS} rows is a list, not a gate`);
-    if (sl >= SKILL_MAX_LINES) bad.push(`SKILL.md ${sl} lines (limit ${SKILL_MAX_LINES})`);
-    bad.length ? fail("C-07 unit sizes within targets", bad.join("\n        ")) : pass("C-07 unit sizes within targets", `SKILL.md ${sl} lines, ${rows} gate rows`);
+    // Measure the document, not its metadata header. A folded description costs
+    // nine lines more than the same words on one line, and the ceiling exists to
+    // bound what the reader wades through, not how the frontmatter is formatted.
+    const sl = lineCount(stripFrontmatter(skillText));
+    // A routed gate points at rules. A multi-topic gate points at topic
+    // directories. A flat skill has no gate at all, and demanding one would be
+    // demanding that every small skill be split.
+    const rowRe = shape.kind === "multi"
+      ? new RegExp(`^\\|.*\\b(${shape.topics.join("|")})\\b`)
+      : /^\|.*rules\/[a-z0-9-]+\.md/;
+    const rows = shape.kind === "flat"
+      ? 0
+      : skillText.split("\n").filter((l) => rowRe.test(l.trim())).length;
+
+    if (shape.kind !== "flat" && rows < SKILL_MIN_ROWS) {
+      bad.push(`${ENTRY} routes only ${rows}; a gate with fewer than ${SKILL_MIN_ROWS} rows is a list, not a gate`);
+    }
+    // The same ceiling holds for a flat skill. Needing more room is the signal
+    // that its decisions have earned a rules/ directory.
+    if (sl >= SKILL_MAX_LINES) bad.push(`${ENTRY} ${sl} lines (limit ${SKILL_MAX_LINES})`);
+
+    const shown = shape.kind === "flat" ? `${ENTRY} ${sl} lines, flat skill` : `${ENTRY} ${sl} lines, ${rows} gate rows`;
+    bad.length ? fail("C-07 unit sizes within targets", bad.join("\n        ")) : pass("C-07 unit sizes within targets", shown);
   }
 
   { // C-08 fences balanced
@@ -249,7 +448,8 @@ async function verify(skillDir) {
     bad.length ? fail("C-09 no hedging language", bad.join("\n        ")) : pass("C-09 no hedging language", "guidance is not optional-by-wording");
   }
 
-  { // C-10 the router owns the verdict vocabulary
+  if (!routed) na("C-10 no rule claims an overall status", NO_RULES);
+  else { // C-10 the router owns the verdict vocabulary
     const bad = [];
     for (const n of ruleNames) if (/\bPASS\b/.test(ruleText.get(n))) bad.push(`rules/${n}.md claims a run status; status belongs to SKILL.md`);
     bad.length ? fail("C-10 no rule claims an overall status", bad.join("\n        ")) : pass("C-10 no rule claims an overall status", "status stays in the router");
@@ -277,20 +477,60 @@ async function verify(skillDir) {
     }
   }
 
-  return { NAME, passes, failures, notes, sizes, ruleText, ruleNames };
+  { // C-12 every markdown file that carries frontmatter has valid frontmatter
+    const bad = [], withFm = [];
+    const all = new Map();
+    for (const f of (await readdir(SKILL_DIR)).filter((f) => f.endsWith(".md"))) {
+      all.set(f, await readFile(join(SKILL_DIR, f), "utf8"));
+    }
+    for (const n of ruleNames) all.set(`rules/${n}.md`, ruleText.get(n));
+
+    for (const [label, text] of all) {
+      if (!text.startsWith("---")) continue;  // no frontmatter is legal; broken frontmatter is not
+      const r = parseYamlFrontmatter(text);
+      if (r.ok) withFm.push(label);
+      else bad.push(`${label}:${r.line} ${r.error}`);
+    }
+    bad.length
+      ? fail("C-12 frontmatter parses as YAML", bad.join("\n        "))
+      : pass("C-12 frontmatter parses as YAML", `${withFm.length} of ${all.size} markdown files carry it`);
+  }
+
+  if (ENTRY !== "SKILL.md") na("C-13 the entry declares name and description", "INDEX.md is internal routing, not an installed activation surface");
+  else { // C-13 the activation surface exists and is answerable
+    const bad = [];
+    const r = parseYamlFrontmatter(skillText);
+    if (!r.ok) bad.push(`${ENTRY}:${r.line} ${r.error}`);
+    else {
+      const fm = r.data;
+      if (!fm.name) bad.push(`${ENTRY} declares no name`);
+      else if (typeof fm.name !== "string") bad.push(`${ENTRY} name is not a scalar`);
+      else if (fm.name !== NAME) bad.push(`${ENTRY} name "${fm.name}" is not the directory name "${NAME}"`);
+
+      if (!fm.description) bad.push(`${ENTRY} declares no description; nothing can route to this skill`);
+      else if (typeof fm.description !== "string") bad.push(`${ENTRY} description is not a scalar`);
+      else if (fm.description.trim().length < DESC_MIN_CHARS) {
+        bad.push(`${ENTRY} description is ${fm.description.trim().length} characters, under the ${DESC_MIN_CHARS} needed to distinguish it from a neighbour`);
+      }
+    }
+    bad.length
+      ? fail("C-13 the entry declares name and description", bad.join("\n        "))
+      : pass("C-13 the entry declares name and description", `name matches the directory`);
+  }
+
+  return { NAME, shape, passes, failures, notes, skipped, sizes, ruleText, ruleNames };
 }
 
 const targets = process.argv.slice(2);
 if (!targets.length) { console.error("usage: node verify-skill.mjs <skill-dir> [...]"); process.exit(2); }
 
-let totalFail = 0;
-for (const t of targets) {
-  const r = await verify(t);
-  console.log(`\n=== ${r.NAME} ===\n`);
+function report(r) {
+  console.log(`\n=== ${r.NAME} ===  (${r.shape.kind})\n`);
   for (const p of r.passes) console.log(`  PASS  ${p.n}${p.d ? `  [${p.d}]` : ""}`);
   for (const f of r.failures) { console.log(`  FAIL  ${f.n}`); console.log(`        ${f.d}`); }
+  for (const s of r.skipped) { console.log(`  N/A   ${s.n}`); console.log(`        ${s.d}`); }
   for (const n of r.notes) { console.log(`  NOTE  ${n.n}`); console.log(`        ${n.d}`); }
-  if (!r.failures.length) {
+  if (!r.failures.length && r.sizes.length) {
     const w = Math.max(12, ...r.sizes.map((s) => s.n.length));
     console.log("");
     for (const s of r.sizes) {
@@ -298,8 +538,30 @@ for (const t of targets) {
       console.log(`  ${s.n.padEnd(w)}  ${String(s.lines).padStart(3)} lines  ${String(s.words).padStart(3)} prose  ${String(s.total).padStart(3)} read  ${fm.severity ?? "?"}`);
     }
   }
-  console.log(`\n  ${r.passes.length} passed, ${r.failures.length} failed`);
+  const na = r.skipped.length ? `, ${r.skipped.length} n/a` : "";
+  console.log(`\n  ${r.passes.length} passed, ${r.failures.length} failed${na}`);
+}
+
+let totalFail = 0;
+const queue = [...targets];
+while (queue.length) {
+  const t = queue.shift();
+  let r;
+  try {
+    r = await verify(t);
+  } catch (e) {
+    // Anything unexpected is a finding with a name. A stack trace tells the
+    // reader nothing about which skill is wrong or what to do about it.
+    console.log(`\n=== ${basename(resolve(t))} ===\n`);
+    console.log("  FAIL  C-00 the skill could be read");
+    console.log(`        ${e.message}`);
+    totalFail++;
+    continue;
+  }
+  report(r);
   totalFail += r.failures.length;
+  // A multi-topic skill routes to topics, each verified as a skill of its own.
+  if (r.shape.kind === "multi") queue.unshift(...r.shape.topics.map((n) => join(resolve(t), n)));
 }
 console.log(`\n${totalFail === 0 ? "all skills structurally clean" : `${totalFail} failing invariants`}\n`);
 process.exit(totalFail === 0 ? 0 : 1);
