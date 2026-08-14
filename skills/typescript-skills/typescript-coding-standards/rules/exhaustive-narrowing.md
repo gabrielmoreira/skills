@@ -3,78 +3,69 @@ id: typescript-coding-standards.exhaustive-narrowing
 owner: typescript-coding-standards
 canonical: true
 severity: default
-references: [Discriminated unions (TypeScript Handbook), "`never` exhaustiveness check", sealed classes (Kotlin/Scala/Swift), pattern matching (Rust)]
+references: [Discriminated unions (TypeScript Handbook), "`never` exhaustiveness check", sealed classes, pattern matching (Rust)]
 ---
 
 # Exhaustive Narrowing
 
-Decision: When a value is a discriminated union, the compiler should prove every variant is handled. Use `switch` over the discriminant with a `default: assertNever(x)` (or equivalent) so adding a new variant produces a compile error at every callsite that must change.
+Decision: **Where a value is a discriminated union, the compiler MUST prove every variant is handled**, so adding a variant fails the build at each callsite that has to change. Distinguishing same-shaped values belongs to `skill://typescript-skills/typescript-coding-standards/rules/branded-and-opaque-types.md`.
 
 Use when:
-- A discriminated union (`{ kind: "a" } | { kind: "b" } | ...`) is consumed by an `if/else` chain or `switch`.
-- A new variant was added but only some callsites were updated and TypeScript said nothing.
-- A `default:` branch silently does nothing or returns a generic value.
-- Code uses `as never` to silence a switch the developer thinks is exhaustive.
+- **A discriminated union is consumed by an if-chain or a switch.**
+- **A variant was added and only some callsites changed**, with no complaint from the compiler.
+- **A default branch silently does nothing**, or returns a generic value.
+- **A cast is silencing a switch** the author believes is exhaustive.
 
 Do:
-- Use a literal-typed discriminant (`kind: "ok" | "err"`) and dispatch with `switch`, not `typeof`/ad-hoc chains.
-- After all cases, assign to `never` (`const _exhaustive: never = x;`) or call `assertNever(x)` so a new variant is a compile error, not a runtime surprise.
-- Let TypeScript's narrowing do the work inside each case — no `as Variant` needed.
-- Extract a shared `assertNever`/`unreachable` helper once multiple consumers need it; if the same dispatch repeats across consumers, consider a visitor (object map keyed by `kind`) instead of repeating `switch`.
-- When a consumer legitimately only handles a subset, narrow the *input type* at the boundary (e.g. `Extract<Shape, { kind: "circle" }>`) rather than silently ignoring the rest.
-- Cross-link with `branded-and-opaque-types.md` for "tagged identity"; this rule is for "tagged variant."
+- **Use a literal-typed discriminant** and dispatch on it with a switch.
+- **End the switch by assigning the value to `never`**, or by calling an `assertNever` helper.
+- **Let narrowing do the work inside each case.** No cast is needed there.
+- **Extract a shared `assertNever` helper** once several consumers need it.
+- **Consider a map keyed by the discriminant** where the same dispatch repeats across consumers.
+- **Narrow the input type at the boundary** where a consumer legitimately handles only a subset.
 
 Avoid:
-- `default: return null` / `default: throw new Error(...)` without a `never` assignment — a runtime check, not a compile-time guarantee.
-- Collapsing multiple "else" cases into one generic branch, or a no-op default — a variant added later is silently ignored.
-- `as never` to silence the compiler — the point of `never` is that reaching it should be a compile error.
-- Discriminant fields typed `string`/`number` instead of literal unions (loses narrowing), or mutated after creation.
+- **A default that returns or throws with no `never` assignment.** That is a runtime check, not a compile-time guarantee.
+- **Collapsing several cases into one generic branch**, which swallows the variant added next year.
+- **Casting to `never` to silence the compiler.** Reaching it is supposed to be the error.
+- **A discriminant typed as a bare string or number**, which loses narrowing entirely.
 
 Exceptions:
-- `default:` with explicit `unknown` handling is fine when the input genuinely can be unknown (parsing untrusted data) — see `type-narrowing-over-assertion.md`.
-- A union with one or two variants may not need the ceremony.
+- **An explicit unknown branch is fine where the input genuinely can be unknown**, such as parsing untrusted data.
+- **A union of one or two variants MAY skip the ceremony.**
 
-Example:
+Example (one instance, not the set):
 
 ```ts
 type Shape =
   | { kind: "circle"; radius: number }
-  | { kind: "square"; side: number }
-  | { kind: "rectangle"; width: number; height: number };
+  | { kind: "square"; side: number };
 
 function assertNever(x: never): never {
   throw new Error(`unreachable: ${JSON.stringify(x)}`);
 }
-```
 
-Good — exhaustive; adding a variant breaks the build until every consumer updates:
-
-```ts
+// Good: adding a variant fails to compile right here.
 function area(s: Shape): number {
   switch (s.kind) {
-    case "circle":    return Math.PI * s.radius ** 2;
-    case "square":    return s.side ** 2;
-    case "rectangle": return s.width * s.height;
-    default:          return assertNever(s); // adding a variant fails to compile here
+    case "circle": return Math.PI * s.radius ** 2;
+    case "square": return s.side ** 2;
+    default:       return assertNever(s);
   }
 }
-```
 
-Bad — the same bug is silent without `assertNever`:
-
-```ts
-function area(s: Shape): number {
+// Bad: the same new variant silently returns 0.
+function areaSilent(s: Shape): number {
   switch (s.kind) {
-    case "circle":    return Math.PI * s.radius ** 2;
-    case "square":    return s.side ** 2;
-    case "rectangle": return s.width * s.height;
-    default:          return 0; // bug — a new variant returns 0, no warning
+    case "circle": return Math.PI * s.radius ** 2;
+    case "square": return s.side ** 2;
+    default:       return 0;
   }
 }
 ```
 
 Verify:
-- Every `switch` over a discriminated union ends in `assertNever(x)` / `unreachable(x)` / `const _: never = x;`.
-- No `default: return null` / no-op default for unions you control, and no `as never` silencing the check.
-- Discriminant fields are literal unions, not bare `string`.
-- Consumers that only handle a subset narrow their input type at the boundary instead of ignoring variants.
+- **Check every switch over an owned union ends in a `never` assignment.**
+- **Check no default returns a placeholder** for a union you control.
+- **Check discriminants are literal unions**, not bare strings.
+- **Check a partial consumer narrows its input** rather than ignoring variants.

@@ -3,34 +3,50 @@ id: typescript-coding-standards.vertical-discipline
 owner: typescript-coding-standards
 canonical: true
 severity: default
-references: [Newspaper Metaphor (Clean Code), Step-Down Rule (Clean Code), Extract Method (Fowler), Single Level of Abstraction Principle (SLAP), Template Method (GoF)]
+references: [Newspaper Metaphor (Clean Code), Step-Down Rule, Extract Method (Fowler), Single Level of Abstraction]
 ---
 
 # Vertical Discipline
 
-Decision: Make the main path easy to follow. Respect local file order; when none exists, place orchestration before supporting detail and extract only genuine responsibilities.
+Decision: **Make the main path easy to follow.** Respect the file's local order, and where none exists put orchestration before supporting detail. Whether a thing should exist at all belongs to `skill://typescript-skills/typescript-coding-standards/rules/abstraction-and-local-reasoning.md`.
 
 Use when:
-- A function mixes decisions, infrastructure, and formatting.
-- Readers must jump through helpers to reconstruct one flow.
-- Comments or blank-line sections compensate for unclear responsibilities.
-- Repeated blocks represent one nameable operation.
+- **A function mixes decisions, infrastructure, and formatting.**
+- **A reader must jump through helpers** to reconstruct one flow.
+- **Comments or blank-line sections are compensating** for unclear responsibilities.
+- **A repeated block represents one nameable operation.**
 
 Do:
-- First read the function as a whole; leave cohesive code together.
-- Use short comments for stages when extraction would hide context.
-- Extract a block when it has a stable name, contract, or independent test value.
-- Keep helpers near their caller unless reuse or ownership gives them a better home.
-- Prefer repository and framework conventions over a universal top-down layout.
+- **Read the function whole first.** Cohesive code that reads well stays together.
+- **Use a short stage comment** where extracting would hide the context.
+- **Extract a block once it has a stable name, a contract, or independent test value.** All three, ideally.
+- **Keep a helper near its caller**, unless reuse or ownership gives it a better home.
+- **Prefer the repository's convention** over a universal top-down layout.
 
 Avoid:
-- Extracting every visual block or enforcing one-screen functions.
-- Template-method or class hierarchies for simple sequencing.
-- Mixing abstraction levels that force the reader to simulate infrastructure while following a decision.
-- Reordering established files only to satisfy this style preference.
+- **Extracting every visual block**, or enforcing a one-screen function.
+- **A template method or a class hierarchy for simple sequencing.**
+- **Mixing abstraction levels**, which forces the reader to simulate infrastructure while following a decision.
+- **Reordering an established file** only to satisfy a style preference.
+
+Exceptions:
+- **A generated or vendored file keeps its own order.**
+- **A long switch or a state table MAY stay long** where splitting it would hide the very thing being read.
+
+Example (one instance, not the set):
+
+```ts
+// The main path reads as one story; each stage sits below it.
+export async function settleOrder(order: Order) {
+  const payment = await capturePayment(order);
+  const receipt = buildReceipt(order, payment);
+  await deliverReceipt(receipt);
+  return receipt;
+}
+```
 
 Verify:
-- The primary behavior can be summarized and followed without excessive jumping.
-- Every extraction improves cohesion or creates a real boundary.
-- Comments explain intent or stages, not syntax.
-- The result matches local organization and is easier to re-enter.
+- **Check the primary behaviour can be summarised without much jumping.**
+- **Check every extraction improved cohesion** or created a real boundary.
+- **Check comments explain intent or a stage**, never syntax.
+- **Check the result matches local organisation** and is easier to re-enter.

@@ -8,31 +8,48 @@ references: [YAGNI, Rule of Three, Locality of Behavior]
 
 # Abstraction and Local Reasoning
 
-Decision: Add an abstraction only when it makes the caller easier to understand and gives one clear place to enforce a real policy.
+Decision: **Add an abstraction only where it makes the caller easier to understand and gives one clear place to enforce a real policy.** Where the result sits, and how the flow reads afterwards, belongs to `skill://typescript-skills/typescript-coding-standards/rules/vertical-discipline.md`.
 
 Use when:
-- Adding a wrapper, helper, interface, base type, manager, registry, or service layer — especially when a name would remove real reader burden by naming a domain decision, not just a line of code.
-- The same decision or policy already appears in two or more owned places.
-- A caller must know order, defaults, retry/failure policy, or provider detail that should be owned elsewhere.
+- **Something structural is being added.**
+  - A wrapper or a helper.
+  - An interface or a base type.
+  - A manager, a registry, or a service layer.
+- **The same decision or policy already appears in two or more owned places.**
+- **A caller must know something it should not.**
+  - Ordering.
+  - Defaults.
+  - Retry or failure policy.
+  - Provider detail.
 
 Do:
-- Keep code direct and local when one caller can understand the behavior without hidden sequencing or repeated policy.
-- Stop at the first step of this ladder that works: local named helper for repeated unsafe detail → module-level function for one reusable policy → small object/factory when dependencies or lifecycle must be assembled → interface/class only for a real boundary, plugin seam, lifecycle, identity, or published API.
-- Extract the smallest abstraction that owns one policy or variation point, name it after the decision it protects, and keep the semantic center visible at the callsite or one jump away.
+- **Keep code direct and local** where one caller can follow it without hidden sequencing or repeated policy.
+- **Stop at the first step of this ladder that works.**
+  - A local named helper, for repeated unsafe detail.
+  - A module-level function, for one reusable policy.
+  - A small object or factory, once dependencies or lifecycle must be assembled.
+  - An interface or class, only for a real boundary, plugin seam, lifecycle, identity, or published API.
+- **Extract the smallest abstraction that owns one policy or variation point.**
+- **Name it after the decision it protects**, not after the code it moved.
+- **Keep the semantic centre visible** at the callsite, or one jump away.
 
 Avoid:
-- Thin wrappers that only rename an existing call, or moving code away just to make a file look shorter.
-- Interfaces with one implementation and no real boundary pressure, or `Base*`/`Manager`/`Helper`/`Util` names that hide the real decision.
+- **A thin wrapper that renames an existing call.**
+- **Moving code away to make a file look shorter.**
+- **An interface with one implementation and no boundary pressure.**
+- **A name that hides the decision.** `Base`, `Manager`, `Helper`, `Util`.
 
-Exceptions: a one-implementation interface is fine at a real boundary (test seam, provider seam, plugin seam, published API); a small helper is fine when it removes duplicated unsafe detail and has a specific name.
+Exceptions:
+- **A one-implementation interface is fine at a real boundary.** A test seam, a plugin seam, or a published API.
+- **A small helper is fine** where it removes duplicated unsafe detail and has a specific name.
 
-Example — direct when policy isn't repeated; escalate once retry/audit policy repeats (don't jump straight to `BaseEmailService`/`EmailManager` unless identity or lifecycle is real):
+Example (one instance, not the set):
 
 ```ts
-// direct, single caller:
+// Direct, while there is one caller and no repeated policy.
 await mailer.send({ to: user.email, template: "welcome" });
 
-// escalated, policy now repeats across callers:
+// Escalated, because retry and audit policy now repeat across callers.
 export async function sendAuditedWelcomeEmail(input: { mailer: Mailer; audit: AuditLog; user: User }) {
   await retry(() => input.mailer.send({ to: input.user.email, template: "welcome" }));
   await input.audit.record("welcome-email-sent", { userId: input.user.id });
@@ -40,6 +57,7 @@ export async function sendAuditedWelcomeEmail(input: { mailer: Mailer; audit: Au
 ```
 
 Verify:
-- Identify the policy the abstraction owns in one sentence, and confirm callers know less after the change.
-- Check the abstraction has more than naming value.
-- If removed, a real repeated policy or boundary problem should return.
+- **Name the policy the abstraction owns, in one sentence.** Being unable to is the finding.
+- **Confirm callers know less after the change than before it.**
+- **Check the abstraction has more than naming value.**
+- **Check that removing it would bring back a real repeated policy or boundary problem.**

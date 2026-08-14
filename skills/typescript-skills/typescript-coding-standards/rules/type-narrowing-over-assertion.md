@@ -8,37 +8,43 @@ references: [Type Guards (TypeScript Handbook), Parse don't validate (Lexi Lambd
 
 # Type Narrowing over Assertion
 
-Decision: Prove uncontrolled data at boundaries. Prefer narrowing over assertions in owned logic, but allow a contained assertion when TypeScript cannot express an already-established invariant and runtime validation would add no safety.
+Decision: **Prove uncontrolled data at the boundary, and prefer narrowing over assertion in owned logic.** A contained assertion is allowed where the type system cannot express an invariant that is already established, and a runtime check would add no safety. Stopping two same-shaped values being swapped belongs to `skill://typescript-skills/typescript-coding-standards/rules/branded-and-opaque-types.md`.
 
 Use when:
-- Data comes from network, env, user input, files, queues, databases, SDKs, or deserialization.
-- `!`, `as unknown as`, `as any`, or suppression bypasses uncertainty.
-- Optional or nullable values are accessed without proof.
+- **Data arrives from outside the program.** Network, env, user input, files, queues, databases, SDKs, deserialization.
+- **An escape hatch is bypassing uncertainty.** A non-null assertion, a double cast, a suppression.
+- **An optional or nullable value is accessed with no proof** that it is there.
 
 Do:
-- Narrow simple cases with language checks and reusable cases with named type guards.
-- Parse complex untrusted shapes once at the boundary.
-- Use discriminated unions for related alternatives.
-- Keep unavoidable assertions local and document the invariant they rely on.
-- Prefer `satisfies` when checking a literal without widening it.
+- **Narrow a simple case with a language check**, and a reusable one with a named type guard.
+- **Parse a complex untrusted shape once, at the boundary.**
+- **Use a discriminated union for related alternatives**, so narrowing follows the tag.
+- **Keep an unavoidable assertion local**, and write down the invariant it rests on.
+- **Prefer `satisfies` when checking a literal** without widening it.
 
 Avoid:
-- Assertions that turn `unknown` external input directly into an owned type.
-- Double casts, `as any`, and suppressions used only to silence a real mismatch.
-- Runtime schemas for trusted local fixtures or values already constructed by typed code.
-- Ceremonial guards that duplicate a framework guarantee without improving safety.
+- **An assertion that turns external `unknown` straight into an owned type.** Nothing checked anything.
+- **A double cast or a suppression used to silence a real mismatch.**
+- **A runtime schema over a trusted local fixture** that typed code already built.
+- **A ceremonial guard duplicating a framework guarantee** with no added safety.
 
-Example:
+Exceptions:
+- **An assertion is fine where the invariant was just established** in the lines above and the compiler cannot see it.
+- **A generated client MAY be trusted at its own edge**, where its contract is verified elsewhere.
+
+Example (one instance, not the set):
 
 ```ts
+// Untrusted: parse it once, at the boundary.
 const payload: unknown = await response.json();
 const order = OrderSchema.parse(payload);
 
+// Trusted and local: check the shape without widening it.
 const fixture = { status: "paid" } satisfies OrderFixture;
 ```
 
 Verify:
-- Untrusted inputs are parsed or narrowed before use.
-- Assertions are rare, local, and backed by a stated invariant.
-- Test fixtures stay contained to tests.
-- No suppression hides an unresolved contract mismatch.
+- **Check untrusted input is parsed or narrowed before use.**
+- **Check assertions are rare, local, and carry a stated invariant.**
+- **Check test fixtures stay inside tests.**
+- **Check no suppression is hiding an unresolved contract mismatch.**

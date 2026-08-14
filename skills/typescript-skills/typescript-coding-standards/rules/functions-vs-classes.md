@@ -8,28 +8,41 @@ references: [Closure Module Pattern, SRP (SOLID)]
 
 # Functions vs Classes
 
-Decision: Prefer functions first; use `makeXxx` capability objects when closure-private scope helps; use classes when identity, lifecycle, protocol, or allocation pressure earns the class.
+Decision: **Prefer a function. Use a `makeXxx` capability object once closure-private scope helps. Use a class only where identity, lifecycle, protocol, or measured allocation pressure earns it.**
 
 Use when:
-- Choosing between a function, object literal, `makeXxx` factory, or class.
-- A class has one public method or no meaningful instance identity; or several functions share dependencies/small private state and tests need to inject them once for multiple related capabilities.
+- **Choosing between a function, an object literal, a factory, and a class.**
+- **A class has one public method**, or no meaningful instance identity.
+- **Several functions share dependencies or small private state**, and tests want to inject them once.
 
 Do:
-- Use plain functions for pure/stateless transformations.
-- Use a `makeXxx` factory (object of functions closing over dependencies) once a second function needs the same dependencies or private state.
-- Reach for a class only when instances represent identity, lifecycle, mutable resource state, subscription handles, or ordered protocols (open/use/close) — not for grouping alone.
-- Keep construction separate from behavior when dependencies are external; return the smallest public object callers need.
+- **Use a plain function for a pure or stateless transformation.**
+- **Move to a `makeXxx` factory** once a second function needs the same dependencies or private state.
+- **Reach for a class only when an instance represents something.**
+  - Identity.
+  - Lifecycle or mutable resource state.
+  - A subscription handle.
+  - An ordered protocol, such as open then use then close.
+- **Keep construction separate from behaviour** where dependencies come from outside.
+- **Return the smallest public object callers need.**
 
 Avoid:
-- Classes used only as namespaces, or `new` where a function/`makeXxx` object preserves local reasoning just as well.
-- Treating "related functions," OO consistency, or future flexibility as sufficient reason for a class on their own.
-- Inheritance for reuse before composition has failed, exposing mutable private state that could stay closure-private, or creating huge numbers of closure objects on hot paths without measuring allocation.
+- **A class used as a namespace.**
+- **`new` where a function or a capability object reads just as well.**
+- **Grouping, OO consistency, or future flexibility as the whole reason** for a class.
+- **Inheritance for reuse**, before composition has actually failed.
+- **Exposing mutable state** that could have stayed closure-private.
+- **Creating very many closure objects on a hot path** without measuring first.
 
-Exceptions: framework APIs may require classes (keep the ceremony at the edge); a class can wrap a real resource handle even with few methods; at high instance-creation rates, measure allocation before choosing class/prototype methods over closures.
+Exceptions:
+- **A framework API MAY require a class.** Keep that ceremony at the edge.
+- **A class MAY wrap a real resource handle** even with few methods.
+- **At high instance rates, measure allocation** before choosing prototype methods over closures.
 
-Example — function → `makeXxx` when dependencies should be closure-private; class only when lifecycle/protocol is the point (composition-root vs per-call assembly: `skill://typescript-skills/typescript-composition/rules/ready-instance-vs-factory.md`):
+Example (one instance, not the set):
 
 ```ts
+// Capability object: dependencies stay closure-private, and tests inject once.
 export function makeReceiptSender({ mailer, audit }: { mailer: Mailer; audit: AuditLog }) {
   let sentCount = 0;
   async function sendReceipt(order: Order) {
@@ -40,15 +53,18 @@ export function makeReceiptSender({ mailer, audit }: { mailer: Mailer; audit: Au
   return { sendReceipt, stats: () => ({ sentCount }) };
 }
 
+// Class: the protocol is the point, and order matters.
 class ReceiptStream {
   constructor(private readonly connection: Connection) {}
-  async open()  { /* acquire resource */ }
-  async send(order: Order) { /* requires open connection */ }
-  async close() { /* release resource */ }
+  async open()  { /* acquire */ }
+  async send(order: Order) { /* requires an open connection */ }
+  async close() { /* release */ }
 }
 ```
 
+- **For where that object is assembled**, read `skill://typescript-skills/typescript-composition/rules/ready-instance-vs-factory.md`.
+
 Verify:
-- State what an instance represents beyond a bag of functions.
-- Check whether closure-private state would be simpler than class-private state.
-- Check whether lifecycle cleanup, protocol order, identity, or measured allocation pressure genuinely matter to callers.
+- **Say what an instance represents** beyond a bag of functions.
+- **Check whether closure-private state would be simpler** than class-private state.
+- **Check the lifecycle, protocol order, identity, or measured allocation** genuinely matters to callers.

@@ -8,31 +8,41 @@ references: [Ubiquitous Language (DDD), Intention-Revealing Names (Clean Code)]
 
 # Naming and Semantic Center
 
-Decision: Name code by what the reader needs to understand at the callsite, and keep the important decision visible. Owns general naming in owned code — for renaming concepts that come from providers/SDKs at the boundary, read `skill://typescript-skills/typescript-boundaries/rules/local-naming.md`.
+Decision: **Name code for what the reader needs at the callsite, and keep the decision that matters visible there.** This rule owns general naming in owned code. Renaming something that came from a provider belongs to `skill://typescript-skills/typescript-boundaries/rules/local-naming.md`.
 
 Use when:
-- A name describes implementation instead of meaning.
-- A boolean, mode, status, or branch hides the behavior that matters.
-- A reader must open several helpers to learn what the code really does.
-- Local code uses provider/framework words that are not local meaning.
+- **A name describes the implementation instead of the meaning.**
+- **A boolean, mode, status, or branch hides the behaviour that matters.**
+- **A reader must open several helpers** to learn what the code really does.
+- **Local code uses provider or framework words** that are not the local meaning.
 
 Do:
-- Name by local meaning, caller promise, or policy.
-- Put the important conditional, mode, or choice where the reader naturally looks.
-- Prefer specific names over role words like `handle`, `process`, `manage`, or `data`.
-- Keep names stable when they describe local meaning rather than current implementation.
+- **Name by local meaning, the caller's promise, or the policy** it enforces.
+- **Put the important conditional where the reader naturally looks**, not two helpers down.
+- **Prefer a specific name over a role word.** `handle`, `process`, `manage`, and `data` say nothing.
+- **Keep a name stable while it describes meaning** rather than the current implementation.
 
 Avoid:
-- Names that only repeat type information.
-- Names borrowed from providers when local semantics differ.
-- Hiding the domain decision behind generic helper chains.
-- Abbreviations that require private context.
+- **A name that only repeats the type.**
+- **A provider's word where local semantics differ.**
+- **Hiding the domain decision behind a chain of generic helpers.**
+- **An abbreviation that needs private context to expand.**
 
 Exceptions:
-- Preserve external field names at edge modules when matching wire/provider shape is the point.
-- Keep standard vocabulary when the ecosystem term is clearer than a local invention.
+- **Preserve external field names at an edge module**, where matching the wire shape is the point.
+- **Keep the standard vocabulary** where the ecosystem's term is clearer than a local invention.
+
+Example (one instance, not the set):
+
+```ts
+// Bad: the name reports the mechanism, and the decision is invisible.
+function processData(input: Order[], flag: boolean) { /* ... */ }
+
+// Good: the name carries the promise, and the branch names its own behaviour.
+function selectShippableOrders(orders: Order[], includeBackordered: boolean) { /* ... */ }
+```
 
 Verify:
-- Ask what a tired maintainer would infer from the name without opening the implementation.
-- Check whether the name remains true if the implementation changes.
-- If a branch changes behavior, check that its name exposes the behavioral difference.
+- **Ask what a tired maintainer would infer** from the name alone, without opening it.
+- **Check the name stays true if the implementation changes.**
+- **Where a branch changes behaviour, check its name exposes the difference.**
