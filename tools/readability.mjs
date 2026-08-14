@@ -63,6 +63,10 @@ export function shape(raw) {
   // 60-word sentence carrying five clause marks, which is a measurement
   // artefact rather than a sentence anyone has to read.
   const sents = noFence
+    // A colon or comma inside an inline code span is part of an identifier, not
+    // a clause boundary. Counting `Do:` and `Verify:` as clause marks scores the
+    // vocabulary a rule has to name, which is not density anyone reads.
+    .replace(/`[^`]*`/g, "CODE")
     .replace(/^\|.*$/gm, "")
     .replace(/^#.*$/gm, "")
     .replace(/^(Decision|Use when|Do|Avoid|Exceptions|Example[^\n]*|Verify):\s*$/gm, "")
@@ -107,6 +111,18 @@ const isFlatEntry = (f) => {
   return !fs.existsSync(path.join(path.dirname(f), "rules"));
 };
 
+/**
+ * How much structure an entry file owes scales with how much it routes. A gate
+ * over two rules is mostly its table; a router over eleven has sections, a
+ * default stance, and discriminators. Charging both the same forty bullets asks
+ * the small one to pad.
+ */
+const routedCount = (f) => {
+  const dir = path.join(path.dirname(f), "rules");
+  if (!fs.existsSync(dir)) return 0;
+  return fs.readdirSync(dir).filter((n) => n.endsWith(".md")).length;
+};
+
 const flag = (v, limit, over) => (over ? v > limit : v < limit) ? "  " : " !";
 
 console.log("\nfile".padEnd(34) + "words bull bold  avgP maxP  cl/s prose%");
@@ -114,8 +130,9 @@ let bad = 0;
 for (const f of files) {
   const perUnit = /[\\/]rules[\\/]/.test(f) || isFlatEntry(f);
   const s = shape(fs.readFileSync(f, "utf8"));
-  const wantBul = perUnit ? 12 : 40;
-  const wantBold = perUnit ? 4 : 20;
+  const n = perUnit ? 0 : routedCount(f);
+  const wantBul = perUnit ? 12 : Math.max(12, Math.min(40, n * 4));
+  const wantBold = perUnit ? 4 : Math.max(4, Math.min(20, n * 2));
   const marks =
     flag(s.bullets, wantBul, true) + flag(s.bold, wantBold, true) +
     flag(s.maxPara, TARGET.maxPara, false) + flag(s.clauses, TARGET.clauses, false) +
