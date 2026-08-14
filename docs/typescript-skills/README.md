@@ -1,12 +1,35 @@
-# typescript-skills — project history and design notes
+# typescript-skills: what is still open
 
-These files are authoring/history material moved out of the skill payload in `skills/typescript-skills/references/`. Agents do not need them at runtime; they document how the tree was designed and migrated.
+Two files, both about work that has not been done yet. Everything describing
+work already finished was deleted, because a hand-maintained record of the
+current state drifts the moment the tree changes.
 
-- `cheatsheet.md` — all rules restated as positive code examples (superseded by the compressed rules themselves).
-- `roadmap.md` — coverage gaps and phases; most items resolved.
-- `evaluation-plan.md` — the original eval design (superseded by `evals/` in the skill tree).
-- `ownership.md` — topic-ownership table (now encoded in each bundle's SKILL.md `Owns` / `Does Not Own` sections).
-- `source-coverage.md` — migration map from the original `~/.agents/skills/typescript-skills` tree.
-- `review-notes.md` — tree-state notes from past reviews.
+- **`roadmap.md`** lists coverage gaps. Nine of them are still open, marked by
+  the absence of a resolved status.
+- **`evaluation-plan.md`** specifies the activation scenarios each topic needs.
+  None of them are written yet, so this topic has no `evals/` directory.
 
-Internal `references/...` links inside these files refer to the old layout and may be stale.
+## Where the current state actually comes from
+
+Run the suite instead of reading about it:
+
+```bash
+node tools/check-all.mjs --report
+```
+
+That prints how many invariants pass, how many mutations are caught, and how
+many files sit inside every shape target. Those numbers are measured on every
+run, so they cannot go stale the way a written summary does.
+
+## What was removed, and why
+
+- **`cheatsheet.md`** restated every rule as a positive example, 1040 lines of
+  it. Its own index already called it superseded by the rules themselves. A
+  second copy of a rule disagrees with the first one eventually, and nothing
+  announces which copy is stale.
+- **`ownership.md`** mapped each topic to its owner. Every rule already carries
+  `owner:` in its frontmatter, and the checker fails a rule whose owner does not
+  match its directory. The enforced version replaces the written one.
+- **`source-coverage.md`** tracked a migration that finished.
+- **`review-notes.md`** described the tree as a draft not yet installed, which
+  stopped being true when it was committed.
