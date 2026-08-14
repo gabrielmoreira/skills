@@ -30,14 +30,30 @@ export function shape(raw) {
   const body = raw.replace(/^---[\s\S]*?---/, "");
   const noFence = body.replace(/```[\s\S]*?```/g, "");
 
-  const paras = noFence
-    .split(/\n\s*\n/)
-    .map((p) => p.trim())
-    // A list item starts with "- ", "* " or "1. ". A paragraph opening with
-    // **bold** also starts with an asterisk and is still a paragraph: the
-    // first version of this filter dropped those, so a bold lead-in scored
-    // as zero prose instead of as prose that had been made scannable.
-    .filter((p) => p && !p.startsWith("#") && !p.startsWith("|") && !/^(-\s|\*\s|\d+\.\s)/.test(p));
+  // A paragraph is a run of consecutive lines that are not list items, headings,
+  // table rows, or block labels. Splitting on blank lines instead made the layout
+  // decide the score: a file that puts a blank line between bullet groups
+  // measured as almost no prose, while the same content written with the label
+  // glued to its bullets measured as one 164-word paragraph. That is the layout
+  // being scored, not the writing.
+  // A list item starts with "- ", "* " or "1. ". A line opening with **bold** is
+  // still prose: an earlier filter dropped those, so a bold lead-in scored as
+  // zero prose rather than as prose that had been made scannable.
+  const LABEL = /^(?:Decision|Use when|Do|Avoid|Exceptions|Example[^:]*|Verify):\s*/;
+  const paras = [];
+  let run = [];
+  const flush = () => { if (run.length) { paras.push(run.join(" ")); run = []; } };
+  for (const line of noFence.split(/\r?\n/)) {
+    const isList = /^\s*(?:[-*]\s|\d+\.\s)/.test(line);
+    const isOther = !line.trim() || line.trimStart().startsWith("#") || line.trimStart().startsWith("|");
+    if (isList || isOther) { flush(); continue; }
+    // A bare block label is structure. A label carrying its statement on the
+    // same line keeps that statement and drops only the label.
+    const text = line.replace(LABEL, "").trim();
+    if (!text) { flush(); continue; }
+    run.push(text);
+  }
+  flush();
 
   const paraWords = paras.map((p) => p.split(/\s+/).length);
   const words = noFence.split(/\s+/).filter(Boolean).length;

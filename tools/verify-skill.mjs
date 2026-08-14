@@ -458,8 +458,13 @@ async function verify(skillDir) {
       ? 0
       : skillText.split("\n").filter((l) => rowRe.test(l.trim())).length;
 
-    if (shape.kind !== "flat" && rows < SKILL_MIN_ROWS) {
-      bad.push(`${ENTRY} routes only ${rows}; a gate with fewer than ${SKILL_MIN_ROWS} rows is a list, not a gate`);
+    // A gate cannot have more rows than there are things to route to. Holding a
+    // two-rule topic to four rows asks for rules that do not exist.
+    const wantRows = shape.kind === "multi"
+      ? Math.max(2, Math.min(SKILL_MIN_ROWS, shape.topics.length))
+      : Math.max(2, Math.min(SKILL_MIN_ROWS, ruleNames.length));
+    if (shape.kind !== "flat" && rows < wantRows) {
+      bad.push(`${ENTRY} routes only ${rows}; a gate with fewer than ${wantRows} rows is a list, not a gate`);
     }
     // The same ceiling holds for a flat skill. Needing more room is the signal
     // that its decisions have earned a rules/ directory.
