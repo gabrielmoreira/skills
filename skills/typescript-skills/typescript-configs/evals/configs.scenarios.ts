@@ -188,6 +188,31 @@ const scenarios = [
       "Accepts the code-defaulted resource identity because the endpoints are public"
     ],
     tags: ["stage-conditional", "resource-identity", "bypass", "legacy-migrated"]
+  },
+  {
+    id: "configs-migration-scattered-env-reads",
+    bundle: "typescript-configs",
+    rule: "migration",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "Env reads are scattered across about a dozen feature modules and nobody is sure what the current defaults actually do. We want typed config everywhere. Plan says replace all of it in one pass and add proper validation while we are in there.",
+    expectedPrimary: "typescript-configs",
+    expectedSecondary: ["typescript-testing"],
+    must: [
+      "Characterizes the current behaviour before changing any semantics",
+      "Introduces a seam that centralizes the reads without changing them, then parses behind it",
+      "Moves callers to typed config one boundary at a time",
+      "Refuses to fold a requiredness or default change into the mechanical migration",
+      "Removes the old reads and any compatibility alias after cutover"
+    ],
+    mustNot: [
+      "Endorses the single-pass rewrite with validation added along the way",
+      "Leaves raw env reads and typed config as two permanent paths",
+      "Changes stage or runtime assumptions that were not in scope"
+    ],
+    tags: ["migration", "config", "characterization", "seam"]
   }
 ] satisfies EvalScenario[];
 

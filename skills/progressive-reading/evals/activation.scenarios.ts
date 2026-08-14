@@ -63,6 +63,8 @@ const scenarios = [
     mode: "exception",
     difficulty: "mixed",
     prompt: "Give only the final answer in one sentence. No headings, bullets, context, or explanation.",
+        nearMiss:
+      "Answer shape is precisely this skill's subject, and one sentence sounds like the brevity it favours. But the user has already fixed the shape, and adding headings or context would override an explicit instruction.",
     activation: {
       layer: "public-skill",
       target: "progressive-reading",
@@ -81,6 +83,8 @@ const scenarios = [
     difficulty: "hard",
     prompt:
       "Return exactly one JSON object matching the schema below. No Markdown, prose, headings, comments, or additional keys.",
+        nearMiss:
+      "The prompt is about output form, which is the subject. But the required form is a machine contract, where a heading or a bullet breaks the parse instead of helping a reader.",
     activation: {
       layer: "public-skill",
       target: "progressive-reading",
@@ -98,6 +102,8 @@ const scenarios = [
     mode: "exception",
     difficulty: "mixed",
     prompt: "Copy the stack trace verbatim. Do not explain, summarize, reflow, or reformat any line.",
+        nearMiss:
+      "Reflowing dense output is what this skill normally does. Here the value is byte-for-byte fidelity, and every improvement it would make destroys exactly that.",
     activation: {
       layer: "public-skill",
       target: "progressive-reading",

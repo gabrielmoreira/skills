@@ -499,8 +499,13 @@ async function verify(skillDir) {
 
   { // C-11 scenarios, when present
     const evalsDir = join(SKILL_DIR, "evals");
-    const files = (await exists(evalsDir)) ? (await readdir(evalsDir)).filter((f) => f.endsWith(".scenarios.mjs")) : [];
-    if (!files.length) note("no activation scenarios yet, routing and behaviour are UNPROVEN", `${NAME} has no evals/*.scenarios.mjs`);
+    // Both extensions count. Node imports either, and reporting a skill as
+    // UNPROVEN because its scenarios are written in the other one is a false
+    // negative that hides real coverage.
+    const files = (await exists(evalsDir))
+      ? (await readdir(evalsDir)).filter((f) => /\.scenarios\.(mjs|ts)$/.test(f))
+      : [];
+    if (!files.length) note("no activation scenarios yet, routing and behaviour are UNPROVEN", `${NAME} has no evals/*.scenarios.{mjs,ts}`);
     else {
       const bad = [];
       const owned = new Set();
@@ -510,8 +515,24 @@ async function verify(skillDir) {
         for (const s of mod.default ?? []) {
           count++;
           for (const k of ["id", "prompt"]) if (!s[k]) bad.push(`${s.id ?? "(no id)"}: missing ${k}`);
-          if (s.activation?.shouldActivate === true) { pos++; if (s.expectedPrimary) owned.add(s.expectedPrimary.replace(/^rules\//, "").replace(/\.md$/, "")); else bad.push(`${s.id}: positive scenario has no expectedPrimary`); }
-          else { neg++; if (!s.nearMiss) bad.push(`${s.id}: negative scenario does not say why it is a near miss`); }
+          // Two conventions name the rule a scenario belongs to: a pointer in
+          // `expectedPrimary`, or a bare `rule` name beside a topic-level one.
+          const named = s.rule ?? (typeof s.expectedPrimary === "string" && s.expectedPrimary.includes("rules/")
+            ? s.expectedPrimary.replace(/^.*rules\//, "").replace(/\.md$/, "")
+            : null);
+
+          // Three kinds, and only one of them owes a near-miss explanation.
+          // A scenario with no `activation` block makes no activation claim at
+          // all: it exercises answer quality for a rule it names. Treating that
+          // as a negative demanded an explanation for a claim it never made.
+          if (s.activation?.shouldActivate === false) {
+            neg++;
+            if (!s.nearMiss) bad.push(`${s.id}: negative scenario does not say why it is a near miss`);
+          } else {
+            pos++;
+            if (named) owned.add(named);
+            else bad.push(`${s.id}: scenario names no rule`);
+          }
         }
       }
       for (const n of ruleNames) if (!owned.has(n)) bad.push(`rules/${n}.md has no positive scenario`);

@@ -64,6 +64,8 @@ const scenarios = [
     difficulty: "hard",
     prompt:
       "Rewrite this TypeScript compiler error in plain English for a beginner. Do not suggest or change any code.",
+        nearMiss:
+      "A compiler error is TypeScript, and explaining one clearly overlaps with good writing. But no code is being designed, reviewed, or changed, so no rule in this tree has a decision to make.",
     activation: {
       layer: "public-skill",
       target: "typescript-skills",
@@ -81,6 +83,8 @@ const scenarios = [
     mode: "exception",
     difficulty: "mixed",
     prompt: "What year was TypeScript 5.0 released? Cite the official announcement; no coding guidance is needed.",
+        nearMiss:
+      "The prompt names TypeScript directly, which is the strongest surface trigger there is. It asks for a historical fact with a citation, and this tree routes design decisions rather than release dates.",
     activation: {
       layer: "public-skill",
       target: "typescript-skills",
@@ -99,6 +103,8 @@ const scenarios = [
     difficulty: "mixed",
     prompt:
       "Convert this `.ts` file from CRLF to LF without inspecting or changing its code. Preserve every byte except line endings.",
+        nearMiss:
+      "It is a TypeScript file and it is being modified, so both the language and the edit are present. The change is explicitly byte-level and forbids reading the code, so there is no design decision inside it.",
     activation: {
       layer: "public-skill",
       target: "typescript-skills",

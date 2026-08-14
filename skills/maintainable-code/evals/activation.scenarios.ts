@@ -63,6 +63,8 @@ const scenarios = [
     mode: "exception",
     difficulty: "mixed",
     prompt: "Change the typo in this user-facing string from 'recieve' to 'receive'. Do not touch anything else.",
+        nearMiss:
+      "A string edit is a change to a source file, which is this skill's subject. But nothing about structure, boundaries, or cohesion is in play: one token changes and the surrounding design is untouched.",
     activation: {
       layer: "public-skill",
       target: "maintainable-code",
@@ -81,6 +83,8 @@ const scenarios = [
     difficulty: "hard",
     prompt:
       "Explain why this SQL query returns zero rows with these parameters. Diagnose the current behavior only; do not redesign or refactor the data layer.",
+        nearMiss:
+      "Diagnosing a data layer sounds like the boundary and cohesion questions this skill owns, and the words are all here. But the ask is why current behaviour happens, not whether the design is right, and it forbids redesign outright.",
     activation: {
       layer: "public-skill",
       target: "maintainable-code",
@@ -99,6 +103,8 @@ const scenarios = [
     difficulty: "mixed",
     prompt:
       "Write a disposable eight-line script that renames these five local files once. It will be deleted immediately afterward; no library or reusable API is needed.",
+        nearMiss:
+      "'No reusable API is needed' names the exact tension this skill arbitrates. It names it in order to close it: eight lines deleted immediately have no future reader to protect, and that reader is the entire reason the guidance exists.",
     activation: {
       layer: "public-skill",
       target: "maintainable-code",

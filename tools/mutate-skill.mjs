@@ -9,8 +9,9 @@
  * green suite proves nothing until a broken skill fails it for the right reason.
  *
  * Mutations are structural rather than string-anchored, so they keep working
- * when a skill is rewritten. A mutation that no longer applies is reported as
- * stale, because a check nobody has seen fire is decoration.
+ * when a skill is rewritten. One that could not apply is reported as stale,
+ * because a check nobody has seen fire is decoration. One that had nothing of
+ * its kind to break is reported as not applicable, which is a different fact.
  */
 import fs from "node:fs";
 import os from "node:os";
@@ -39,6 +40,18 @@ const decision = (t) => {
   const e = rest.search(/^Use when:/m);
   return e < 0 ? rest : rest.slice(0, e);
 };
+
+/**
+ * A mutation reports one of three things.
+ *
+ *   true   it applied, and the check must now turn red
+ *   NA     there is nothing of this kind here by design, so it cannot apply
+ *   false  it should have applied and could not, which means the anchor moved
+ *
+ * Collapsing the middle case into `false` reported nine inapplicable mutations
+ * per run as stale, which buries the one that is genuinely broken.
+ */
+const NA = "n/a";
 
 const MUTATIONS = [
   {
@@ -113,7 +126,7 @@ const MUTATIONS = [
           }
         }
       }
-      return false;
+      return NA;   // no reciprocated local pair here to make one-way
     },
   },
   {
@@ -198,9 +211,9 @@ const MUTATIONS = [
     what: "the entry loses the name that routes to it",
     apply(dir) {
       const p = path.join(dir, "SKILL.md");
-      if (!fs.existsSync(p)) return false;
+      if (!fs.existsSync(p)) return NA;   // a topic index declares no name
       const t = fs.readFileSync(p, "utf8");
-      if (!/^name:.*$/m.test(t)) return false;
+      if (!/^name:.*$/m.test(t)) return NA;
       fs.writeFileSync(p, t.replace(/^name:.*$\n/m, ""), "utf8");
       return true;
     },
@@ -212,15 +225,22 @@ const MUTATIONS = [
     apply(dir) {
       const evals = path.join(dir, "evals");
       if (!fs.existsSync(evals)) return false;
-      const file = fs.readdirSync(evals).find((f) => f.endsWith(".scenarios.mjs"));
-      if (!file) return false;
+      const file = fs.readdirSync(evals).find((f) => /\.scenarios\.(mjs|ts)$/.test(f));
+      if (!file) return NA;
       const p = path.join(evals, file);
-      const t = fs.readFileSync(p, "utf8");
-      const m = t.match(/expectedPrimary: "rules\/[a-z0-9-]+\.md",/);
-      if (!m) return false;
-      // Point every scenario at the same rule, orphaning the rest.
-      const first = m[0];
-      fs.writeFileSync(p, t.replace(/expectedPrimary: "rules\/[a-z0-9-]+\.md",/g, first), "utf8");
+      let t = fs.readFileSync(p, "utf8");
+      // Two fields can carry the scenario-to-rule link, and a scenario may
+      // carry both. Rewriting only one left the other still naming the real
+      // rule, so coverage survived the mutation and the check never fired.
+      let applied = false;
+      for (const re of [/expectedPrimary: "rules\/[a-z0-9-]+\.md",/g, /rule: "[a-z0-9-]+",/g]) {
+        const first = t.match(re)?.[0];
+        if (!first) continue;
+        t = t.replace(re, first);   // point every scenario at the same rule
+        applied = true;
+      }
+      if (!applied) return false;
+      fs.writeFileSync(p, t, "utf8");
       return true;
     },
   },
@@ -281,7 +301,9 @@ for (const target of process.argv.slice(2).flatMap((t) => expand(path.resolve(t)
   for (const m of MUTATIONS) {
     if (m.needsRules && !hasRules) { inapplicable.push(m.check); continue; }
     copy(src, dir);
-    if (!m.apply(dir)) {
+    const outcome = m.apply(dir);
+    if (outcome === NA) { inapplicable.push(m.check); continue; }
+    if (!outcome) {
       problems.push(`${m.check}: mutation no longer applies, this check has not been seen firing`);
       continue;
     }

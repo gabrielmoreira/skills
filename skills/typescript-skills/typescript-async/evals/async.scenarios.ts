@@ -131,6 +131,31 @@ const scenarios = [
       "Recommends only increasing terminationGracePeriodSeconds"
     ],
     tags: ["sigterm", "graceful-shutdown", "kubernetes", "legacy-migrated"]
+  },
+  {
+    id: "async-cleanup-transaction-leaks-on-throw",
+    bundle: "typescript-async",
+    rule: "cleanup-and-teardown",
+    tier: "P0",
+    mode: "apply",
+    difficulty: "mixed",
+    prompt:
+      "This importer opens a read stream and begins a transaction, then commits at the end. When a row fails to insert it throws and we see connections pile up until the pool is exhausted. Reviewer says just wrap it in try/catch.",
+    expectedPrimary: "typescript-async",
+    expectedSecondary: ["typescript-error-handling"],
+    must: [
+      "Identifies that cleanup runs only on the success path, which is why the failure path leaks",
+      "Pairs each acquisition with a release that runs on every exit, using try/finally or explicit resource management",
+      "Releases the transaction before the stream, in reverse order of acquisition",
+      "Awaits the asynchronous close rather than calling it and moving on",
+      "Makes dispose idempotent so a second call is safe"
+    ],
+    mustNot: [
+      "Accepts a bare try/catch that swallows the error without releasing anything",
+      "Suggests cleanup in the catch block only, which still skips the cancelled path",
+      "Recommends a process-level handler for a per-operation resource"
+    ],
+    tags: ["cleanup", "teardown", "transaction", "resource-leak"]
   }
 ] satisfies EvalScenario[];
 
