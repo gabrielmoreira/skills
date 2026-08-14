@@ -207,6 +207,25 @@ const MUTATIONS = [
     },
   },
   {
+    check: "C-14",
+    needsRules: true,
+    what: "a scenario prompt names the rule it is meant to route to",
+    apply(dir) {
+      const evals = path.join(dir, "evals");
+      if (!fs.existsSync(evals)) return NA;
+      const file = fs.readdirSync(evals).find((f) => /\.scenarios\.(mjs|ts)$/.test(f));
+      if (!file) return NA;
+      const p = path.join(evals, file);
+      const t = fs.readFileSync(p, "utf8");
+      const rule = rulesOf(dir)[0].replace(/\.md$/, "");
+      const m = t.match(/prompt:\s+"([^"]{20,})"/);
+      if (!m) return false;
+      // Put the rule filename inside a prompt, which is the giveaway C-14 bans.
+      fs.writeFileSync(p, t.replace(m[1], `${m[1]} (see ${rule})`), "utf8");
+      return true;
+    },
+  },
+  {
     check: "C-13",
     what: "the entry loses the name that routes to it",
     apply(dir) {

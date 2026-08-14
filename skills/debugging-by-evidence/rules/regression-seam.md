@@ -13,7 +13,7 @@ write. The caller never reaches the helper with the failing shape. A test there
 proves the helper, not the bug.
 
 - **You should see a recorded failure with the fix absent.** You should not see a green test nobody has watched go red.
-- **Owns where the test goes and what it must have been seen doing.** Where the fix itself goes → `rules/fix-at-the-source.md`. The throwaway command that first showed the symptom → `rules/runnable-signal.md`.
+- **Owns where the test goes and what it must have been seen doing.** That a fix waits for a red at all → `test-first-by-evidence/rules/bug-fix-starts-red.md`. Where the fix itself goes → `rules/fix-at-the-source.md`. The throwaway command that first showed the symptom → `rules/runnable-signal.md`.
 
 Use when:
 

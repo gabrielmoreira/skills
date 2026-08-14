@@ -3,54 +3,52 @@ id: test-first-by-evidence.bug-fix-starts-red
 owner: test-first-by-evidence
 canonical: true
 severity: hard-gate
-references: [Regression testing, Defect-driven testing]
+references: [Defect-driven testing, Regression testing]
 ---
 
 # Bug Fix Starts Red
 
-Decision: **A bug fix begins with a test that reproduces the defect and fails for that reason.** Establishing the cause in the first place belongs to `debugging-by-evidence/rules/runnable-signal.md`.
+Decision: **A fix waits for a test that fails because of the defect, even when the cause is already obvious.** Where that test goes, what it asserts, and how to make an existing fix prove itself belong to `debugging-by-evidence/rules/regression-seam.md`.
 
 Use when:
-- **A bug is reported**, with or without a reproduction.
-- **A stack trace or a failing run** is the starting point.
+- **A bug is reported** and the cause is plain enough to fix immediately.
+- **A one-line fix is about to be applied.**
+- **A fix already exists** and a test is being added behind it.
 - **A regression appeared** in something that used to work.
-- **A fix is already written** and a test is being added behind it.
 
 Do:
-- **Turn the report into a failing test before touching the code.** The test is the reproduction, in a form that runs again next year.
-- **Put it where the defect actually is**, not where it surfaced. A wrong value arriving from three layers away gets its test at the source.
-- **Assert the correct behaviour**, so the test fails now and passes after the fix.
-- **Confirm the failure matches the report.** A different red line is a different bug.
-- **Keep the test after the fix lands.** It is the regression guard, and it is the whole return on this work.
-- **Where the cause is not yet known, establish it first.** A fix without a cause is a guess that happened to go green.
+- **Write the failing test first, however small the fix looks.** A one-line fix to the wrong line is still wrong, and only a red proves you found the right one.
+- **Confirm the failure is the reported symptom.** A different red line is a different bug.
+- **Where the fix is already written, make it prove itself.** Remove it, watch the test go red, put it back. That is the only way to earn the red you skipped.
+- **Keep the test after the fix lands.** It is the entire return on this work.
+- **Where the cause is not established, stop and establish it.** A fix without a cause is a guess that happened to go green.
 
 Avoid:
-- **Fixing first and adding the test after.** It passes on the first run and has never shown it can catch the defect.
-- **A test that reproduces a symptom you cannot explain.** You may be pinning a coincidence.
+- **Fixing first and adding a test after.** It passes on its first run and has never shown it can catch anything.
 - **Asserting the buggy output** so the suite goes green without anything being fixed.
+- **A test that reproduces a symptom you cannot explain.** You may be pinning a coincidence.
 - **Deleting the test once the fix is merged.**
-- **A test at the point of the crash** when the bad value was created elsewhere.
 
 Exceptions:
-- **A defect that cannot be reproduced in a test** is reported as such, with what would be needed to reproduce it, rather than fixed blind.
-- **An urgent production fix MAY ship before the test**, provided the test follows in the same change and the gap is stated.
+- **A defect that cannot be reproduced in a test is reported as such**, with what would be needed to reproduce it, rather than fixed blind.
+- **An urgent production fix MAY ship before its test**, provided the test follows in the same change and the gap is stated.
 
 Example (one instance, not the set):
 
 ```txt
-Report:   empty email is accepted at signup.
+Report: empty email accepted at signup. The cause is obvious.
 
-RED       rejects an empty email
-          expected "Email required", received undefined
-          Fails because the check does not exist. Matches the report.
+Tempting: add the check, then a test. The test passes first run
+          and has never demonstrated it can fail.
 
-GREEN     add the check. Test passes, suite passes.
+Instead:  write the test, watch it fail on the missing check,
+          then add the check.
 
-KEEP      the test stays. Next year it is the reason this cannot come back.
+Already fixed? Remove the check, watch the test go red, restore it.
+          Now the red exists, just later than it should have.
 ```
 
 Verify:
-- **Quote the red run that reproduced the defect**, before the fix existed.
-- **Check the test sits where the defect originates.**
+- **Quote the red run that reproduced the defect**, with the fix absent.
 - **Check the failure matched the reported symptom**, not merely something red.
 - **Check the test survives into the merged change.**

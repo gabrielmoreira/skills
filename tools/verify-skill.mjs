@@ -540,6 +540,34 @@ async function verify(skillDir) {
     }
   }
 
+  { // C-14 a scenario prompt must not name what it is testing for
+    const evalsDir = join(SKILL_DIR, "evals");
+    const files = (await exists(evalsDir))
+      ? (await readdir(evalsDir)).filter((f) => /\.scenarios\.(mjs|ts)$/.test(f))
+      : [];
+    if (!files.length) na("C-14 no scenario prompt gives away its answer", "no scenario files to read");
+    else {
+      // A prompt naming the skill or a rule filename is not a test of routing:
+      // it hands over the answer and then checks the answer came back.
+      const giveaways = [NAME, ...ruleNames].filter((n) => n.includes("-"));
+      const bad = [];
+      let checked = 0;
+      for (const f of files) {
+        const mod = await import(pathToFileURL(join(evalsDir, f)).href);
+        for (const s of mod.default ?? []) {
+          if (typeof s.prompt !== "string") continue;
+          checked++;
+          const lower = s.prompt.toLowerCase();
+          for (const g of giveaways) if (lower.includes(g)) bad.push(`${s.id}: prompt contains "${g}"`);
+          if (/\brules\//.test(lower)) bad.push(`${s.id}: prompt cites a rule path`);
+        }
+      }
+      bad.length
+        ? fail("C-14 no scenario prompt gives away its answer", [...new Set(bad)].join("\n        "))
+        : pass("C-14 no scenario prompt gives away its answer", `${checked} prompts`);
+    }
+  }
+
   { // C-12 every markdown file that carries frontmatter has valid frontmatter
     const bad = [], withFm = [];
     const all = new Map();

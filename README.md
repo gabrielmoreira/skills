@@ -1,8 +1,8 @@
 # Agent Skills That Restore Context
 
-Eight skills for coding agents. Each one covers a moment you already recognise: a
-branch to review, a bug with no reproduction, a git command that refuses, docs
-that went stale.
+Nine skills for coding agents. Each one covers a moment you already recognise: a
+feature about to be written, a branch to review, a bug with no reproduction, a git
+command that refuses, docs that went stale.
 
 > The work should leave enough behind that the next person can pick it up cold.
 

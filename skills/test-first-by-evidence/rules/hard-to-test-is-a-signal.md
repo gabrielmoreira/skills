@@ -24,7 +24,7 @@ Do:
   - Huge setup: the unit needs too much context to do one thing.
   - Nothing obvious to assert: the unit has no result, only effects.
   - A clock or randomness you cannot control: time and entropy are being read instead of passed.
-- **Pass the awkward dependency in**, and the test stops fighting you.
+- **Pass the awkward dependency in**, and the test stops fighting you. Only the awkward ones: a stable pure helper injected to satisfy a pattern is a cost with no return, per `maintainable-code`.
 - **Where you cannot say what to assert, write the API you wish existed** and let the test drive it.
 - **Where the design cannot change now, say so and name what the test therefore does not prove.**
 
