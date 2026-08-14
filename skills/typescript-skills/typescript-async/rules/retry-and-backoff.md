@@ -3,42 +3,54 @@ id: typescript-async.retry-and-backoff
 owner: typescript-async
 canonical: true
 severity: default
-references: [Exponential backoff with jitter (AWS Architecture Blog), Retry storms (Google SRE), p-retry / cockatiel / async-retry, AbortSignal interplay]
+references: [Exponential backoff with jitter (AWS Architecture Blog), Retry storms (Google SRE), p-retry / cockatiel / async-retry]
 ---
 
 # Retry and Backoff
 
-Decision: Retry only explicitly retryable, safe operations within a finite caller-owned budget. Prefer a proven project dependency; otherwise use capped exponential backoff with jitter and cancellation.
+Decision: **Retry only an operation that is explicitly retryable and safe to repeat, inside a finite budget the caller owns.** Prefer a proven project dependency, otherwise use capped exponential backoff with jitter and cancellation. Deciding what counts as retryable belongs to `skill://typescript-skills/typescript-error-handling/rules/error-classification.md`.
 
 Use when:
-- Transient network, throttling, or availability failures are expected.
-- Existing retries lack caps, jitter, cancellation, or timeout budgeting.
-- Replicas retry in lockstep or ignore `Retry-After`.
-- A write may be repeated after an ambiguous outcome.
+- **Transient network, throttling, or availability failures are expected.**
+- **Existing retries are missing something.** A cap, jitter, cancellation, or a timeout budget.
+- **Replicas retry in lockstep**, or ignore a server's `Retry-After`.
+- **A write may be repeated after an ambiguous outcome.**
 
 Do:
-- Separate retry classification from retry mechanics.
-- Cap attempts and elapsed time below the outer request or runtime deadline.
-- Use exponential backoff with full jitter; treat `Retry-After` as input bounded by local policy.
-- Propagate `AbortSignal` through attempts and waits.
-- Require idempotency, an idempotency key, or deduplication for repeatable writes.
-- Record attempts and final failure without logging secrets.
+- **Keep classification separate from mechanics.** One decides whether to retry, the other decides how.
+- **Cap both attempts and elapsed time**, below the outer request or runtime deadline.
+- **Use exponential backoff with full jitter.** Lockstep replicas are what turns a blip into a storm.
+- **Treat `Retry-After` as input**, bounded by local policy rather than obeyed blindly.
+- **Propagate the abort signal through every attempt and every wait.**
+- **Require idempotency for a repeatable write.** An idempotency key, or deduplication.
+- **Record attempts and the final failure**, without logging secrets.
 
 Avoid:
-- Retrying every exception or caller error.
-- Constant sleeps, unlimited retries, nested retry layers, or waits beyond the caller budget.
-- Retrying non-idempotent work without a duplicate-prevention contract.
-- Swallowing the final failure.
+- **Retrying every exception.** A caller error will fail identically every time.
+- **A constant sleep, or unlimited attempts.**
+- **Nested retry layers.** Their budgets multiply, and nobody owns the total.
+- **Waiting past the caller's budget**, which returns an answer nobody is waiting for.
+- **Retrying non-idempotent work** with no duplicate-prevention contract.
+- **Swallowing the final failure.**
 
-Example:
+Exceptions:
+- **A single attempt is fine** where the operation is cheap to fail and the caller retries at a higher level.
+- **A library MAY expose the knobs without choosing the policy**, leaving the budget to its caller.
+
+Example (one instance, not the set):
 
 ```ts
+// Full jitter, capped, and cancellable.
 const delay = Math.random() * Math.min(capMs, baseMs * 2 ** attempt);
 await sleep(delay, { signal });
 ```
 
 Verify:
-- Classification, attempt cap, elapsed budget, timeout, jitter, and cancellation are explicit.
-- Only one layer owns retries for an operation.
-- Repeated writes are safe.
-- The final failure preserves cause and classification.
+- **Check each of these is explicit.**
+  - Classification.
+  - The attempt cap and the elapsed budget.
+  - The per-attempt timeout.
+  - Jitter and cancellation.
+- **Check only one layer owns retries for an operation.**
+- **Check a repeated write is safe to repeat.**
+- **Check the final failure keeps its cause and its classification.**

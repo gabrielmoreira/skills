@@ -3,68 +3,70 @@ id: typescript-async.parallel-and-dependencies
 owner: typescript-async
 canonical: true
 severity: default
-references: [Vercel React Best Practices (async-parallel, async-defer-await, async-dependencies, async-api-routes), Promise.all (MDN), p-limit / p-map (Sindresorhus)]
+references: [Vercel React Best Practices (async-parallel, async-defer-await, async-dependencies), Promise.all (MDN), p-limit / p-map (Sindresorhus)]
 ---
 
 # Parallel and Dependencies
 
-Decision: Sequential `await` is correct only when one operation depends on the previous one's result. Independent operations use `Promise.all`. Operations with partial dependencies start each promise at the earliest possible moment. Unbounded input sets need bounded concurrency.
+Decision: **A sequential `await` is correct only where one operation needs the previous one's result.** Independent work runs together, partial dependencies start as early as possible, and unbounded input gets bounded concurrency.
 
 Use when:
-- Multiple `await` lines run back-to-back with no value flowing between them — likely sequential where parallel would do.
-- A handler awaits auth, then config, then data — each waits on the previous unnecessarily even though some are independent.
-- A loop `await`s per item over a large or unbounded input — needs `Promise.all` (small/bounded) or bounded concurrency (large/rate-limited).
-- Code fetches data eagerly in branches that don't end up using it.
-- Partial failure in a batch must not abort the rest, but the code uses `Promise.all` (all-or-nothing).
+- **Several `await` lines run back to back with no value flowing between them.**
+- **A handler awaits auth, then config, then data**, where some of those are independent.
+- **A loop awaits per item** over a large or unbounded input.
+- **Code fetches eagerly in branches that never use the result.**
+- **A batch uses `Promise.all`** where partial failure must not abort the rest.
 
 Do:
-- Read each `await`: if the next line doesn't consume its result, the wait is hiding parallelism — group independent ops with `Promise.all`.
-- For partial dependencies, start every independent promise immediately and `await` each only where its value is needed — don't block earlier work on a later dependency.
-- For unbounded, paginated, or rate-limited input, use bounded concurrency (`p-limit`, `p-map({ concurrency })`, or a batch-of-N loop) instead of one large `Promise.all` burst.
-- Defer `await` into the branch that actually uses the value; early returns should not pay for work they don't need.
-- Use `Promise.allSettled` when partial failure must not abort the rest of the batch.
-- Share one promise across consumers that need the same data instead of re-fetching it per caller.
-- Pass `AbortSignal` through parallel work so cancelling the parent cancels the children — see `cancellation-and-abort.md`.
-- Honor any concurrency/rate limits the downstream API documents.
+- **Read each `await` and ask whether the next line consumes it.** If not, the wait is hiding parallelism.
+- **Group independent operations with `Promise.all`.**
+- **For partial dependencies, start every independent promise immediately** and await each only where its value is needed.
+- **Use bounded concurrency for unbounded, paginated, or rate-limited input.** A concurrency limiter, or a batch-of-N loop.
+- **Defer the await into the branch that uses the value**, so an early return pays nothing.
+- **Use `Promise.allSettled` where partial failure must not sink the batch.**
+- **Share one promise between consumers that need the same data.**
+- **Pass the abort signal through**, so cancelling the parent cancels the children.
+- **Honour any concurrency or rate limit the downstream documents.**
 
 Avoid:
-- Sequential `await` chains that pass no values between steps — pure waterfall, no benefit.
-- `Promise.all` over unbounded input (the canonical "500 IDs" case) — a single burst that collapses or rate-limits downstream.
-- Awaiting a value before every conditional even when most branches never use it.
-- Hand-rolling batching/concurrency limiting when `p-limit`/`p-map` is already in the project.
-- Re-fetching the same data per component/consumer instead of sharing one promise; defaulting to `Promise.all` when one failure should not sink the whole batch.
+- **A waterfall of awaits that pass no values.**
+- **`Promise.all` over unbounded input.** One burst that collapses or throttles the downstream.
+- **Awaiting before a conditional** that most branches never reach.
+- **Hand-rolling a concurrency limiter** where the project already has one.
+- **Re-fetching the same data per consumer.**
 
 Exceptions:
-- A single small operation doesn't need `Promise.all` ceremony; operations with side effects that must serialize (write-then-write) stay sequential; retry/backoff loops are intentionally sequential per attempt.
-- React Server Components may `await` directly because Suspense provides streaming (`async-suspense-boundaries` pattern).
-- Library code with no concurrency knob may expose its own `AbortSignal` without imposing `p-limit` itself.
+- **A single small operation needs no `Promise.all` ceremony.**
+- **Side effects that must serialize stay sequential.** A write followed by a dependent write.
+- **A retry loop is sequential per attempt on purpose.**
+- **A server component MAY await directly**, because streaming provides the overlap.
 
-Example:
+Example (one instance, not the set):
 
 ```ts
-// Sequential only when there's a dependency:
+// Sequential, because there is a real dependency:
 const user = await fetchUser(id);
-const profile = await fetchProfile(user.id); // needs user.id
+const profile = await fetchProfile(user.id);
 
-// Independent — run in parallel:
+// Independent, so run together:
 const [posts, comments] = await Promise.all([fetchPosts(id), fetchComments(id)]);
 
-// Partial dependency — start both immediately, await only when needed:
+// Partial dependency: start both now, await each where it is needed.
 const sessionP = auth();
-const configP = fetchConfig();           // independent of session
+const configP = fetchConfig();
 const session = await sessionP;
 const [config, data] = await Promise.all([configP, fetchData(session.user.id)]);
 
-// Unbounded input — bounded concurrency, not a single Promise.all burst:
+// Unbounded input: bound the concurrency instead of one burst.
 const limit = pLimit(5);
 await Promise.all(ids.map((id) => limit(() => fetchProfile(id))));
 
-// Partial-failure tolerance — allSettled instead of all-or-nothing:
+// Partial failure must not sink the batch:
 const results = await Promise.allSettled(jobs.map(process));
 ```
 
 Verify:
-- Every back-to-back `await` is checked: does it consume the previous result? If not, it should be parallel or started earlier.
-- `Promise.all` over arrays is only used when the input is bounded and small; unbounded/rate-limited input uses bounded concurrency.
-- Independent fetches in handlers/routes start before the first `await`; deferred work doesn't pay for branches that don't use it.
-- Shared data reuses one promise instead of repeating the fetch; `Promise.allSettled` is used where partial failure must not abort the batch.
+- **Check each back-to-back await consumes the previous result.**
+- **Check `Promise.all` is used only over bounded input.**
+- **Check independent fetches start before the first await.**
+- **Check shared data reuses one promise** rather than repeating the fetch.

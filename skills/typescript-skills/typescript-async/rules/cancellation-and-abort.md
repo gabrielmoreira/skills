@@ -8,51 +8,50 @@ references: [AbortSignal / AbortController (WHATWG / MDN), TanStack Query query-
 
 # Cancellation and Abort
 
-Decision: Operations that may be cancelled accept an `AbortSignal` as a capability and propagate it to anything they call. The signal flows from the caller (request, component, parent task) down through fetches and waits. Code that never cancels is fine; code that should cancel but cannot is a bug waiting to leak handles, memory, or wasted work.
+Decision: **An operation that may be cancelled accepts an `AbortSignal` and passes it to everything it calls.** Code that never cancels is fine. Code that should cancel and cannot is a leak waiting to happen.
 
 Use when:
-- A `fetch` call has no `signal:` and the caller may walk away (component unmount, request abort, parent cancel).
-- A `useEffect` fetch may resolve after unmount and still update state.
-- A long-running query, async iterator, or streaming response has no way to be told "we don't need the answer anymore" or no early-exit path.
-- Tests hang because nothing aborts in-flight work between cases.
+- **A `fetch` has no `signal:`** and the caller may walk away.
+- **An effect's fetch may resolve after unmount** and still set state.
+- **Long or streaming work has no way to be told the answer is no longer wanted.**
+- **Tests hang** because nothing aborts in-flight work between cases.
 
 Do:
-- Accept `signal?: AbortSignal` as part of the function's input when the operation may be cancelled.
-- Pass `signal` to every `fetch`, timer-as-promise, or downstream call that supports it — propagate it to the lowest-level call.
-- Call `signal.throwIfAborted()` (or check `signal.aborted`) at meaningful checkpoints in long or looped work; bail out and return without finishing work the caller no longer needs.
-- Use `AbortSignal.timeout(ms)` for time-bound operations, and `AbortSignal.any([...])` to combine a caller's signal with your own deadline.
-- In React effects, create one `AbortController` per render and call `controller.abort()` in the cleanup function.
-- Treat `AbortError` as expected; do not log it as a real failure.
-- Wrap libraries that don't accept `signal` so they reject when it fires, cleaning up the listener on settle.
-- On the server, wire the request's disconnect event to a downstream `AbortController` so backend work stops when the client gives up.
+- **Accept `signal?: AbortSignal` as part of the input** where the operation may be cancelled.
+- **Propagate it to the lowest-level call.** Every `fetch`, timer, and downstream call that supports it.
+- **Check at meaningful points in long or looped work**, with `signal.throwIfAborted()`, and bail out.
+- **Use `AbortSignal.timeout(ms)` for a deadline**, and `AbortSignal.any([...])` to combine it with the caller's.
+- **Create one controller per render in an effect**, and abort it in the cleanup.
+- **Treat `AbortError` as expected**, never as a real failure.
+- **Wrap a library that does not accept a signal** so it rejects when the signal fires, removing its listener on settle.
+- **Wire the server request's disconnect event to a downstream controller**, so work stops when the client gives up.
 
 Avoid:
-- `fetch(url)` where the caller can walk away — the request continues, the response is dropped, work is wasted.
-- A function that cannot be cancelled but is composed into something that can — cancellation stops at that hop.
-- Catching `AbortError` and swallowing it silently — the caller's `signal.aborted` checks won't see anything.
-- Creating a new `AbortController` deep inside owned code where the caller cannot reach it.
-- Reusing a global `AbortController` across requests — one cancel kills unrelated work.
-- Mixing cancellation with rejection of a Promise that is also a Result channel — pick one signal channel.
+- **`fetch(url)` where the caller can walk away.** The request continues and the response is thrown out.
+- **A function that cannot be cancelled inside one that can.** Cancellation stops at that hop.
+- **Swallowing `AbortError` silently.** The caller's own checks then see nothing.
+- **Creating a controller deep in owned code** where no caller can reach it.
+- **One global controller shared across requests.** A single cancel kills unrelated work.
 
 Exceptions:
-- Truly fire-and-forget work (audit log emit, metric publish) may not need cancellation.
-- Synchronous CPU work can't be cancelled mid-tick; chunk it (`await new Promise((r) => setImmediate(r))`) or move it to a worker.
-- Test code may use very short `AbortSignal.timeout(...)` values to fail fast; library code may accept `signal` even if unused yet, to keep the option open.
+- **Genuinely fire-and-forget work MAY skip it.** An audit emit, a metric publish.
+- **Synchronous CPU work cannot be cancelled mid-tick.** Chunk it, or move it to a worker.
+- **Library code MAY accept a signal it does not use yet**, to keep the option open.
 
-Example — accept, propagate, combine with a deadline, and treat `AbortError` as expected:
+Example (one instance, not the set):
 
 ```ts
 type FetchProfileInput = { id: string; signal?: AbortSignal };
 
 async function fetchProfile({ id, signal }: FetchProfileInput): Promise<Profile> {
-  signal?.throwIfAborted();                                             // bail out early if already cancelled
-  const combined = signal ? AbortSignal.any([signal, AbortSignal.timeout(5_000)]) : AbortSignal.timeout(5_000);
-  const res = await fetch(`/api/profiles/${id}`, { signal: combined }); // propagate to the lowest-level call
+  signal?.throwIfAborted();
+  const deadline = AbortSignal.timeout(5_000);
+  const combined = signal ? AbortSignal.any([signal, deadline]) : deadline;
+  const res = await fetch(`/api/profiles/${id}`, { signal: combined });
   if (!res.ok) throw new Error(`profile ${id} failed: ${res.status}`);
   return res.json();
 }
 
-// React: one AbortController per render, abort on cleanup; AbortError is expected, not a real failure.
 useEffect(() => {
   const controller = new AbortController();
   fetchProfile({ id: userId, signal: controller.signal })
@@ -62,10 +61,8 @@ useEffect(() => {
 }, [userId]);
 ```
 
-Wrap libraries that don't accept `signal` so they reject when it fires (listen for `abort`, reject with `signal.reason`, remove the listener on settle). On the server, wire the request's own disconnect event to a downstream `AbortController` (Express: `req.on('close', () => controller.abort())`) so backend work stops when the client gives up.
-
 Verify:
-- Functions that may take >100ms or call the network accept `signal?: AbortSignal`, and the signal reaches the lowest-level `fetch`/timer/wait.
-- React effects with async work create an `AbortController` and abort it on cleanup.
-- `AbortError` is recognized and not treated as a real failure; no global `AbortController` is shared across unrelated requests.
-- Tests that exercise cancellation verify the work actually stopped (no hanging promises after abort).
+- **Check anything slow or networked accepts a signal**, and that it reaches the lowest-level call.
+- **Check effects abort on cleanup.**
+- **Check `AbortError` is recognised**, and no controller is shared across unrelated requests.
+- **Check a cancellation test proves the work stopped**, not just that the promise settled.
