@@ -1,0 +1,598 @@
+{
+  "ranAt": "2026-08-14T22:12:49.155Z",
+  "model": "github-copilot/gpt-5.6-terra",
+  "backend": "omp",
+  "clean": true,
+  "rules": false,
+  "samples": 3,
+  "thinking": "high",
+  "selfChecks": {
+    "delegated": 0,
+    "sawHarness": 0,
+    "foreign": []
+  },
+  "results": [
+    {
+      "skill": "test-first-by-evidence",
+      "id": "about-to-add-a-feature",
+      "kind": "observed",
+      "arm": "with",
+      "negative": false,
+      "passes": 3,
+      "samples": 3,
+      "verdict": "PASS",
+      "seq": [
+        "read skill://test-first-by-evidence",
+        "read skill://typescript-skills",
+        "read .",
+        "todo ",
+        "read skill://typescript-skills/typescript-async/INDEX.md",
+        "read skill://test-first-by-evidence/rules/watch-it-fail.md",
+        "read skill://test-first-by-evidence/rules/where-the-test-goes.md",
+        "read package.json",
+        "read src/index.js",
+        "grep .",
+        "read skill://typescript-skills/typescript-async/rules/retry-and-backoff.md",
+        "read skill://typescript-skills/typescript-error-handling/rules/error-classification.md"
+      ]
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "about-to-add-a-feature",
+      "kind": "observed",
+      "arm": "without",
+      "negative": false,
+      "passes": 0,
+      "samples": 3,
+      "verdict": "FAIL",
+      "seq": [
+        "read .",
+        "todo ",
+        "read src/index.js",
+        "read package.json",
+        "glob **/*.{test,spec}.{js,mjs,cjs};test/**/*",
+        "write src/index.js",
+        "write test/payment-client.test.js",
+        "bash ",
+        "todo ",
+        "bash ",
+        "todo ",
+        "bash "
+      ]
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "test-passed-on-first-run",
+      "kind": "observed",
+      "arm": "with",
+      "negative": false,
+      "passes": 3,
+      "samples": 3,
+      "verdict": "PASS",
+      "seq": [
+        "read skill://test-first-by-evidence",
+        "read skill://test-first-by-evidence/rules/watch-it-fail.md",
+        "read skill://test-first-by-evidence/rules/code-written-first.md"
+      ]
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "test-passed-on-first-run",
+      "kind": "observed",
+      "arm": "without",
+      "negative": false,
+      "passes": 0,
+      "samples": 3,
+      "verdict": "FAIL",
+      "seq": [
+        "read .",
+        "read src/index.js:raw",
+        "read package.json:raw",
+        "bash "
+      ]
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "implementation-already-written",
+      "kind": "observed",
+      "arm": "with",
+      "negative": false,
+      "passes": 3,
+      "samples": 3,
+      "verdict": "PASS",
+      "seq": [
+        "read skill://test-first-by-evidence",
+        "read .",
+        "todo ",
+        "read src/index.js:raw",
+        "read package.json:raw",
+        "read skill://test-first-by-evidence/rules/code-written-first.md",
+        "read skill://test-first-by-evidence/rules/watch-it-fail.md",
+        "read skill://test-first-by-evidence/rules/where-the-test-goes.md",
+        "grep .",
+        "bash ",
+        "todo ",
+        "bash "
+      ]
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "implementation-already-written",
+      "kind": "observed",
+      "arm": "without",
+      "negative": false,
+      "passes": 0,
+      "samples": 3,
+      "verdict": "FAIL",
+      "seq": [
+        "read .",
+        "glob package.json;pyproject.toml;Cargo.toml;go.mod;pom.xml;build.gradle;build.gradle.kts;*.csproj",
+        "todo ",
+        "read src/index.js:1-300",
+        "read package.json:1-120",
+        "glob **/*.{test,spec}.{js,mjs,cjs};test/**/*;tests/**/*",
+        "glob **/*",
+        "grep .",
+        "bash ",
+        "bash ",
+        "todo ",
+        "read src/index.js:1-10"
+      ]
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "bug-report-with-a-trace",
+      "kind": "observed",
+      "arm": "with",
+      "negative": false,
+      "passes": 3,
+      "samples": 3,
+      "verdict": "PASS",
+      "seq": [
+        "read skill://debugging-by-evidence",
+        "read skill://test-first-by-evidence",
+        "read .",
+        "todo ",
+        "read skill://debugging-by-evidence/rules/runnable-signal.md",
+        "read skill://test-first-by-evidence/rules/bug-fix-starts-red.md",
+        "read package.json",
+        "read src/index.js",
+        "bash ",
+        "read src",
+        "glob **",
+        "grep ."
+      ]
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "bug-report-with-a-trace",
+      "kind": "observed",
+      "arm": "without",
+      "negative": false,
+      "passes": 0,
+      "samples": 3,
+      "verdict": "FAIL",
+      "seq": [
+        "read .",
+        "grep .",
+        "todo ",
+        "read package.json",
+        "read src/index.js",
+        "glob **/*",
+        "bash ",
+        "bash ",
+        "todo ",
+        "bash ",
+        "todo ",
+        "bash "
+      ]
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "assertions-on-mock-calls",
+      "kind": "observed",
+      "arm": "with",
+      "negative": false,
+      "passes": 1,
+      "samples": 3,
+      "verdict": "UNSTABLE",
+      "seq": [
+        "read skill://test-first-by-evidence",
+        "read skill://test-first-by-evidence/rules/tests-that-cannot-lie.md"
+      ]
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "assertions-on-mock-calls",
+      "kind": "observed",
+      "arm": "without",
+      "negative": false,
+      "passes": 0,
+      "samples": 3,
+      "verdict": "FAIL",
+      "seq": [
+        "read .",
+        "read package.json",
+        "read src/index.js"
+      ]
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "no-obvious-place-for-the-test",
+      "kind": "observed",
+      "arm": "with",
+      "negative": false,
+      "passes": 2,
+      "samples": 3,
+      "verdict": "UNSTABLE",
+      "seq": [
+        "read skill://test-first-by-evidence",
+        "read skill://test-first-by-evidence/rules/where-the-test-goes.md"
+      ]
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "no-obvious-place-for-the-test",
+      "kind": "observed",
+      "arm": "without",
+      "negative": false,
+      "passes": 0,
+      "samples": 3,
+      "verdict": "FAIL",
+      "seq": []
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "everything-needs-mocking",
+      "kind": "observed",
+      "arm": "with",
+      "negative": false,
+      "passes": 0,
+      "samples": 3,
+      "verdict": "FAIL",
+      "seq": []
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "everything-needs-mocking",
+      "kind": "observed",
+      "arm": "without",
+      "negative": false,
+      "passes": 0,
+      "samples": 3,
+      "verdict": "FAIL",
+      "seq": []
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "red-exists-now-implement",
+      "kind": "observed",
+      "arm": "with",
+      "negative": false,
+      "passes": 3,
+      "samples": 3,
+      "verdict": "PASS",
+      "seq": [
+        "read skill://test-first-by-evidence",
+        "read .",
+        "todo ",
+        "read package.json",
+        "read src/index.js",
+        "read skill://test-first-by-evidence/rules/smallest-green.md",
+        "bash ",
+        "glob **/*",
+        "grep .",
+        "bash ",
+        "bash ",
+        "todo "
+      ]
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "red-exists-now-implement",
+      "kind": "observed",
+      "arm": "without",
+      "negative": false,
+      "passes": 0,
+      "samples": 3,
+      "verdict": "FAIL",
+      "seq": [
+        "todo ",
+        "read .",
+        "glob package.json;pyproject.toml;Cargo.toml;go.mod;*.sln;*.csproj",
+        "read package.json",
+        "read src/index.js",
+        "glob **/*test*;**/*.spec.*",
+        "bash ",
+        "todo ",
+        "todo ",
+        "todo "
+      ]
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "expired-token-handling",
+      "kind": "observed",
+      "arm": "with",
+      "negative": false,
+      "passes": 0,
+      "samples": 3,
+      "verdict": "FAIL",
+      "seq": [
+        "read skill://debugging-by-evidence",
+        "read skill://test-first-by-evidence",
+        "read .",
+        "todo ",
+        "read skill://debugging-by-evidence/rules/runnable-signal.md",
+        "read skill://test-first-by-evidence/rules/bug-fix-starts-red.md",
+        "read skill://test-first-by-evidence/rules/watch-it-fail.md",
+        "read package.json",
+        "read src/index.js",
+        "read xd://lsp",
+        "bash ",
+        "write xd://lsp"
+      ]
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "expired-token-handling",
+      "kind": "observed",
+      "arm": "without",
+      "negative": false,
+      "passes": 0,
+      "samples": 3,
+      "verdict": "FAIL",
+      "seq": [
+        "todo ",
+        "read .",
+        "read src/index.js:raw",
+        "read package.json:raw",
+        "read src/index.js",
+        "grep .",
+        "glob **/*",
+        "todo ",
+        "edit ",
+        "write test/index.test.js",
+        "bash ",
+        "read src/index.js"
+      ]
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "flaky-signup-suite-after-a-fix",
+      "kind": "observed",
+      "arm": "with",
+      "negative": false,
+      "passes": 0,
+      "samples": 3,
+      "verdict": "FAIL",
+      "seq": [
+        "read .",
+        "read skill://debugging-by-evidence",
+        "read skill://evidence-backed-review",
+        "read package.json",
+        "read src/index.js",
+        "todo ",
+        "bash ",
+        "read skill://evidence-backed-review/rules/correctness-in-the-diff.md",
+        "read skill://evidence-backed-review/rules/security-and-abuse-paths.md",
+        "bash ",
+        "todo ",
+        "bash "
+      ]
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "flaky-signup-suite-after-a-fix",
+      "kind": "observed",
+      "arm": "without",
+      "negative": false,
+      "passes": 0,
+      "samples": 3,
+      "verdict": "FAIL",
+      "seq": [
+        "read .",
+        "read src/index.js",
+        "read package.json"
+      ]
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "review-the-tests-in-this-pr",
+      "kind": "observed",
+      "arm": "with",
+      "negative": true,
+      "passes": 3,
+      "samples": 3,
+      "verdict": "PASS",
+      "seq": [
+        "read skill://evidence-backed-review",
+        "read .",
+        "todo ",
+        "bash ",
+        "read package.json",
+        "read src/index.js",
+        "read ..",
+        "glob **/*test*;**/*spec*",
+        "todo ",
+        "read ../workspace",
+        "read ../w-71aac652/test",
+        "read ../w-3c3604a1/test"
+      ]
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "review-the-tests-in-this-pr",
+      "kind": "observed",
+      "arm": "without",
+      "negative": true,
+      "passes": 3,
+      "samples": 3,
+      "verdict": "PASS",
+      "seq": [
+        "bash ",
+        "read .",
+        "todo ",
+        "read package.json",
+        "read src/index.js",
+        "glob **/*.{test,spec}.{js,mjs,cjs};test/**/*;tests/**/*;__tests__/**/*",
+        "bash ",
+        "todo ",
+        "bash ",
+        "todo "
+      ]
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "why-is-this-failing",
+      "kind": "observed",
+      "arm": "with",
+      "negative": true,
+      "passes": 3,
+      "samples": 3,
+      "verdict": "PASS",
+      "seq": [
+        "read skill://debugging-by-evidence",
+        "read .",
+        "todo ",
+        "read skill://debugging-by-evidence/rules/runnable-signal.md",
+        "read package.json",
+        "read src/index.js",
+        "glob **/*",
+        "bash ",
+        "bash ",
+        "todo ",
+        "bash ",
+        "todo "
+      ]
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "why-is-this-failing",
+      "kind": "observed",
+      "arm": "without",
+      "negative": true,
+      "passes": 3,
+      "samples": 3,
+      "verdict": "PASS",
+      "seq": [
+        "todo ",
+        "read .",
+        "glob package.json;**/*checkout*;**/*test*;**/*spec*",
+        "read package.json",
+        "read src/index.js",
+        "bash ",
+        "glob **/*",
+        "bash ",
+        "bash ",
+        "todo ",
+        "bash ",
+        "todo "
+      ]
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "which-test-framework",
+      "kind": "observed",
+      "arm": "with",
+      "negative": true,
+      "passes": 3,
+      "samples": 3,
+      "verdict": "PASS",
+      "seq": [
+        "read skill://maintainable-code",
+        "read .",
+        "read package.json",
+        "read src/index.js"
+      ]
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "which-test-framework",
+      "kind": "observed",
+      "arm": "without",
+      "negative": true,
+      "passes": 3,
+      "samples": 3,
+      "verdict": "PASS",
+      "seq": [
+        "read .",
+        "glob package.json;**/{jest,vitest,vite}.config.*;**/*.{test,spec}.{ts,tsx,js,jsx}",
+        "grep package.json;**/*.{json,js,cjs,mjs,ts,tsx}",
+        "read package.json:raw",
+        "read src/index.js:raw"
+      ]
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "explain-what-tdd-is",
+      "kind": "observed",
+      "arm": "with",
+      "negative": true,
+      "passes": 2,
+      "samples": 3,
+      "verdict": "UNSTABLE",
+      "seq": [
+        "read skill://progressive-reading"
+      ]
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "explain-what-tdd-is",
+      "kind": "observed",
+      "arm": "without",
+      "negative": true,
+      "passes": 3,
+      "samples": 3,
+      "verdict": "PASS",
+      "seq": []
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "coverage-number-dropped",
+      "kind": "observed",
+      "arm": "with",
+      "negative": true,
+      "passes": 0,
+      "samples": 3,
+      "verdict": "FAIL",
+      "seq": [
+        "read skill://debugging-by-evidence",
+        "read skill://test-first-by-evidence",
+        "read .",
+        "todo ",
+        "read package.json",
+        "read src/index.js",
+        "read skill://test-first-by-evidence/rules/code-written-first.md",
+        "read skill://test-first-by-evidence/rules/watch-it-fail.md",
+        "bash ",
+        "grep .",
+        "grep .",
+        "read skill://debugging-by-evidence/rules/runnable-signal.md"
+      ]
+    },
+    {
+      "skill": "test-first-by-evidence",
+      "id": "coverage-number-dropped",
+      "kind": "observed",
+      "arm": "without",
+      "negative": true,
+      "passes": 3,
+      "samples": 3,
+      "verdict": "PASS",
+      "seq": [
+        "read .",
+        "glob {package.json,pyproject.toml,go.mod,Cargo.toml,README.md,vitest.config.*,jest.config.*,pytest.ini,.coveragerc}",
+        "todo ",
+        "read package.json",
+        "read src/index.js",
+        "write test/index.test.js",
+        "todo ",
+        "bash ",
+        "todo ",
+        "bash ",
+        "todo "
+      ]
+    }
+  ]
+}

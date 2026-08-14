@@ -36,11 +36,12 @@
  *   node tools/run-activation.mjs --check          compare against the baseline
  *   node tools/run-activation.mjs --write-baseline
  */
-import { readdir, readFile, writeFile, mkdir } from "node:fs/promises";
-import { join, resolve, basename } from "node:path";
+import { readdir, readFile, writeFile, mkdir, rm } from "node:fs/promises";
+import { join, resolve, basename, dirname } from "node:path";
 import { pathToFileURL } from "node:url";
 import { spawn } from "node:child_process";
 import { tmpdir } from "node:os";
+import { randomUUID } from "node:crypto";
 
 const ROOT = resolve(process.env.SKILL_COLLECTION_ROOT ?? "skills");
 const BASELINE = resolve("evals/baseline.json");
@@ -93,10 +94,34 @@ function parseArgs(argv) {
 // Skills load from this repository rather than from an installed copy, so a run
 // always measures the working tree and never a stale install.
 
+/**
+ * Everything that could differ between two runs of the same prompt, turned off.
+ *
+ * Memory is built from previous rollouts, so leaving it on lets one sample teach
+ * the next and the arms stop being independent. The marketplace can update
+ * itself mid-run and can carry skills of its own. Temperature is pinned.
+ *
+ * Listing every source that might inject a skill is a losing game, so the
+ * runner also records every skill it sees the agent open and reports any that
+ * this collection does not own. That catches a new source without knowing it
+ * exists.
+ */
+const QUIET = [
+  "memories:\n  enabled: false\n",
+  "marketplace:\n  autoUpdate: off\n",
+  "temperature: 0\n",
+  "extensions: []\n",
+].join("");
+
+const OFF_SOURCES = [
+  "enableCodexUser", "enableClaudeUser", "enableClaudeProject",
+  "enablePiUser", "enablePiProject", "enableAgentsUser", "enableAgentsProject",
+].map((k) => `  ${k}: false\n`).join("");
+
 const OVERLAYS = {
   with: (skillsDir) =>
-    `skills:\n  enabled: true\n  enableCodexUser: false\n  enableClaudeUser: false\n  enableClaudeProject: false\n  enablePiUser: false\n  enablePiProject: false\n  enableAgentsUser: false\n  enableAgentsProject: false\n  customDirectories:\n    - ${skillsDir.replace(/\\/g, "/")}\n`,
-  without: () => `skills:\n  enabled: false\n`,
+    `${QUIET}skills:\n  enabled: true\n${OFF_SOURCES}  customDirectories:\n    - ${skillsDir.replace(/\\/g, "/")}\n`,
+  without: () => `${QUIET}skills:\n  enabled: false\n`,
 };
 
 /**
@@ -107,10 +132,14 @@ const OVERLAYS = {
  * evidence. omp addresses skills as skill://<name>/<path>, so both the
  * activation and the routing decision are visible as ordinary read calls.
  */
-export function observe(stream) {
+const DELEGATES = /^(task|agent|subagent|dispatch|spawn|delegate)/i;
+
+export function observe(stream, harnessDir = null) {
   const skills = new Set();
   const rules = new Set();
   const seq = [];
+  let delegated = false;
+  let sawHarness = false;
   for (const line of stream.split("\n")) {
     let j;
     try {
@@ -121,12 +150,27 @@ export function observe(stream) {
     if (j.type !== "tool_execution_start") continue;
     const path = String(j.args?.path ?? "");
     seq.push({ tool: j.toolName, path });
+    if (DELEGATES.test(j.toolName ?? "")) delegated = true;
+    if (harnessDir && path.replace(/\\/g, "/").includes(harnessDir.replace(/\\/g, "/"))) sawHarness = true;
     const m = path.match(/^skill:\/\/([a-z0-9-]+)(?:\/(.+))?$/);
     if (!m) continue;
     skills.add(m[1]);
     if (m[2]) rules.add(m[2]);
   }
-  return { skills: [...skills], rules: [...rules], seq };
+
+  // A delegating agent may do its reading inside a child whose tool calls never
+  // reach this stream. Every skill:// path anywhere in the transcript is
+  // collected as a second, weaker channel, and the two are reported apart so a
+  // mention is never mistaken for an observed read.
+  const mentioned = new Set();
+  for (const m of stream.matchAll(/skill:\/\/([a-z0-9-]+)\/((?:[a-z0-9-]+\/)?(?:rules\/)?[a-zA-Z0-9-]+\.md)/g)) {
+    mentioned.add(`${m[1]}|${m[2]}`);
+  }
+  const onlyMentioned = [...mentioned]
+    .filter((s) => !rules.has(s.split("|")[1]))
+    .map((s) => s.replace("|", "/"));
+
+  return { skills: [...skills], rules: [...rules], seq, delegated, sawHarness, onlyMentioned };
 }
 
 /** Did the test file appear before the implementation was edited? */
@@ -209,14 +253,36 @@ function cliBackend(model, system, user) {
  * because the point is to measure the agent that actually runs, not a stripped
  * one. stdin is closed: omp waits for EOF on a piped stdin and hangs otherwise.
  */
-function ompRun(a, arm, prompt, paths) {
+/**
+ * A fresh working directory for every single call.
+ *
+ * Sharing one directory across calls was the worst determinism defect in the
+ * first version: with six running at once, one call read the test file another
+ * had just written, and a sample was no longer independent of its neighbours.
+ */
+const SEED = {
+  "package.json": `{\n  "name": "workspace",\n  "type": "module",\n  "scripts": { "test": "node --test" }\n}\n`,
+  "src/index.js": "export function main() {\n  return null;\n}\n",
+};
+
+async function freshWorkspace(base) {
+  const dir = join(base, `w-${randomUUID().slice(0, 8)}`);
+  for (const [rel, content] of Object.entries(SEED)) {
+    const target = join(dir, rel);
+    await mkdir(dirname(target), { recursive: true });
+    await writeFile(target, content);
+  }
+  return dir;
+}
+
+function ompRun(a, arm, prompt, paths, cwd) {
   return new Promise((ok, bad) => {
     const args = [
       "-p", prompt,
       "--model", a.model,
       "--thinking", a.thinking,
       "--config", paths.overlay[arm],
-      "--cwd", paths.fixture,
+      "--cwd", cwd,
       "--mode", "json",
       "--max-time", String(a.maxTime),
       "--no-session", "--no-extensions",
@@ -426,7 +492,23 @@ async function main() {
   // are built here and never written into the repository. The overlay is
   // generated from this script's own location, so it is derived, never stored.
   const paths = backend.agentic ? await prepareOmp(args) : null;
-  const roots = paths ? [[paths.fixture.replace(/\\/g, "/"), "<fixture>"], [ROOT.replace(/\\/g, "/"), "<skills>"]] : [];
+  const roots = paths
+    ? [
+        [paths.conf.replace(/\\/g, "/"), "<harness>"],
+        [paths.base.replace(/\\/g, "/"), "<workspace>"],
+        [ROOT.replace(/\\/g, "/"), "<skills>"],
+      ]
+    : [];
+
+  // Self-checks. Each names a way a run can be worth less than it looks, and
+  // each is counted rather than assumed away.
+  const flags = { delegated: 0, sawHarness: 0, foreign: new Set() };
+  // The whole collection, not the selected subset: a sibling skill opening is
+  // normal and interesting, a skill from somewhere else means a source is still
+  // loading that the overlay was supposed to have silenced.
+  const ours = new Set(
+    (await readdir(ROOT, { withFileTypes: true })).filter((d) => d.isDirectory()).map((d) => d.name),
+  );
 
   const results = await pool(selected, args.concurrency, async (c) => {
     let passes = 0;
@@ -434,16 +516,25 @@ async function main() {
     let seq = null;
     for (let i = 0; i < args.samples; i++) {
       let answer;
+      let workspace = null;
       try {
-        answer = backend.agentic
-          ? await ompRun(args, c.arm, c.user, paths)
-          : await backend.call(args.model, c.system, c.user);
+        if (backend.agentic) {
+          workspace = await freshWorkspace(paths.base);
+          answer = await ompRun(args, c.arm, c.user, paths, workspace);
+        } else {
+          answer = await backend.call(args.model, c.system, c.user);
+        }
       } catch (e) {
         answers.push(`ERROR ${e.message}`);
         continue;
+      } finally {
+        if (workspace) await rm(workspace, { recursive: true, force: true }).catch(() => {});
       }
       if (c.kind === "observed") {
-        const seen = observe(answer);
+        const seen = observe(answer, paths.conf);
+        if (seen.delegated) flags.delegated++;
+        if (seen.sawHarness) flags.sawHarness++;
+        for (const s of seen.skills) if (!ours.has(s)) flags.foreign.add(s);
         seq ??= seen.seq.slice(0, 12).map((s) => redact(`${s.tool} ${s.path}`, roots));
         const want = c.scenario.activation?.shouldActivate === false;
         const graded = gradeObserved(seen, c.scenario, c.skill);
@@ -463,8 +554,8 @@ async function main() {
     return { skill: c.skill, id: c.id, kind: c.kind, arm: c.arm, negative: c.scenario.activation?.shouldActivate === false, passes, samples: args.samples, verdict: verdictOf(passes, args.samples), seq, answers: args.verbose ? answers : undefined };
   });
 
-  report(results, args);
-  const record = { ranAt: new Date().toISOString(), model: args.model, backend: backend.name, clean: backend.clean, rules: args.rules, samples: args.samples, results: results.map(({ answers, ...r }) => r) };
+  report(results, args, flags);
+  const record = { ranAt: new Date().toISOString(), model: args.model, backend: backend.name, clean: backend.clean, rules: args.rules, samples: args.samples, thinking: args.thinking, selfChecks: { delegated: flags.delegated, sawHarness: flags.sawHarness, foreign: [...flags.foreign] }, results: results.map(({ answers, ...r }) => r) };
   await mkdir(resolve("evals"), { recursive: true });
   await writeFile(resolve("evals/last-run.json"), `${JSON.stringify(record, null, 2)}\n`);
   if (args.writeBaseline) {
@@ -482,17 +573,22 @@ async function main() {
 async function prepareOmp(args) {
   const base = args.fixture ? resolve(args.fixture) : join(tmpdir(), `skill-evals-${process.pid}`);
   const fixture = join(base, "workspace");
+  // The overlays live outside the fixture's tree. A first run left them one
+  // directory above it, and the agent globbed upward, read both arms, and
+  // learned it was inside an experiment.
+  const conf = join(tmpdir(), `.omp-cfg-${process.pid}`);
   await mkdir(fixture, { recursive: true });
+  await mkdir(conf, { recursive: true });
   const overlay = {};
   for (const arm of ["with", "without"]) {
-    const p = join(base, `${arm}.yml`);
+    const p = join(conf, `${arm}.yml`);
     await writeFile(p, arm === "with" ? OVERLAYS.with(ROOT) : OVERLAYS.without());
     overlay[arm] = p;
   }
-  return { base, fixture, overlay };
+  return { base, conf, fixture, overlay };
 }
 
-function reportObserved(results) {
+function reportObserved(results, flags) {
   const key = (r) => `${r.skill}/${r.id}`;
   const withS = new Map(results.filter((r) => r.arm === "with").map((r) => [key(r), r]));
   const without = new Map(results.filter((r) => r.arm === "without").map((r) => [key(r), r]));
@@ -518,6 +614,11 @@ function reportObserved(results) {
   }
   console.log(`  unstable           ${results.filter((r) => r.verdict === "UNSTABLE").length}`);
 
+  // A run can be worth less than it looks. Each of these says how.
+  if (flags?.delegated) console.log(`  delegated          ${flags.delegated}   a child's reads may not appear in the transcript`);
+  if (flags?.sawHarness) console.log(`  read the harness   ${flags.sawHarness}   the agent found the eval's own config`);
+  if (flags?.foreign?.size) console.log(`  foreign skills     ${[...flags.foreign].join(", ")}   a source the overlay did not silence`);
+
   const bad = all.filter((r) => r.w.verdict !== "PASS");
   if (bad.length) {
     console.log("\nnot passing with the skills loaded");
@@ -528,8 +629,8 @@ function reportObserved(results) {
   }
 }
 
-function report(results, args) {
-  if (results.some((r) => r.kind === "observed")) return reportObserved(results);
+function report(results, args, flags) {
+  if (results.some((r) => r.kind === "observed")) return reportObserved(results, flags);
   const key = (r) => `${r.skill}/${r.id}`;
   const gated = new Map(results.filter((r) => r.kind === "routing" && r.arm === "gated").map((r) => [key(r), r]));
   const blind = new Map(results.filter((r) => r.kind === "routing" && r.arm === "blind").map((r) => [key(r), r]));

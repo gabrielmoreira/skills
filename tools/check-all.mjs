@@ -153,13 +153,21 @@ function behaviourLine() {
   } catch {
     return "never run; node tools/run-activation.mjs --backend omp --write-baseline";
   }
-  const rows = base.results.filter((r) => r.arm === "with" || r.arm === "gated");
-  const pass = rows.filter((r) => r.verdict === "PASS").length;
-  const control = base.results.filter((r) => r.arm === "without" || r.arm === "blind");
+  // Near misses are counted apart. A skill that was never loaded cannot fire
+  // wrongly, so every negative passes the control for free, and folding them in
+  // credits the skill with work the absence of the skill did.
+  const on = (r) => r.arm === "with" || r.arm === "gated";
+  const pos = base.results.filter((r) => !r.negative);
+  const pass = pos.filter((r) => on(r) && r.verdict === "PASS").length;
+  const total = pos.filter(on).length;
+  const control = pos.filter((r) => !on(r));
   const controlPass = control.filter((r) => r.verdict === "PASS").length;
+  const neg = base.results.filter((r) => r.negative && on(r));
+  const shut = neg.filter((r) => r.verdict === "PASS").length;
   const days = Math.floor((Date.now() - Date.parse(base.ranAt)) / 86400000);
   const age = days === 0 ? "today" : `${days}d old`;
-  return `${pass}/${rows.length} with the skills, ${controlPass}/${control.length} without, ${base.model}, ${age}`;
+  const shutPart = neg.length ? `, ${shut}/${neg.length} stayed shut` : "";
+  return `${pass}/${total} with the skills, ${controlPass}/${control.length} without${shutPart}, ${base.model}, ${age}`;
 }
 
 // ---------------------------------------------------------------- output
