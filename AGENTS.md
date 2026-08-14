@@ -21,6 +21,7 @@ behaviour is deleted, not kept for completeness.
 | code should stay simple, testable, and sustainable: boundaries, cohesion, layering | `maintainable-code` |
 | TypeScript needs focused guidance: standards, boundaries, async, errors, testing | `typescript-skills` |
 | an answer must be easier to start, scan, pause, and resume | `progressive-reading` |
+| a skill itself must be written, split, renamed, or checked | `authoring-verifiable-skills` |
 
 - **Not finding a match is an answer.** Do not stretch one to fit.
 - **Two or more matching is normal.** Process comes before implementation, and the narrower one
