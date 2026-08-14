@@ -10,68 +10,102 @@ description: >-
 
 # Maintainable Code
 
-Make real complexity visible and remove accidental complexity. Prefer the repository's proven conventions; apply these defaults only where they improve flow, boundaries, testing, or re-entry.
+**Core principle.** Make real complexity visible, and remove the complexity nothing required.
+
+- **The repository's proven conventions come first.** Apply these defaults only where they improve flow, boundaries, testing, or re-entry.
+- **The weight sits in *Investigate before changing* and *Make effects and dependencies explicit*.** The other eight are easier to apply, and easier to skip, once those two hold.
 
 ## Language
 
-Reply in the user's language. Keep persistent repository content in the project's established language; default to clear international English when no convention exists.
+- **Reply in the user's language.**
+- **Keep persistent repository content in the project's established language.**
+- **Default to clear international English** where no convention exists.
 
-## Principles
+## 1. Investigate before changing
 
-### 1. Investigate before changing
+- **Trace what is already there** before touching it.
+  - Current behaviour.
+  - Entry points.
+  - Dependencies.
+  - Tests.
+  - Local patterns.
+- **Reuse a pattern that fits.**
+- **Do not create a second architecture beside the first.**
+- **Do not abstract every similarity you notice.** Two things looking alike is not evidence they change together.
 
-Trace the current behavior, entry points, dependencies, tests, and local patterns. Reuse a fitting pattern; do not create a second architecture or abstract every similarity.
+## 2. Design from observable proof
 
-### 2. Design from observable proof
+- **Decide how the result will be demonstrated before implementing it.**
+- **Sketch the main path, build the smallest coherent core, then wire the boundaries.**
+- **Treat the plan as provisional.** Revise it when the implementation reveals a better contract, data shape, or user experience.
 
-Define how the result will be demonstrated before implementation. Sketch the main path, build the smallest coherent core, then wire boundaries. Treat the plan as provisional: revise it when implementation reveals a better contract, data shape, or user experience.
+## 3. Keep the main flow obvious
 
-### 3. Keep the main flow obvious
-
-Use as few layers as the problem needs. Keep essential decisions and context close; move secondary detail behind well-named units.
+- **Use as few layers as the problem needs.**
+- **Keep the essential decisions and their context close together.**
+- **Move secondary detail behind a well-named unit.**
 
 For service-style applications, a useful default is:
 
 ```text
-composition root → route → use case → focused subtask → connector
+composition root -> route -> use case -> focused subtask -> connector
 ```
 
-Do not impose this spine on libraries, framework-led applications, pipelines, or small scripts when their native structure is clearer.
+- **Do not impose that spine where the native structure is clearer.** Libraries, framework-led applications, pipelines, and small scripts each have one.
 
-### 4. Make effects and dependencies explicit
+## 4. Make effects and dependencies explicit
 
-Keep network, files, process state, time, randomness, and external services at visible boundaries. Pass stateful, replaceable, lifecycle-sensitive, or I/O dependencies explicitly.
+- **Keep these at visible boundaries.**
+  - Network and files.
+  - Process state.
+  - Time and randomness.
+  - External services.
+- **Pass a dependency explicitly when it is stateful, replaceable, lifecycle-sensitive, or does I/O.**
+- **Do not inject a stable pure utility or a constant just to satisfy a pattern.**
+- **Avoid globals and broad context objects**, which hide what a unit actually needs.
+- **A shared context is fine where it is the deliberate extension contract.**
 
-Do not inject stable pure utilities or constants merely to satisfy a pattern. Avoid globals and broad context objects that hide what a unit actually needs; shared contexts are acceptable when they are the deliberate extension contract.
+## 5. Keep mechanisms generic and dependencies deliberate
 
-### 5. Keep mechanisms generic and dependencies deliberate
+- **A generic engine must not absorb business values belonging to one caller.**
+- **Put the variability in a contract, configuration, data, or an extension point.**
+- **Adopt a maintained library where it removes meaningful complexity.**
+- **Avoid a dependency for trivial work**, and avoid a homemade substitute for a hard problem that is already solved.
+- **Contain a library where its vocabulary should not become the application's vocabulary.**
 
-Generic engines must not absorb caller-specific business values. Put variability in contracts, configuration, data, or extension points.
+## 6. Organize around the axis of change
 
-Adopt maintained libraries when they remove meaningful complexity; avoid dependencies for trivial work and homemade substitutes for hard, solved problems. Contain a library when its vocabulary should not become the application's vocabulary.
+- **Prefer feature or domain folders in product applications.** They reveal behaviour and keep related changes together.
+- **Prefer technical or capability-based organisation in libraries, infrastructure, and framework packages**, where that is the natural public boundary.
 
-### 6. Organize around the axis of change
+## 7. Keep units cohesive
 
-Prefer feature or domain folders in product applications because they reveal behavior and keep related changes together. Prefer technical or capability-based organization in libraries, infrastructure, and framework packages when that is the natural public boundary.
+- **A function, class, or module needs one coherent purpose**, not one tiny step.
+- **Extract a concern where it clarifies the main flow.** Parsing, validation, transitions, retries, formatting.
+- **Do not scatter one decision across helpers to make functions shorter.**
+- **Keep small deterministic support functions pure by default.**
+- **Isolate mini engines from business values and hidden I/O.** State machines, schedulers, retry controllers.
 
-### 7. Keep units cohesive
+## 8. Optimize file layout for re-entry
 
-A function, class, or module needs one coherent purpose, not one tiny step. Extract parsing, validation, transitions, retries, and formatting when doing so clarifies the main flow. Do not scatter a single decision across helpers just to make functions shorter.
+- **Follow the repository's local order.**
+- **Without a convention, put the public or main path before secondary detail**, and arrange helpers in the order they are needed.
+- **Treat a blank-line group as a prompt to inspect cohesion**, never as an automatic extraction rule.
 
-Keep small deterministic support functions pure by default. Isolate state machines, schedulers, retry controllers, and similar mini engines from business values and hidden I/O.
+## 9. Use stable domain language
 
-### 8. Optimize file layout for re-entry
+- **Reuse the domain's established vocabulary.**
+- **Choose familiar precise terms.**
+- **Name related operations symmetrically**, so a nearby name is predictable.
+- **Do not rename a valid framework or domain term to enforce stylistic uniformity.**
 
-Follow the repository's local order. Without a convention, place the public or main path before secondary detail and arrange helpers in the order they are needed. Treat blank-line groups as a prompt to inspect cohesion, not an automatic extraction rule.
+## 10. Communicate progressively
 
-### 9. Use stable domain language
+- **Present the useful answer or decision first**, then the supporting detail, then the risk.
+- **For full response-style guidance, use `skill://progressive-reading`.**
 
-Reuse the domain's established vocabulary. Choose familiar precise terms, and name related operations symmetrically so nearby names are predictable. Do not rename valid framework or domain terms merely to enforce stylistic uniformity.
+## Before applying any of this
 
-### 10. Communicate progressively
-
-Present the useful answer or decision first, then supporting detail and risk. For full response-style guidance, use `skill://progressive-reading`.
-
-## Check
-
-Before applying a principle, ask whether it fits the project's scale, framework, and existing contracts. A justified exception is better than ceremonial compliance; make the reason visible.
+- **Ask whether the principle fits this project's scale, framework, and existing contracts.**
+- **A justified exception beats ceremonial compliance.**
+- **Make the reason visible** so the next reader does not undo it.
