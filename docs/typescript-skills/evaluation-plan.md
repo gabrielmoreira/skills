@@ -39,7 +39,7 @@ Progressive-design scenarios also require the agent to pick the correct rung: st
 | Secret ARN appears in config and logs include config object | `typescript-security` | `typescript-configs` for pointer parsing |
 | Code adds OpenTelemetry/X-Ray imports inside a service module | `typescript-observability` | `typescript-composition` for bootstrap/lifecycle |
 
-| Agent describes a "mapper" or "transform" task without naming a skill | `typescript-boundaries` | — |
+| Agent describes a "mapper" or "transform" task without naming a skill | `typescript-boundaries` |, |
 | Agent describes adding a "translator" between provider responses and domain | `typescript-boundaries` | `typescript-coding-standards` for naming |
 ## Bundle Pressure Scenarios
 

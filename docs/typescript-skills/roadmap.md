@@ -4,7 +4,7 @@ This roadmap lists coverage gaps, improvements to existing rules, and alignment 
 
 ---
 
-## Phase 1 — High-priority gaps
+## Phase 1, High-priority gaps
 
 New bundles or rules covering areas with no canonical guidance today.
 
@@ -13,11 +13,11 @@ New bundles or rules covering areas with no canonical guidance today.
 Resolved: canonical guidance now lives in `typescript-error-handling`.
 
 Canonical rules:
-- `define-app-error-semantics-early.md` — define a canonical app-owned error model, structured attachments, factories, and enrichment helpers before the codebase fragments.
-- `throw-vs-result.md` — choose one propagation style per package while reusing the same canonical error data.
-- `error-classification.md` — classify by semantic family and explicit retry mode instead of technical origin alone.
-- `error-shape-and-metadata.md` — structure root semantic payload, normalized cause data, metadata, retry/http extensions, and runtime-cause guidance.
-- `error-boundary-contract.md` — project canonical internal errors into safe public boundary shapes with explicit redaction.
+- `define-app-error-semantics-early.md`, define a canonical app-owned error model, structured attachments, factories, and enrichment helpers before the codebase fragments.
+- `throw-vs-result.md`, choose one propagation style per package while reusing the same canonical error data.
+- `error-classification.md`, classify by semantic family and explicit retry mode instead of technical origin alone.
+- `error-shape-and-metadata.md`, structure root semantic payload, normalized cause data, metadata, retry/http extensions, and runtime-cause guidance.
+- `error-boundary-contract.md`, project canonical internal errors into safe public boundary shapes with explicit redaction.
 
 Pressure signals that motivated the bundle remain relevant:
 - `raw-input-to-internal-model` requires distinguishable failures but does not define app error semantics by itself.
@@ -28,11 +28,11 @@ Pressure signals that motivated the bundle remain relevant:
 Resolved: canonical guidance now lives in `typescript-async`.
 
 Canonical rules:
-- `parallel-and-dependencies.md` — sequential await only when values depend on previous results; independent work runs in parallel; unbounded/rate-limited work uses bounded concurrency.
-- `cancellation-and-abort.md` — pass `AbortSignal` as a cancellation capability and propagate it through fetches, waits, effects, and composed operations.
-- `cleanup-and-teardown.md` — release acquired resources deterministically with `finally`, dispose protocols, or `using`/`await using` when runtime support is verified.
-- `process-lifecycle.md` — handle SIGTERM/SIGINT with readiness flip, drain, ordered shutdown, hard deadline, and observability flush.
-- `retry-and-backoff.md` — retry only classified backoff-retryable failures; honor upstream hints; require idempotency/deduplication for retried mutating operations.
+- `parallel-and-dependencies.md`, sequential await only when values depend on previous results; independent work runs in parallel; unbounded/rate-limited work uses bounded concurrency.
+- `cancellation-and-abort.md`, pass `AbortSignal` as a cancellation capability and propagate it through fetches, waits, effects, and composed operations.
+- `cleanup-and-teardown.md`, release acquired resources deterministically with `finally`, dispose protocols, or `using`/`await using` when runtime support is verified.
+- `process-lifecycle.md`, handle SIGTERM/SIGINT with readiness flip, drain, ordered shutdown, hard deadline, and observability flush.
+- `retry-and-backoff.md`, retry only classified backoff-retryable failures; honor upstream hints; require idempotency/deduplication for retried mutating operations.
 
 Pressure signals that motivated the bundle remain relevant:
 - Observability covers trace/log signals but not concurrency control.
@@ -43,9 +43,9 @@ Status: no coverage.
 Suggested bundle: rules inside `typescript-coding-standards` or dedicated bundle `typescript-modules`.
 
 Candidate rules:
-- `package-surface.md` — barrel files, `index.ts` as explicit public API, re-export policy. Progressive: no barrel until external consumers exist, barrel earned when package boundary justifies it.
-- `circular-dependency-prevention.md` — dependency direction, layering, how to detect and break cycles.
-- `import-side-effects.md` — side-effect imports are boundaries; isolate them, do not hide inside pure modules.
+- `package-surface.md`, barrel files, `index.ts` as explicit public API, re-export policy. Progressive: no barrel until external consumers exist, barrel earned when package boundary justifies it.
+- `circular-dependency-prevention.md`, dependency direction, layering, how to detect and break cycles.
+- `import-side-effects.md`, side-effect imports are boundaries; isolate them, do not hide inside pure modules.
 
 Pressure signals:
 - Cutovers mentions re-export cleanup but not package structure.
@@ -57,9 +57,9 @@ Status: no coverage.
 Suggested bundle: `typescript-api-contracts`.
 
 Candidate rules:
-- `error-shape-contract.md` — REST status codes and error body shape, GraphQL error extensions, stable error codes. Cross-link with error-handling.
-- `pagination-and-versioning.md` — cursor vs offset, backward compatibility, versioning strategy. Progressive: no versioning until a real breaking change, cursor when dataset grows.
-- `idempotency.md` — idempotency keys, retry safety, at-least-once semantics.
+- `error-shape-contract.md`, REST status codes and error body shape, GraphQL error extensions, stable error codes. Cross-link with error-handling.
+- `pagination-and-versioning.md`, cursor vs offset, backward compatibility, versioning strategy. Progressive: no versioning until a real breaking change, cursor when dataset grows.
+- `idempotency.md`, idempotency keys, retry safety, at-least-once semantics.
 
 Pressure signals:
 - Boundaries covers provider shapes entering the code, but not shapes the code itself exposes.
@@ -71,9 +71,9 @@ Status: no coverage.
 Suggested bundle: `typescript-persistence` or rules inside `typescript-boundaries`.
 
 Candidate rules:
-- `repository-boundary.md` — repository as boundary between domain and persistence. ORM entities do not leak into business logic. Progressive: direct query functions, repository module when queries grow, explicit transaction boundary when multi-step.
-- `migration-safety.md` — backward-compatible migrations, deploy-order awareness, data migration vs schema migration.
-- `query-discipline.md` — N+1 detection, DataLoader/batching for GraphQL, query builder vs raw SQL boundaries.
+- `repository-boundary.md`, repository as boundary between domain and persistence. ORM entities do not leak into business logic. Progressive: direct query functions, repository module when queries grow, explicit transaction boundary when multi-step.
+- `migration-safety.md`, backward-compatible migrations, deploy-order awareness, data migration vs schema migration.
+- `query-discipline.md`, N+1 detection, DataLoader/batching for GraphQL, query builder vs raw SQL boundaries.
 
 Pressure signals:
 - Provider containment teaches not to leak SDK types but does not cover ORM entities specifically.
@@ -82,9 +82,9 @@ Pressure signals:
 ### 1.6 Type system design (status: resolved)
 
 Resolved: positive type-system guidance now lives in `typescript-coding-standards`:
-- `rules/branded-and-opaque-types.md` — nominal typing for domain primitives
-- `rules/exhaustive-narrowing.md` — discriminated unions + `assertNever`
-- `rules/generics-and-conditional-types.md` — generics with minimum constraints, mapped + conditional types, `infer`
+- `rules/branded-and-opaque-types.md`, nominal typing for domain primitives
+- `rules/exhaustive-narrowing.md`, discriminated unions + `assertNever`
+- `rules/generics-and-conditional-types.md`, generics with minimum constraints, mapped + conditional types, `infer`
 Future positive type-system gaps should be added only when they are not already covered by the resolved rules above.
 
 Pressure signals that motivated the bundle remain relevant:
@@ -93,47 +93,47 @@ Pressure signals that motivated the bundle remain relevant:
 
 ---
 
-## Phase 2 — Medium-priority gaps
+## Phase 2, Medium-priority gaps
 
 Smaller rules or areas that affect day-to-day agent work less frequently.
 
 ### 2.1 Build and package system
 
 Candidate rules:
-- `esm-cjs-interop.md` — `package.json` exports, module resolution, dual publish.
-- `tree-shaking-safety.md` — side-effect annotations, barrel file cost, dead code.
-- `tsconfig-discipline.md` — strict mode, path aliases, composite projects.
+- `esm-cjs-interop.md`, `package.json` exports, module resolution, dual publish.
+- `tree-shaking-safety.md`, side-effect annotations, barrel file cost, dead code.
+- `tsconfig-discipline.md`, strict mode, path aliases, composite projects.
 
 ### 2.2 Monorepo and workspace boundaries
 
 Candidate rules:
-- `workspace-dependency-direction.md` — shared package ownership, cross-package import hygiene, internal vs published packages.
-- `coordinated-cutovers.md` — multi-package migration, versioning of internal shared packages.
+- `workspace-dependency-direction.md`, shared package ownership, cross-package import hygiene, internal vs published packages.
+- `coordinated-cutovers.md`, multi-package migration, versioning of internal shared packages.
 
 ### 2.3 Performance, streaming, and memory
 
 Candidate rules:
-- `streaming-and-backpressure.md` — when to stream vs buffer, Node.js streams, backpressure.
-- `hot-path-discipline.md` — allocation awareness, lazy loading, batching.
+- `streaming-and-backpressure.md`, when to stream vs buffer, Node.js streams, backpressure.
+- `hot-path-discipline.md`, allocation awareness, lazy loading, batching.
 
 ### 2.4 Code documentation and comment policy
 
 Candidate rules:
-- `comment-policy.md` — TSDoc/JSDoc for public API, invariant/rationale comments (`// SAFETY:`, `// WHY:`), stale comment cleanup.
+- `comment-policy.md`, TSDoc/JSDoc for public API, invariant/rationale comments (`// SAFETY:`, `// WHY:`), stale comment cleanup.
 
 ### 2.5 Dependency hygiene and supply chain
 
 Candidate rules:
-- `dependency-policy.md` — version pinning, lockfile discipline, audit, peer dependency boundaries, minimize transitive risk.
+- `dependency-policy.md`, version pinning, lockfile discipline, audit, peer dependency boundaries, minimize transitive risk.
 
 ### 2.6 CI/CD and delivery contracts
 
 Candidate rules:
-- `pipeline-contracts.md` — build/test/lint gates, artifact versioning, rollout checks, schema/config change safety.
+- `pipeline-contracts.md`, build/test/lint gates, artifact versioning, rollout checks, schema/config change safety.
 
 ---
 
-## Phase 3 — Best practice alignment
+## Phase 3, Best practice alignment
 
 Areas where the current tree covers the topic but alignment with recognized practices can improve.
 
@@ -154,9 +154,9 @@ Specific gaps:
 
 Specific gaps:
 - **Input validation / injection**: `raw-input-to-internal-model` parses inputs but does not mention injection prevention (SQL, NoSQL, command, SSRF). Add rule in `typescript-security`:
-  - `input-safety.md` — SSRF prevention, parameterized queries, command injection, allowlist over denylist.
+  - `input-safety.md`, SSRF prevention, parameterized queries, command injection, allowlist over denylist.
 - **Authorization**: no rule covers authorization boundaries, RBAC/ABAC patterns, or permission checks. Candidate rule:
-  - `authorization-boundary.md` — authorization as a boundary concern, not hidden in business logic.
+  - `authorization-boundary.md`, authorization as a boundary concern, not hidden in business logic.
 
 ### 3.4 Testing Trophy alignment (alignment: adequate)
 
@@ -172,7 +172,7 @@ Specific gaps:
 
 ---
 
-## Phase 4 — Improvements to existing rules
+## Phase 4, Improvements to existing rules
 
 Redundancies, ambiguities, and simplification opportunities in what already exists.
 
@@ -243,7 +243,7 @@ Action: replace the legacy monolithic behavioral eval file with phased, per-bund
 Each roadmap item only advances to installed skills when:
 1. Rule written following `references/authoring-checklist.md`.
 2. Ownership updated in `references/ownership.md`.
-3. Router(s) updated — root and/or bundle SKILL.md.
+3. Router(s) updated, root and/or bundle SKILL.md.
 4. At least 2 eval scenarios added to `references/evaluation-plan.md` or the successor per-bundle scenario manifest.
 5. Evals pass the current promotion gate: every scenario scores at least 2/3, hard-gates score 3/3, and the with-skill mean is at least 2.5/3.
 6. Source coverage updated if rule came from external material.

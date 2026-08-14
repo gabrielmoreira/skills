@@ -82,9 +82,11 @@ all, which is a skill that silently never loads.
 
 ## What is not proved yet
 
-Activation and routing are declared, not measured. The scenarios exist and none
-of them have been executed against a model. `typescript-skills` has no scenarios
-at all, and its remaining gaps are listed in `docs/typescript-skills/`.
+**Activation and routing are declared, not measured.** Every skill carries
+scenarios, every rule has at least one, and none of them have been executed
+against a model. The structure is checked; the behaviour is not.
+
+**Coverage gaps that are known and open** are listed in `docs/typescript-skills/`.
 
 The current state is always what the suite prints, never what this file claims.
 
