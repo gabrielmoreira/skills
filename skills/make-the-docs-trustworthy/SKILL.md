@@ -1,6 +1,15 @@
 ---
 name: make-the-docs-trustworthy
-description: Correct, create, or remove written material so a later reader can rely on it: documentation that no longer matches the system, a fact about to be written down a second time, prose restating what a config file or command already prints, a records folder that has drifted, or a decision worth recording so it stops being re-argued. Prose no human has read counts as a hypothesis, not a source. Use when the user says "the docs are out of date", "readme still says the old flow", "where does this go", "write this down", or "should this be an ADR". Not for judging docs inside a change under review, explaining an existing document, or looking up a third party documentation.
+description: >-
+  Correct, create, or remove written material so a later reader can rely on it:
+  documentation that no longer matches the system, a fact about to be written down
+  a second time, prose restating what a config file or command already prints, a
+  records folder that has drifted, or a decision worth recording so it stops being
+  re-argued. Prose no human has read counts as a hypothesis, not a source. Use
+  when the user says "the docs are out of date", "readme still says the old flow",
+  "where does this go", "write this down", or "should this be an ADR". Not for
+  judging docs inside a change under review, explaining an existing document, or
+  looking up a third party documentation.
 ---
 
 # Make the Docs Trustworthy

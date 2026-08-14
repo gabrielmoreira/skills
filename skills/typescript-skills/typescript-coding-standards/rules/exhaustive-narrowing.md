@@ -3,7 +3,7 @@ id: typescript-coding-standards.exhaustive-narrowing
 owner: typescript-coding-standards
 canonical: true
 severity: default
-references: [Discriminated unions (TypeScript Handbook), `never` exhaustiveness check, sealed classes (Kotlin/Scala/Swift), pattern matching (Rust)]
+references: [Discriminated unions (TypeScript Handbook), "`never` exhaustiveness check", sealed classes (Kotlin/Scala/Swift), pattern matching (Rust)]
 ---
 
 # Exhaustive Narrowing

@@ -1,6 +1,15 @@
 ---
 name: evidence-backed-review
-description: Judge a change before it lands: a branch, a pull request, a diff against a base point, or uncommitted work. Says what was not inspected rather than calling it clean. Covers what was actually asked for, security and abuse paths, whether the tests prove what they claim, broken contracts and callers outside this repository, and stale docs. Every finding at file:line, and it never edits. Use when the user says "review this", "check this before I commit", "does this hold up", or hands over a branch before opening it. Not for explaining code, formatting-only passes, running the linter or tests, or responding to a review of your own work.
+description: >-
+  Judge a change before it lands: a branch, a pull request, a diff against a base
+  point, or uncommitted work. Says what was not inspected rather than calling it
+  clean. Covers what was actually asked for, security and abuse paths, whether the
+  tests prove what they claim, broken contracts and callers outside this
+  repository, and stale docs. Every finding at file:line, and it never edits. Use
+  when the user says "review this", "check this before I commit", "does this hold
+  up", or hands over a branch before opening it. Not for explaining code,
+  formatting-only passes, running the linter or tests, or responding to a review
+  of your own work.
 ---
 
 # Evidence-Backed Review

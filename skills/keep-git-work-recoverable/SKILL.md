@@ -1,6 +1,15 @@
 ---
 name: keep-git-work-recoverable
-description: Establish where you are and what is safe to do when a repository operation refuses or the state is unclear: a switch blocked by local changes, a branch already checked out in another workspace, a name that will not resolve, a detached head, refs that may be out of date, or old workspaces to clean up. Nothing uncommitted is discarded and nothing is removed without positive evidence it landed. Use when the user says "can not switch branches", "am I detached", "fetch is not picking up the new branch", or pastes a git refusal. Not for merge-conflict content, commit messages, judging a diff, or commands that are already working.
+description: >-
+  Establish where you are and what is safe to do when a repository operation
+  refuses or the state is unclear: a switch blocked by local changes, a branch
+  already checked out in another workspace, a name that will not resolve, a
+  detached head, refs that may be out of date, or old workspaces to clean up.
+  Nothing uncommitted is discarded and nothing is removed without positive
+  evidence it landed. Use when the user says "can not switch branches", "am I
+  detached", "fetch is not picking up the new branch", or pastes a git refusal.
+  Not for merge-conflict content, commit messages, judging a diff, or commands
+  that are already working.
 ---
 
 # Keep Git Work Recoverable

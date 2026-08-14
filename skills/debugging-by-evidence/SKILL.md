@@ -1,6 +1,15 @@
 ---
 name: debugging-by-evidence
-description: Find the cause of a failure and prove it before any fix. No hypothesis before a command that already reproduces the symptom. Covers building a signal that reproduces, ranking rival explanations with what would falsify each, probing without fixing, putting the regression test where the bug actually occurs, and reporting the causal chain at file:line. Use when the user says "this is broken", "why is this failing", "tests fail after my change", "it only breaks sometimes", or reports something throwing, hanging, or newly slow. Not for judging a change that already exists, or for an error whose message already names the file, line, and cause.
+description: >-
+  Find the cause of a failure and prove it before any fix. No hypothesis before a
+  command that already reproduces the symptom. Covers building a signal that
+  reproduces, ranking rival explanations with what would falsify each, probing
+  without fixing, putting the regression test where the bug actually occurs, and
+  reporting the causal chain at file:line. Use when the user says "this is
+  broken", "why is this failing", "tests fail after my change", "it only breaks
+  sometimes", or reports something throwing, hanging, or newly slow. Not for
+  judging a change that already exists, or for an error whose message already
+  names the file, line, and cause.
 ---
 
 # Debugging by Evidence
