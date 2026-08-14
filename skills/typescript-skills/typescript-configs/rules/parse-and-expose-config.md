@@ -8,43 +8,39 @@ references: [Parse don't validate, Twelve-Factor III (Config)]
 
 # Parse and Expose Config
 
-Decision: Parse unknown config once at the boundary into typed values. This rule owns raw-to-typed parsing, requiredness, schema choice, and parser failure shape. For module slices and AppConfig avoidance, read `skill://typescript-skills/typescript-configs/rules/contextual-config.md`.
+Decision: **Parse unknown config once, at the boundary, into typed values.** This rule owns raw-to-typed parsing, requiredness, schema choice, and parser failure shape. Who receives which slice belongs to `skill://typescript-skills/typescript-configs/rules/contextual-config.md`.
 
 Use when:
-- Code reads `process.env`, CLI args, raw config files, or untyped runtime values.
-- A config value is claimed with `!`, `as`, `Number(...)` without validation, or string truthiness.
-- Feature modules read env directly, or config object names mirror provider/env names instead of module/app meaning.
-- A few fields turn into many, or modes make fields conditionally required.
-- Framework-level config objects pass through feature modules unchanged, or legacy env reads are scattered across behavior modules.
-
-Complexity ladder:
-1. Manual parser in one config boundary.
-2. Framework entrypoint/parser when the framework owns config loading.
-3. Schema parser for typed shape and consistent failure reporting.
-4. Schema with discriminated unions when modes make fields conditionally required.
-5. Migration seam for scattered legacy env reads (see `migration.md`).
+- **Code reads unknown runtime values.** `process.env`, CLI args, raw config files.
+- **A value is claimed rather than checked.** A `!`, an `as`, a bare `Number(...)`, or string truthiness.
+- **Feature modules read env directly.**
+- **Config names mirror provider or env names** instead of module meaning.
+- **A few fields turn into many**, or a mode makes fields conditionally required.
+- **A framework config object passes through feature modules unchanged.**
 
 Do:
-- Collect raw values in one boundary module; never let `process.env` reach behavior modules.
-- Parse strings into booleans, numbers, URLs, enums, durations, arrays, and required fields deliberately.
-- Expose typed config named by module or capability context; pass it into feature modules and composition roots.
-- Respect framework entry conventions, then adapt to contextual configs before feature behavior.
-- Start simple, but do not leave raw unknown values or broad god configs in behavior code.
-- Split one config file into `stage.ts` / `featureFlags.ts` / `serviceConfig.ts` once it mixes env loading, typed config building, and feature decisions and grows past ~150-200 lines.
+- **Collect raw values in one boundary module.** Never let `process.env` reach behaviour code.
+- **Parse deliberately into real types.** Booleans, numbers, URLs, enums, durations, arrays, and required fields.
+- **Escalate only as the shape demands.**
+  - A manual parser in one boundary.
+  - The framework entrypoint, where the framework owns loading.
+  - A schema parser, for typed shape and consistent failure reporting.
+  - A discriminated union, once a mode makes fields conditionally required.
+- **Expose config named by module or capability**, and pass it inward.
+- **Split the config file once it mixes loading, building, and feature decisions** and has grown past roughly 150 lines.
 
 Avoid:
-- Reading `process.env` from behavior modules, or exporting raw env maps / `Record<string, string>` as application config.
-- Using non-null assertions or casts as validation.
-- Using `||` when `0`, `false`, or empty string are valid values; use `??` for missingness.
+- **Reading `process.env` from a behaviour module.**
+- **Exporting a raw env map as application config.**
+- **A non-null assertion or a cast standing in for validation.**
+- **`||` where `0`, `false`, or an empty string are valid.** Use `??` for missingness.
 
 Exceptions:
-- Tests for the config boundary may set env if they restore it.
-- Legacy migration may introduce a seam before full parsing; see `migration.md`.
-- Framework config providers may be the raw source boundary, but feature modules should not consume a broad framework config shape.
+- **A config-boundary test MAY set env**, provided it restores it.
+- **A migration MAY introduce a seam before full parsing.**
+- **A framework provider MAY be the raw source boundary**, as long as feature modules do not consume its broad shape.
 
-For parser purity (no I/O, no network, no secret fetch), read `skill://typescript-skills/typescript-configs/rules/validation-vs-verification.md`. For secret-loading timing, read `skill://typescript-skills/typescript-security/rules/secrets-lifecycle.md`.
-
-Example:
+Example (one instance, not the set):
 
 ```ts
 type EmailConfig = { apiKey: string; timeoutMs: number; retryCount: number };
@@ -58,18 +54,11 @@ export function parseEmailConfig(env: NodeJS.ProcessEnv): EmailConfig {
     retryCount: parsePositiveInt(env.EMAIL_RETRY_COUNT, 3, "EMAIL_RETRY_COUNT"),
   };
 }
-
-// Escalate to a schema when provider/mode switches make fields conditionally required:
-const EmailConfigSchema = z.discriminatedUnion("provider", [
-  z.object({ provider: z.literal("smtp"), smtpUrl: z.string().url() }),
-  z.object({ provider: z.literal("ses"), region: z.string().min(1) }),
-]);
 ```
 
-For root-level shape and module-slice projection, read `skill://typescript-skills/typescript-configs/rules/contextual-config.md`.
+- **Keep the parser pure**, per `skill://typescript-skills/typescript-configs/rules/validation-vs-verification.md`.
 
 Verify:
-- Search for `process.env` outside config boundary and tests.
-- Test parsed values, requiredness, defaults, and failure shape.
-- Check returned config type is what callers use, not raw env shape.
-- Check feature modules accept contextual config, not unrelated app-wide or framework-wide config.
+- **Search for `process.env` outside the config boundary and its tests.**
+- **Test parsed values, requiredness, defaults, and the failure shape.**
+- **Check callers use the returned type**, not the raw env shape.

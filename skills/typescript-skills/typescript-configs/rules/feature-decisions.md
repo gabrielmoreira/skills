@@ -8,39 +8,43 @@ references: [Feature Toggles (Fowler), Twelve-Factor III]
 
 # Feature Decisions
 
-Decision: Parse feature flags and modes once into named behavior decisions. Do not repeat raw env/string checks in application code.
+Decision: **Parse a flag or a mode once into a named behaviour decision**, and never repeat a raw string check in application code.
 
 Use when:
-- Code checks `process.env.FEATURE_X`, `USE_X`, stage names, or raw flag strings outside config.
-- A flag or mode changes which fields are required, or represents more than a boolean (false, true, allowlist, percentage, provider mode).
-- A stage/environment name is used as a proxy for behavior, or the same feature-flag comparison repeats across modules.
-- Operational rollout needs a stable behavior name independent from env variable spelling.
+- **Code checks a raw flag outside config.** An env variable, a stage name, a flag string.
+- **A flag changes which fields are required.**
+- **A flag means more than a boolean.** Off, on, an allowlist, a percentage, a provider mode.
+- **A stage name is standing in for behaviour.**
+- **The same flag comparison repeats across modules.**
+- **A rollout needs a stable behaviour name**, independent of how the variable is spelled.
 
 Do:
-- Parse the raw flag at the config boundary and expose a named decision (such as `isPayloadEncryptionEnabled` or `useBannerBoxApi`) that names the behavior, not the infrastructure variable.
-- Use a named union decision when a flag supports multiple shapes or scopes; validate the final config object when mode/stage/flag decisions change requiredness.
-- Pass named decisions inward as typed config; keep raw env flag strings only at the config boundary, and keep stage/environment names out of application logic unless stage itself is the behavior being tested.
+- **Parse the raw flag at the config boundary**, and expose a decision named for the behaviour.
+- **Name the behaviour, not the infrastructure variable.** `isPayloadEncryptionEnabled`, not `useNewFlagV2`.
+- **Use a named union where a flag has several shapes or scopes.**
+- **Validate the final config object** where a mode changes requiredness.
+- **Pass named decisions inward as typed config**, keeping raw strings at the boundary.
 
 Avoid:
-- Repeated `process.env.USE_X === "true"` checks in handlers, resolvers, datasources, or domain logic.
-- Feature names that describe infrastructure trivia instead of user/system behavior.
-- Stuffing cross-field mode logic into a raw env schema when the real contract is the final config object.
-- Using `stage === "prod"` as a substitute for a named decision like `isPublicIntrospectionEnabled`.
+- **A repeated raw env comparison** in handlers, resolvers, or domain logic.
+- **A feature name describing infrastructure trivia** rather than behaviour.
+- **Cross-field mode logic stuffed into a raw env schema**, when the real contract is the final config.
+- **Using a stage comparison as a substitute for a named decision.**
 
 Exceptions:
-- A tiny script may parse one boolean inline until it grows a config boundary.
-- Existing stage conventions may be preserved during migration, but new behavior should get a named decision.
-- Infrastructure/deployment code may select by stage when stage is actually the infrastructure contract.
+- **A tiny script MAY parse one boolean inline** until it grows a config boundary.
+- **An existing stage convention MAY be preserved during migration**, with new behaviour getting a named decision.
+- **Infrastructure code MAY select by stage** where stage genuinely is the contract.
 
-Example:
+Example (one instance, not the set):
 
 ```ts
-// Bad: raw flag leaks into behavior.
+// Bad: the raw flag leaks into behaviour.
 if (process.env.USE_BANNER_BOX_API === "true") {
   return bannerBoxClient.search(input);
 }
 
-// Good: parse once into a named union decision, consumed as typed config.
+// Good: parsed once into a named decision that carries every shape it supports.
 type BannerBoxDecision = false | true | { customerIds: string[] };
 
 export function readUseBannerBoxApi(value: string | undefined): BannerBoxDecision {
@@ -51,7 +55,7 @@ export function readUseBannerBoxApi(value: string | undefined): BannerBoxDecisio
 ```
 
 Verify:
-- Search for raw env flag checks outside config modules.
-- Check the decision name describes behavior, and multi-shape flags have explicit types and tests for every supported shape.
-- Check mode-specific requiredness is validated on the final config object.
-- Check application code consumes typed decisions, not raw strings.
+- **Search for raw flag checks outside config modules.**
+- **Check the decision name describes behaviour.**
+- **Check a multi-shape flag has an explicit type and a test per shape.**
+- **Check mode-specific requiredness is validated on the final config object.**

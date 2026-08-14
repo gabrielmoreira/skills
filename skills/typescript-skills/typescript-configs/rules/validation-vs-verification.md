@@ -8,33 +8,35 @@ references: [Parse don't validate, Fail Fast]
 
 # Validation vs Verification
 
-Decision: Config parsing validates shape and local policy. External dependency checks happen later in explicit verification or startup code.
+Decision: **Config parsing validates shape and local policy. Checking that an external dependency exists happens later, in explicitly named verification code.**
 
 Use when:
-- Config parsing opens files, calls network, checks cloud resources, pings databases, or fetches secrets.
-- A schema mixes raw value parsing with runtime availability checks, making startup failures hard to classify as parse errors vs dependency failures.
-- Runtime code reconstructs bucket names, table names, ARNs, URLs, secret names, or SSM paths from stage strings instead of receiving explicit resource pointers.
-- Verification is slow, flaky, permissioned, or retryable, and operators need dependency failures reported separately from invalid config.
+- **Parsing does I/O.** Opening files, calling the network, checking cloud resources, fetching secrets.
+- **A schema mixes value parsing with availability checks**, so a startup failure cannot be classified.
+- **Runtime code rebuilds resource identity from a stage string** instead of receiving an explicit pointer.
+- **Verification is slow, flaky, or permissioned**, and operators need it reported separately.
 
 Do:
-- Keep the parser pure: validate syntax, type, enum membership, requiredness, local invariants, and parseable URLs/paths; parse explicit resource pointers (bucket name, table name, ARN, URL, secret name, SSM path, certificate path) as typed config without verifying live resources.
-- Verify existence, permissions, connectivity, credentials, and remote resources after parsing, in explicitly named functions such as `verifyDependencies` or `verifyConfigResources`.
-- Keep invalid config distinct from unavailable dependency; health/readiness checks can report dependency availability separately from parse success.
+- **Keep the parser pure.** Syntax, type, enum membership, requiredness, local invariants, parseable URLs.
+- **Parse a resource pointer as typed config** without checking the live resource behind it. A bucket name, a table name, a URL, a secret name.
+- **Verify after parsing, in a named function.** Existence, permissions, connectivity, credentials.
+- **Keep invalid config distinct from an unavailable dependency.** They have different owners and different fixes.
 
 Avoid:
-- Network, filesystem, database, or cloud calls inside pure config parsing, including fetching secret values.
-- Retrying or fallback behavior inside schema parsing, or hiding dependency failures as config defaults.
-- Reconstructing important resource identifiers from stage strings in application code, unless an already-entrenched convention is only being maintained, not deepened.
+- **Network, filesystem, database, or cloud calls inside parsing**, including fetching a secret value.
+- **Retry or fallback behaviour inside schema parsing.**
+- **Hiding a dependency failure as a config default.**
+- **Rebuilding an important resource identifier from a stage string** in application code.
 
 Exceptions:
-- Synchronous local parsing of a literal string path/URL is validation; checking that the target exists is verification.
-- A tiny script may parse and verify in one file, but keep them as separate functions.
-- Entrenched resource-name conventions may be maintained during migration; do not deepen them in new paths.
+- **Parsing a literal path or URL is validation.** Checking that the target exists is verification.
+- **A tiny script MAY do both in one file**, as two separate functions.
+- **An entrenched naming convention MAY be maintained during migration**, without being deepened in new paths.
 
-Example:
+Example (one instance, not the set):
 
 ```ts
-// Bad: parser does I/O.
+// Bad: the parser does I/O, so a missing bucket looks like a config error.
 export async function parseConfig(env: NodeJS.ProcessEnv) {
   const bucket = env.REPORT_BUCKET;
   if (!bucket) throw new Error("REPORT_BUCKET is required");
@@ -42,9 +44,7 @@ export async function parseConfig(env: NodeJS.ProcessEnv) {
   return { bucket };
 }
 
-// Good: parse first, verify later, as separate named functions.
-type ReportStorageConfig = { bucket: string };
-
+// Good: parse first, verify later, as two named functions.
 export function parseReportStorageConfig(env: NodeJS.ProcessEnv): ReportStorageConfig {
   const bucket = env.REPORT_BUCKET;
   if (!bucket) throw new Error("REPORT_BUCKET is required");
@@ -56,10 +56,10 @@ export async function verifyReportStorage(config: ReportStorageConfig) {
 }
 ```
 
-When stage-conditional logic appears (`stage === "prod" ? ... : ...` selecting resources), stop — stage is not a behavior decision; read `skill://typescript-skills/typescript-configs/rules/feature-decisions.md`. Use one explicit env input per environment-specific resource instead, and parse a named decision once when behavior really differs.
+- **Where stage-conditional logic appears, stop.** Stage is not a behaviour decision. Read `skill://typescript-skills/typescript-configs/rules/feature-decisions.md` and parse a named decision instead.
 
 Verify:
-- Parser tests run without external resources.
-- Startup/integration tests cover dependency verification separately.
-- Error types or messages make parse failure distinct from verification failure.
-- Resource pointers are explicit inputs; runtime code is not reconstructing resource identity from stage unless explicitly preserving an existing convention.
+- **Check parser tests run with no external resources.**
+- **Check dependency verification is covered separately.**
+- **Check the error makes parse failure distinct from verification failure.**
+- **Check resource pointers are explicit inputs.**
