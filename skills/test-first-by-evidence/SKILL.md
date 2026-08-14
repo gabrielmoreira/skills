@@ -24,7 +24,8 @@ description: >-
 NO PRODUCTION CODE WITHOUT A TEST YOU WATCHED FAIL
 ```
 
-- **Code written before its test gets deleted.** Not kept as reference, not adapted while you write the test. Deleted.
+- **Code written before its test is unproven**, and gets re-derived from a red rather than wrapped in a test that passes immediately.
+- **Make it recoverable before removing anything.** Discarding work the human has not agreed to discard is not yours to do.
 - **A test that passes the first time you run it is not a test yet.** It describes what the code already does.
 - **A test that errors is not a red.** An error is a broken test; a failure is a working test with nothing to satisfy it.
 

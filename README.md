@@ -198,8 +198,9 @@ way to know.
   code already does.
 - **A test that errors is not a red either.** A broken test proves nothing about
   the code.
-- **Code written before its test gets deleted**, not kept as reference. Keeping it
-  means you will adapt it, which is testing after with extra steps.
+- **Code written before its test is unproven.** It gets re-derived from a red, and
+  only after the original is committed somewhere safe. Discarding work you did not
+  agree to discard is never the agent's call.
 - **It knows where the test goes.** The narrowest seam that can see the behaviour,
   chosen by what the test needs to run rather than by a label.
 - **It stops you writing tests that cannot fail.** Assert on results, not on

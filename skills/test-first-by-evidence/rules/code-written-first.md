@@ -2,54 +2,56 @@
 id: test-first-by-evidence.code-written-first
 owner: test-first-by-evidence
 canonical: true
-severity: hard-gate
-references: [Working Effectively with Legacy Code (Feathers), Characterization tests]
+severity: default
+references: [Characterization tests (Feathers), Test-Driven Development (Beck)]
 ---
 
 # Code Written First
 
-Decision: **Where implementation exists with no test behind it, delete it and start from red.** The normal path belongs to `rules/watch-it-fail.md`.
+Decision: **Implementation written before its test is unproven, so re-derive it from a red rather than writing a test that passes on the first run.** The normal path belongs to `rules/watch-it-fail.md`.
 
 Use when:
-- **Code was written before its test**, in this session.
-- **A test is being written to cover code that already works.**
-- **The argument is that deleting it wastes the time already spent.**
+- **Code was written before its test**, in this session or an earlier one.
+- **A test is being added behind code that already works.**
 - **You inherited untested code** and are about to change it.
 
 Do:
-- **Delete code you wrote ahead of its test, and implement it again from the red.**
-- **Delete means delete.** Not moved aside, not commented out, not kept in another window.
-- **Treat the sunk time as already spent either way.** The real choice is between rewriting with confidence and keeping code nothing has ever proved.
-- **Where the code is not yours, characterize before you change it.** Write a test that pins what it does today, watch it pass, and label it as a description rather than a decision.
-- **Say which of the two you are doing.** Deleting your own untested code, or pinning someone else's.
+- **Say plainly what a test written against finished code proves.** It passes immediately, so it has never shown it can fail, and it may assert what the code does rather than what it should do.
+- **Make the work recoverable before removing anything.** Commit it, or park it on a scratch branch. A deletion you can undo is a technique; one you cannot is a loss.
+- **Re-derive from the red once it is safe.** Write the test, watch it fail, implement again. The second implementation is usually different, because the test asked for behaviour rather than describing what you happened to write.
+- **Ask before discarding work that is more than trivial.** Minutes of code you still remember is yours to redo. Hours of it, with edge cases you found along the way, is the human's call.
+- **Pin inherited code instead.** Write a test that captures what it does today, watch it pass, and label it as a description rather than a decision.
+- **Say which of the two you are doing**, so a reader knows whether a test states intent or records history.
 
 Avoid:
-- **Keeping it as reference while you write the test.** You will adapt it, which is testing after.
-- **Writing the test and running it once against the finished code.** It passes immediately and proves nothing.
-- **Calling a characterization test a specification.** It records behaviour, including the wrong parts.
-- **Deleting inherited code you do not understand.** Pin it first.
+- **Deleting uncommitted work on your own authority.** That decision belongs to the human, per `keep-git-work-recoverable/rules/removing-work.md`.
+- **Keeping the original open beside you while writing the test.** You will adapt it, which is testing after with extra steps.
+- **Presenting a first-run pass as coverage.** Nothing was demonstrated.
+- **Calling a characterization test a specification.** It records behaviour, including the parts that are wrong.
+- **Rewriting inherited code to make it testable** before anything pins what it currently does.
 
 Exceptions:
-- **Inherited code is pinned, not deleted.** You did not choose it and nobody has proved what depends on it.
-- **A throwaway spike is deleted whole**, not converted, and its findings are reported instead.
+- **Inherited code is pinned, never discarded.** You did not choose it and nobody has established what depends on it.
+- **A throwaway spike is dropped whole**, with its findings reported instead of its code kept.
 - **Generated code is exempt**, since nothing about it was authored.
 
 Example (one instance, not the set):
 
 ```txt
-Wrote retryOperation, then noticed there is no test.
+Wrote a parser this afternoon. No test behind it.
 
-Wrong:  write the test, run it, watch it pass, call it done.
-        It passed because the code is already there. It has never
-        demonstrated that it can fail.
+Weakest:  write a test now, watch it pass, call it covered.
+          It passed because the code is already there.
 
-Right:  delete retryOperation. Write the test. Run it, watch it fail.
-        Write the implementation again from the red.
+Safe:     commit the parser first, so nothing is at risk.
+          Then write the test, watch it fail, implement again.
+          Compare the two. The difference is what the test found.
+
+Inherited instead: pin the behaviour, label it characterization,
+          and change the code only once the pin is green.
 ```
 
-- **The second implementation is usually different**, because the test asked for behaviour rather than describing what you happened to write.
-
 Verify:
-- **Check nothing in the working tree is a copy of the deleted code.**
-- **Check every test in this change has a red run behind it.**
-- **Where a test was written against existing code, check it is labelled as characterization**, with what it pins and when it is revisited.
+- **Check every test in this change has a red run behind it**, or is labelled as characterization.
+- **Check nothing was discarded that the human did not agree to discard.**
+- **Check a characterization test says what it pins and when it is revisited.**

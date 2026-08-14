@@ -30,7 +30,7 @@ Do:
    - A remote service.
    - A data feed.
 4. **Search for the trigger's other call sites.** List what else it feeds. Fix it once there, not once per consumer.
-5. **Delete the intermediate guards the old symptom motivated.** The trigger fix made them unreachable. They now hide the next wrong value.
+5. **Delete the intermediate guards the old symptom motivated, once a run shows them unreachable.** They now hide the next wrong value.
 
 Avoid:
 
