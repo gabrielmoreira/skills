@@ -24,6 +24,10 @@ const VERIFY = path.join(TOOLS, "verify-skill.mjs");
 const rulesOf = (dir) =>
   fs.readdirSync(path.join(dir, "rules")).filter((f) => f.endsWith(".md")).sort();
 
+/** A topic directory names its entry INDEX.md; a skill names it SKILL.md. */
+const entryOf = (dir) =>
+  path.join(dir, fs.existsSync(path.join(dir, "SKILL.md")) ? "SKILL.md" : "INDEX.md");
+
 const readRule = (dir, f) => fs.readFileSync(path.join(dir, "rules", f), "utf8");
 const writeRule = (dir, f, t) => fs.writeFileSync(path.join(dir, "rules", f), t, "utf8");
 
@@ -67,7 +71,8 @@ const MUTATIONS = [
     needsRules: true,
     what: "the index routes a rule that does not exist",
     apply(dir) {
-      const p = path.join(dir, "SKILL.md");
+      const p = entryOf(dir);
+      if (!fs.existsSync(p)) return false;
       const t = fs.readFileSync(p, "utf8");
       const rows = t.split("\n");
       const last = rows.map((l, i) => [l, i]).filter(([l]) => l.trimStart().startsWith("|")).pop();
@@ -241,8 +246,18 @@ const verify = (dir, collection) => {
   }
 };
 
+/** A multi-topic skill has no rules of its own; its topics carry them. */
+const expand = (dir) => {
+  if (fs.existsSync(path.join(dir, "rules"))) return [dir];
+  const topics = fs.readdirSync(dir, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && e.name !== "evals" && e.name !== "references")
+    .map((e) => path.join(dir, e.name))
+    .filter((p) => fs.existsSync(path.join(p, "rules")));
+  return topics.length ? topics : [dir];
+};
+
 let failures = 0;
-for (const target of process.argv.slice(2)) {
+for (const target of process.argv.slice(2).flatMap((t) => expand(path.resolve(t)))) {
   const src = path.resolve(target);
   const name = path.basename(src);
   const collection = path.dirname(src);

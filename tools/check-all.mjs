@@ -1,0 +1,145 @@
+#!/usr/bin/env node
+/**
+ * The whole suite, over every skill in the collection.
+ *
+ *   node tools/check-all.mjs              everything; exits non-zero on failure
+ *   node tools/check-all.mjs --report     the numbers only; always exits zero
+ *   node tools/check-all.mjs --fast       skip mutations, which are the slow part
+ *   node tools/check-all.mjs <skill> ...  limit to named skills
+ *
+ * What runs, and what each part is for:
+ *
+ *   verify      structural invariants, frontmatter validation included
+ *   mutate      proves each invariant fires for its own reason
+ *   shape       prose share, bullets, bold, clause density, longest paragraph
+ *   parity      the built-in frontmatter parser against a full YAML one
+ *
+ * `--report` is the continuous-improvement view: it prints totals that can be
+ * compared between runs, so a collection getting better is visible as a number
+ * rather than as a feeling.
+ */
+import { readdir, stat } from "node:fs/promises";
+import { dirname, join, resolve, basename } from "node:path";
+import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
+
+const TOOLS = dirname(fileURLToPath(import.meta.url));
+const ROOT = resolve(TOOLS, "..");
+const SKILLS = join(ROOT, "skills");
+
+const argv = process.argv.slice(2);
+const reportOnly = argv.includes("--report");
+const fast = argv.includes("--fast");
+const named = argv.filter((a) => !a.startsWith("--"));
+
+const exists = async (p) => { try { await stat(p); return true; } catch { return false; } };
+
+const run = (script, args) => {
+  try {
+    const out = execFileSync("node", [join(TOOLS, script), ...args], { encoding: "utf8", stdio: "pipe" });
+    return { ok: true, out };
+  } catch (e) {
+    return { ok: false, out: (e.stdout ?? "") + (e.stderr ?? "") };
+  }
+};
+
+/** Every directory under skills/ that carries an entry file. */
+async function discover() {
+  const out = [];
+  for (const e of await readdir(SKILLS, { withFileTypes: true })) {
+    if (!e.isDirectory()) continue;
+    if (named.length && !named.includes(e.name)) continue;
+    const dir = join(SKILLS, e.name);
+    if ((await exists(join(dir, "SKILL.md"))) || (await exists(join(dir, "INDEX.md")))) out.push(dir);
+  }
+  return out.sort();
+}
+
+const num = (s, re) => { const m = s.match(re); return m ? Number(m[1]) : 0; };
+/** Sum a capture across every match, since a multi-topic skill reports per topic. */
+const sum = (s, re, group = 1) =>
+  [...s.matchAll(new RegExp(re.source, re.flags.includes("g") ? re.flags : `${re.flags}g`))]
+    .reduce((a, m) => a + Number(m[group]), 0);
+
+const skills = await discover();
+if (!skills.length) {
+  console.error(`no skills found under ${SKILLS}`);
+  process.exit(2);
+}
+
+const rows = [];
+let failed = 0;
+
+for (const dir of skills) {
+  const name = basename(dir);
+
+  const v = run("verify-skill.mjs", [dir]);
+  const vPass = sum(v.out, /(\d+) passed, \d+ failed/);
+  const vFail = sum(v.out, /\d+ passed, (\d+) failed/);
+
+  const m = fast ? null : run("mutate-skill.mjs", [dir]);
+  const mCaught = m ? sum(m.out, /(\d+)\/\d+ caught/) : 0;
+  const mTotal = m ? sum(m.out, /\d+\/(\d+) caught/) : 0;
+  const mBad = m ? !m.ok : false;
+
+  const s = run("readability.mjs", ["--skill", dir]);
+  const sIn = num(s.out, /(\d+)\/\d+ files inside/);
+  const sAll = num(s.out, /\d+\/(\d+) files inside/);
+
+  const bad = vFail > 0 || mBad || sIn < sAll;
+  if (bad) failed++;
+
+  rows.push({ name, vPass, vFail, mCaught, mTotal, sIn, sAll, bad, detail: { v, m, s } });
+}
+
+const parity = run("check-yaml-parity.mjs", []);
+const paritySkipped = parity.out.startsWith("SKIPPED");
+if (!parity.ok) failed++;
+
+// ---------------------------------------------------------------- output
+
+const w = Math.max(12, ...rows.map((r) => r.name.length));
+console.log("");
+console.log(`${"skill".padEnd(w)}  invariants   mutations       shape`);
+console.log("-".repeat(w + 36));
+for (const r of rows) {
+  const inv = r.vFail ? `${r.vPass} ok ${r.vFail} FAIL` : `${r.vPass} ok`;
+  const mut = fast ? "skipped" : r.mTotal ? `${r.mCaught}/${r.mTotal}` : "none";
+  const shp = `${r.sIn}/${r.sAll}`;
+  console.log(`${r.name.padEnd(w)}  ${inv.padEnd(12)} ${mut.padEnd(11)} ${shp.padEnd(8)}${r.bad ? " <-" : ""}`);
+}
+
+const totals = rows.reduce((a, r) => ({
+  inv: a.inv + r.vPass,
+  invFail: a.invFail + r.vFail,
+  mut: a.mut + r.mCaught,
+  mutTotal: a.mutTotal + r.mTotal,
+  shape: a.shape + r.sIn,
+  files: a.files + r.sAll,
+}), { inv: 0, invFail: 0, mut: 0, mutTotal: 0, shape: 0, files: 0 });
+
+console.log("");
+console.log(`  skills            ${rows.length}`);
+console.log(`  invariants        ${totals.inv} passed, ${totals.invFail} failed`);
+console.log(`  mutations         ${fast ? "skipped" : `${totals.mut} of ${totals.mutTotal} caught`}`);
+console.log(`  shape             ${totals.shape} of ${totals.files} files inside every target`);
+console.log(`  frontmatter       ${paritySkipped ? "built-in check only, no full parser installed" : parity.out.trim().split("\n").pop()}`);
+
+if (!reportOnly) {
+  for (const r of rows.filter((x) => x.bad)) {
+    console.log(`\n=== ${r.name} ===`);
+    for (const line of r.detail.v.out.split("\n")) if (/^\s*(FAIL|\s{8})/.test(line)) console.log(line);
+    if (r.detail.m && !r.detail.m.ok) {
+      for (const line of r.detail.m.out.split("\n")) if (/PROBLEM|baseline/.test(line)) console.log(line);
+    }
+    if (r.sIn < r.sAll) {
+      for (const line of r.detail.s.out.split("\n")) if (line.includes("!")) console.log(`  shape  ${line.trim()}`);
+    }
+  }
+  if (!parity.ok && !paritySkipped) console.log(`\n=== frontmatter parity ===\n${parity.out}`);
+}
+
+console.log("");
+if (reportOnly) process.exit(0);
+console.log(failed === 0 ? "collection clean\n" : `${failed} with findings\n`);
+process.exit(failed === 0 ? 0 : 1);

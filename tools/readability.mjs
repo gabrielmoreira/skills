@@ -91,11 +91,24 @@ export function shape(raw) {
 const args = process.argv.slice(2);
 let files = [];
 if (args[0] === "--skill") {
+  // A multi-topic skill is its entry plus every topic, each of which is itself
+  // an entry plus rules. Measuring only the outer file would report one number
+  // for a skill carrying forty.
+  const unit = (dir) => {
+    const entry = fs.existsSync(path.join(dir, "SKILL.md")) ? "SKILL.md" : "INDEX.md";
+    const out = [path.join(dir, entry)];
+    const rules = path.join(dir, "rules");
+    if (fs.existsSync(rules)) out.push(...fs.readdirSync(rules).filter((f) => f.endsWith(".md")).map((f) => path.join(rules, f)));
+    return out;
+  };
   const dir = args[1];
-  const rules = path.join(dir, "rules");
-  const entry = fs.existsSync(path.join(dir, "SKILL.md")) ? "SKILL.md" : "INDEX.md";
-  files = [path.join(dir, entry)];
-  if (fs.existsSync(rules)) files.push(...fs.readdirSync(rules).map((f) => path.join(rules, f)));
+  files = unit(dir);
+  if (!fs.existsSync(path.join(dir, "rules"))) {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (!e.isDirectory() || e.name === "evals" || e.name === "references") continue;
+      if (fs.existsSync(path.join(dir, e.name, "rules"))) files.push(...unit(path.join(dir, e.name)));
+    }
+  }
 } else {
   files = args;
 }
