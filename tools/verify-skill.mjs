@@ -332,13 +332,25 @@ async function verify(skillDir) {
   if (!routed) na(`C-03 ${ENTRY} routes every rule exactly once`, NO_RULES);
   else { // C-03 index routes each rule once
     const bad = [], pointed = [];
+    // Only pointers that address this topic's own rules count. A row may also
+    // send the reader to a neighbouring topic, which is routing, not a local rule.
+    const soleTarget = new Map();
     for (const row of skillText.split("\n").filter((l) => l.trimStart().startsWith("|"))) {
-      for (const m of row.matchAll(/rules\/([a-z0-9-]+)\.md/g)) pointed.push(m[1]);
+      const here = [];
+      for (const m of row.matchAll(/(?:([a-z0-9-]+)\/)?rules\/([a-z0-9-]+)\.md/g)) {
+        if (!m[1] || m[1] === NAME) here.push(m[2]);
+      }
+      pointed.push(...here);
+      // A row naming exactly one destination is that rule's primary route. A row
+      // naming several, including a neighbouring topic index, is a deliberate
+      // "read both" rather than a redundant entry.
+      const destinations = (row.match(/(?:rules\/[a-z0-9-]+\.md|INDEX\.md)/g) ?? []).length;
+      if (here.length === 1 && destinations === 1) soleTarget.set(here[0], (soleTarget.get(here[0]) ?? 0) + 1);
     }
-    for (const n of pointed) if (!(await exists(join(rulesDir, `${n}.md`)))) bad.push(`${ENTRY} points at rules/${n}.md which does not exist`);
+    for (const n of new Set(pointed)) if (!(await exists(join(rulesDir, `${n}.md`)))) bad.push(`${ENTRY} points at rules/${n}.md which does not exist`);
     const counts = new Map();
     for (const n of pointed) counts.set(n, (counts.get(n) ?? 0) + 1);
-    for (const [n, c] of counts) if (c > 1) bad.push(`${ENTRY} routes rules/${n}.md ${c} times`);
+    for (const [n, c] of soleTarget) if (c > 1) bad.push(`${ENTRY} makes rules/${n}.md the sole target of ${c} separate rows`);
     for (const n of ruleNames) if (!counts.has(n)) bad.push(`rules/${n}.md has no row in ${ENTRY}`);
     bad.length ? fail(`C-03 ${ENTRY} routes every rule exactly once`, bad.join("\n        ")) : pass(`C-03 ${ENTRY} routes every rule exactly once`, `${counts.size} rows`);
   }
@@ -348,7 +360,17 @@ async function verify(skillDir) {
     let total = 0;
     for (const [label, text] of docs) {
       for (const t of localPointers(text)) { total++; if (!(await exists(join(rulesDir, `${t}.md`)))) bad.push(`${label} points at rules/${t}.md which does not exist`); }
-      for (const f of foreignPointers(text)) { total++; if (!(await exists(join(COLLECTION, f)))) bad.push(`${label} points at ${f}, which is not in this collection`); }
+      for (const f of foreignPointers(text)) {
+        total++;
+        // In a multi-topic skill a pointer led by one of its own topics is
+        // internal, not a reference to a neighbouring skill.
+        const internal = shape.kind === "multi" && shape.topics.includes(f.split("/")[0]);
+        const base = internal ? SKILL_DIR : COLLECTION;
+        if (await exists(join(base, f))) continue;
+        bad.push(internal
+          ? `${label} points at ${f}, which is not in this skill`
+          : `${label} points at ${f}, which is not in this collection`);
+      }
     }
     bad.length ? fail("C-04 every rule reference resolves", bad.join("\n        ")) : pass("C-04 every rule reference resolves", `${total} pointers`);
   }

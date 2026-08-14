@@ -17,7 +17,7 @@ Use when:
 
 Do:
 - Keep code direct and local when one caller can understand the behavior without hidden sequencing or repeated policy.
-- Escalate only as far as needed: local named helper for repeated unsafe detail → module-level function for one reusable policy → small object/factory when dependencies or lifecycle must be assembled → interface/class only for a real boundary, plugin seam, lifecycle, identity, or published API.
+- Stop at the first step of this ladder that works: local named helper for repeated unsafe detail → module-level function for one reusable policy → small object/factory when dependencies or lifecycle must be assembled → interface/class only for a real boundary, plugin seam, lifecycle, identity, or published API.
 - Extract the smallest abstraction that owns one policy or variation point, name it after the decision it protects, and keep the semantic center visible at the callsite or one jump away.
 
 Avoid:
