@@ -61,6 +61,12 @@ NO PRODUCTION CODE WITHOUT A TEST YOU WATCHED FAIL
 - **Where it goes against what makes it honest.** Placement decides which seam. Honesty decides what it asserts once it is there.
 - **Bug fix against watch it fail.** A bug fix starts from a red that reproduces a defect. The general case starts from a red that describes a wish.
 
+**Default stance.**
+
+- **Write the test, run it, and watch it fail before writing any implementation.**
+- **Then write the least code that passes**, and run the whole suite.
+- **Never claim a phase you have not observed.** A predicted failure is not a red.
+
 ## Say which phase you are in
 
 **Report it every time.** Each phase licenses only what it names.

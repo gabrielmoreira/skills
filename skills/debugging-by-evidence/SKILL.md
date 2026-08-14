@@ -60,6 +60,12 @@ description: >-
 - **Hypotheses against probing.** Ranking comes before any run. A probe tests exactly one ranked prediction.
 - **Source against seam.** Source decides where the fix belongs. Seam decides where its test belongs. Both wait for `EXPLAINED`.
 
+**Default stance.**
+
+- **Get a command to reproduce it before explaining anything.**
+- **Name the state you are in**, and take only what that state licenses.
+- **Never assert a cause no run has supported.** An untested explanation is labelled as one.
+
 ## Say which loop state you are in
 **Report it every time.** Each state licenses only what it names.
 

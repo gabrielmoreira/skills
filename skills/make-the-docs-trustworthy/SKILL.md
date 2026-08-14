@@ -60,6 +60,12 @@ description: >-
 - **Staleness against one-artifact.** Split by symptom. A sentence that is untrue, against a file whose job cannot be stated.
 - **Record against supersede.** Split by moment. The first time it is written, against every time after.
 
+**Default stance.**
+
+- **Search for the fact before writing it**, and edit it where it already lives.
+- **Write only what cannot be found by looking.** Anything a command already prints becomes a pointer.
+- **Say what you chose not to write**, so the omission is a decision rather than a gap.
+
 ## Prose nobody has read is not a source
 
 - **Do one of two things before citing a document as your reason.** Re-derive its claim from the system, or say plainly that you did not.

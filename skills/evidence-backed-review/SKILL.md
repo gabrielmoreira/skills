@@ -78,6 +78,12 @@ description: >-
 - **Standards against spec:** what was written down, against what was asked.
 - **Standards against external sources:** where the rule lives, never whether it counts.
 
+**Default stance.**
+
+- **Report, never edit.** The working tree ends the run exactly as it started.
+- **Every finding lands at `file:line`**, and every axis you did not inspect is named as not inspected.
+- **One status, decided by the weakest axis**, never by the count of clean ones.
+
 ## Verify before critiquing
 - **Confirm a finding before reporting it.** Reproduce it, or read the actual code path.
 - **Emit exactly one label:** `confirmed-with-code-path`, `plausible-mechanism`, `not-reproduced`, `insufficient-detail`.

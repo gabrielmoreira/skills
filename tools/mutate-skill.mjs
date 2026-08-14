@@ -207,6 +207,49 @@ const MUTATIONS = [
     },
   },
   {
+    check: "C-16",
+    needsRules: true,
+    what: "a multi-rule prompt is rewritten to spell out the row it should trigger",
+    apply(dir) {
+      const evals = path.join(dir, "evals");
+      if (!fs.existsSync(evals)) return NA;
+      const file = fs.readdirSync(evals).find((f) => /\.scenarios\.(mjs|ts)$/.test(f));
+      if (!file) return NA;
+      const p = path.join(evals, file);
+      const t = fs.readFileSync(p, "utf8");
+      // Find a scenario that claims two or more rules, and the first rule it claims.
+      const m = t.match(/expectedAll:\s*\[\s*"[^"]*rules\/([a-z0-9-]+)\.md"/);
+      if (!m) return NA;
+      const rule = m[1];
+      // Its gate row, which is exactly what an honest prompt must not repeat.
+      const entry = fs.readFileSync(entryOf(dir), "utf8");
+      const row = entry.split("\n").find((l) => l.trimStart().startsWith("|") && l.includes(`rules/${rule}.md`));
+      if (!row) return false;
+      const signal = (row.split("|")[1] ?? "").replace(/\*\*/g, "").trim();
+      // Put the row's own words into the prompt above that expectedAll.
+      const before = t.slice(0, m.index);
+      const at = before.lastIndexOf("prompt:");
+      if (at < 0) return false;
+      const end = t.indexOf("\n", t.indexOf('"', t.indexOf('"', at) + 1));
+      const head = t.slice(0, at);
+      const tail = t.slice(end);
+      fs.writeFileSync(p, `${head}prompt: ${JSON.stringify(signal)},${tail}`, "utf8");
+      return true;
+    },
+  },
+  {
+    check: "C-15",
+    what: "the gate loses the default stance under it",
+    apply(dir) {
+      const p = entryOf(dir);
+      if (!fs.existsSync(p)) return NA;
+      const t = fs.readFileSync(p, "utf8");
+      if (!/\*\*Default stance\.?\*\*/.test(t)) return NA;
+      fs.writeFileSync(p, t.replace(/\*\*Default stance\.?\*\*/, "Notes."), "utf8");
+      return true;
+    },
+  },
+  {
     check: "C-14",
     needsRules: true,
     what: "a scenario prompt names the rule it is meant to route to",

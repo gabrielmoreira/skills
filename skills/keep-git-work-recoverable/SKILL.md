@@ -87,6 +87,12 @@ against the state you cannot name.
 - **Stale refs against removing work.** The first downgrades a claim. The second is where an
   unverified claim does real damage.
 
+**Default stance.**
+
+- **Establish where you are before acting.** Every later observation depends on it.
+- **Read state freely, and change nothing that cannot be undone.**
+- **Hand every destructive move to the human**, with what it would cost named.
+
 ## Tag every claim that rests on the remote
 
 **Attach one to every statement about a branch or a remote or a merge.**

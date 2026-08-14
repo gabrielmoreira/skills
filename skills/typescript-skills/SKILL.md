@@ -36,6 +36,12 @@ description: >-
 | throw versus return, result types, retryability, error contract, swallowed fallback | `skill://typescript-skills/typescript-error-handling/INDEX.md` |
 | `Promise.all`, sequential awaits, bounded concurrency, `AbortSignal`, cleanup, retry and backoff, SIGTERM, graceful shutdown | `skill://typescript-skills/typescript-async/INDEX.md` |
 
+**Default stance.**
+
+- **Open one topic, not nine.** A second one only where the task crosses a real boundary.
+- **Follow the conventions the repository already has**, unless a rule protects a stronger invariant.
+- **Add structure only when the pressure is real**, and let the topic's own rules say when it is.
+
 ## Tie-breakers
 
 **Only a genuinely ambiguous case belongs here.** Everything else routes above.

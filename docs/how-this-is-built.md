@@ -87,7 +87,7 @@ Everything runs on bare node. No install, no toolchain, no dependency.
 | Script | What it proves |
 | --- | --- |
 | `check-all.mjs` | the whole suite, with totals that compare between runs |
-| `verify-skill.mjs` | 14 structural invariants, frontmatter validation included |
+| `verify-skill.mjs` | 16 structural invariants, frontmatter validation included |
 | `mutate-skill.mjs` | that each invariant fires for its own reason |
 | `readability.mjs` | prose share, bullets, bold, clause density, paragraph length |
 | `check-yaml-parity.mjs` | the built-in frontmatter parser against a full YAML one |

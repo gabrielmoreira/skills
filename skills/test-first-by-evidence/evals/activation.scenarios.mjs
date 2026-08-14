@@ -187,6 +187,61 @@ const scenarios = [
     tags: ["activation", "positive", "green"],
   },
 
+  // ------------------------------------------------------- multi-rule, vague
+  //
+  // `expectedAll` claims every listed rule must open, not just the first.
+  // The prompt is deliberately under-specified: it is a plain feature request
+  // that mentions no test, no phase, and no cycle. A prompt that spelled those
+  // out would prove nothing, because the routing would have been handed over.
+  {
+    id: "expired-token-handling",
+    bundle: "test-first-by-evidence",
+    rule: "watch-it-fail",
+    tier: "P0",
+    mode: "apply",
+    difficulty: "hard",
+    prompt: "login should cope with a token that already expired instead of blowing up",
+    expectedPrimary: "rules/watch-it-fail.md",
+    expectedAll: ["rules/watch-it-fail.md", "rules/smallest-green.md"],
+    expectedSecondary: ["rules/where-the-test-goes.md"],
+    activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: true, forbiddenRoutes: [] },
+    must: [
+      "Writes a failing test for the expired token before any implementation",
+      "Runs it and quotes the failure rather than predicting it",
+      "Then writes the least code that satisfies it, and runs the whole suite",
+      "Does not stop after the red: the green half is reached in the same pass",
+    ],
+    mustNot: [
+      "Implements the handling first and adds a test behind it",
+      "Reports only the failing test and treats the task as finished",
+      "Adds refresh, rotation, or retry behaviour that no test asked for",
+    ],
+    tags: ["activation", "positive", "multi-rule", "under-specified"],
+  },
+  {
+    id: "flaky-signup-suite-after-a-fix",
+    bundle: "test-first-by-evidence",
+    rule: "bug-fix-starts-red",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "hard",
+    prompt: "signup broke for a customer yesterday, we patched it this morning, anything else we should do",
+    expectedPrimary: "rules/bug-fix-starts-red.md",
+    expectedAll: ["rules/bug-fix-starts-red.md", "rules/code-written-first.md"],
+    expectedSecondary: [],
+    activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: true, forbiddenRoutes: [] },
+    must: [
+      "Notices the fix landed with no red behind it",
+      "Removes the fix, watches a test go red, and restores it, rather than adding a test that passes on its first run",
+      "Keeps the resulting test as the regression guard",
+    ],
+    mustNot: [
+      "Accepts a test written against the patched code as sufficient",
+      "Suggests discarding the patch without asking",
+    ],
+    tags: ["activation", "positive", "multi-rule", "under-specified"],
+  },
+
   // ---------------------------------------------------------------- negative
   {
     id: "review-the-tests-in-this-pr",

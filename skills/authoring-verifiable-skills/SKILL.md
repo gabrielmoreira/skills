@@ -46,6 +46,12 @@ description: >-
 - **Gate against one-rule.** The gate owns which file opens. One-rule owns what is inside it.
 - **Readable against order.** Readable owns the shape of a line. Order owns which line comes first.
 
+**Default stance.**
+
+- **Fix the activation surface first.** A skill that never fires does nothing, and that failure is silent.
+- **Route on what an agent can see in the work**, never on a concept it would need to already know.
+- **Never call a check good until you have watched it fail** for its own reason.
+
 ## What every skill is made of
 
 - **`SKILL.md`** carries the frontmatter, the core principle, and the gate.

@@ -540,6 +540,71 @@ async function verify(skillDir) {
     }
   }
 
+  { // C-16 a multi-rule scenario must not spell out the rows it should trigger
+    //
+    // A scenario declaring `expectedAll` claims several rules must all open.
+    // That claim is worthless if the prompt repeats the gate rows, because then
+    // the routing was handed over rather than inferred. The interesting case is
+    // an under-specified prompt that still produces the whole set, so this
+    // measures how much of each row's distinctive vocabulary leaked into it.
+    const STOP = new Set("about after against already always another anything because before being between could every first found their there these thing think those three under where which while would".split(" "));
+    const terms = (s) => new Set(
+      (s.toLowerCase().match(/[a-z][a-z-]{4,}/g) ?? []).filter((w) => !STOP.has(w)),
+    );
+
+    // Gate rows, mapped from the rule they point at to the signal beside it.
+    const rowFor = new Map();
+    for (const line of skillText.split("\n")) {
+      if (!line.trimStart().startsWith("|")) continue;
+      const m = line.match(/(?:([a-z0-9-]+)\/)?rules\/([a-z0-9-]+)\.md/);
+      if (!m) continue;
+      rowFor.set(m[2], line.split("|")[1] ?? "");
+    }
+
+    const evalsDir = join(SKILL_DIR, "evals");
+    const files = (await exists(evalsDir))
+      ? (await readdir(evalsDir)).filter((f) => /\.scenarios\.(mjs|ts)$/.test(f))
+      : [];
+    const bad = [];
+    let multi = 0;
+    for (const f of files) {
+      const mod = await import(pathToFileURL(join(evalsDir, f)).href);
+      for (const s of mod.default ?? []) {
+        const all = Array.isArray(s.expectedAll) ? s.expectedAll : [];
+        if (all.length < 2 || typeof s.prompt !== "string") continue;
+        multi++;
+        const p = terms(s.prompt);
+        for (const ref of all) {
+          const rule = ref.replace(/^.*rules\//, "").replace(/\.md$/, "");
+          if (!(await exists(join(rulesDir, `${rule}.md`)))) { bad.push(`${s.id}: expectedAll names rules/${rule}.md, which does not exist`); continue; }
+          const row = terms(rowFor.get(rule) ?? "");
+          // A row with one distinctive term cannot be measured. Two can: most
+          // rows land there, and skipping them made this check silent.
+          if (row.size < 2) continue;
+          const shared = [...row].filter((w) => p.has(w));
+          const ratio = shared.length / row.size;
+          if (ratio > 0.4) bad.push(`${s.id}: prompt repeats ${Math.round(ratio * 100)}% of the ${rule} row (${shared.join(", ")})`);
+        }
+      }
+    }
+    if (!files.length) na("C-16 multi-rule scenarios stay under-specified", "no scenario files to read");
+    else if (bad.length) fail("C-16 multi-rule scenarios stay under-specified", bad.join("\n        "));
+    else if (!multi) note("no multi-rule scenario yet", `${NAME} never claims that two rules must both open`);
+    else pass("C-16 multi-rule scenarios stay under-specified", `${multi} scenarios claim two or more rules`);
+  }
+
+  { // C-15 an entry carrying a gate states the default stance under it
+    // An agent that matches no row, or stops at the table, still has to act
+    // correctly on the common case. Without this the gate is routing and
+    // nothing else, and reading it teaches the reader nothing.
+    const hasGate = /^\|.*(rules\/[a-z0-9-]+\.md|INDEX\.md)/m.test(skillText);
+    if (!hasGate) na("C-15 a gate states its default stance", "this skill has no gate table");
+    // The label may carry a qualifier, such as "for a non-trivial application".
+    else if (!/\*\*Default stance[^*]{0,60}\*\*/.test(skillText)) {
+      fail("C-15 a gate states its default stance", `${ENTRY} routes rules but never says what to do in the common case`);
+    } else pass("C-15 a gate states its default stance", "stated under the table");
+  }
+
   { // C-14 a scenario prompt must not name what it is testing for
     const evalsDir = join(SKILL_DIR, "evals");
     const files = (await exists(evalsDir))
