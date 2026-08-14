@@ -171,9 +171,16 @@ npx skills@latest add gabrielmoreira/skills --skill evidence-backed-review
 npx skills@latest add gabrielmoreira/skills --list
 ```
 
+**Where it lands.** One copy under `~/.agents/skills/`, symlinked into every agent
+directory you have. Editing the skill once changes it everywhere. Add `--copy` if
+you would rather have independent real files.
+
+**A few agents will report a failure on `--global`**, Eve and PromptScript among
+them, because they only support project-level skills. The rest install fine and
+nothing is broken. Drop `--global` for those, or ignore the lines.
+
 Useful afterwards: `npx skills list` shows what you have, `npx skills update`
-pulls newer versions, and `npx skills remove` takes one out. Add `--copy` to the
-install if you would rather have real files than symlinks.
+pulls newer versions, and `npx skills remove` takes one out.
 
 ### Manual install
 
@@ -191,8 +198,9 @@ cp -r skills/skills/* ~/.claude/skills/
 mkdir -p .claude/skills && cp -r skills/skills/* .claude/skills/
 ```
 
-**Other agents follow the same shape.** Point them at wherever they look. Common
-locations are `~/.agents/skills/` and `~/.codex/skills/`.
+**Other agents follow the same shape.** Point them at wherever they look.
+`~/.agents/skills/` is the shared location many of them read, which is where the
+CLI puts the real files before symlinking them out.
 
 ## Then wire it up
 
