@@ -23,7 +23,10 @@ const OPTIONAL = ["Exceptions:", "Example"];  // "Example:" or "Example (one ins
 // rule owning two decisions, not to stop it being scannable.
 const RULE_MAX_WORDS = 450;
 const RULE_MAX_TOTAL = 600;
-const RULE_MIN_LINES = 30;
+// The floor now counts prose lines only, so it had to come down with the change.
+// A rule that teaches mostly through a worked example is not thin: its content
+// sits in the fence. C-02 already rejects a stub by requiring all five blocks.
+const RULE_MIN_LINES = 24;
 const RULE_MAX_LINES = 70;
 // The gate table now lives in SKILL.md. A routing table is routing, not
 // explanation, so the ceiling counts it separately from the prose that got
@@ -425,7 +428,11 @@ async function verify(skillDir) {
     const bad = [];
     for (const n of ruleNames) {
       const t = ruleText.get(n);
-      const lines = lineCount(t);
+      // Count the decision content, the same thing the prose budget counts.
+      // Frontmatter is metadata and a code example is already bounded by the
+      // read budget below, so charging both against the line cap penalises a
+      // rule twice for teaching with real code.
+      const lines = lineCount(stripFences(stripFrontmatter(t)));
       const words = stripFences(stripFrontmatter(t)).split(/\s+/).filter(Boolean).length;
       // Two budgets, because one number cannot serve both. Prose measures
       // decision density, an example adds no second decision, so it is excluded.
