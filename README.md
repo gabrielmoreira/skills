@@ -1,89 +1,103 @@
-# ADHD-friendly Agent Skills
+# Agent Skills That Restore Context
 
 This repository collects agent skills shaped around one idea:
 
-> Code should help the reader recover context.
+> The work should restore context for whoever comes next.
 
-Concentration, fatigue, interruption, and ADHD-like friction change how expensive code feels to read. Some code works, but still makes the reader hold too much in working memory. These skills push agents toward code that is easier to enter, scan, review, and resume.
+Concentration, fatigue, interruption, and ADHD-like friction change how
+expensive it is to pick something up again. Code that works can still make the
+reader hold too much in working memory. So can a change with no stated reason, a
+failure with no reproduction, a repository in a state nobody can name, and prose
+that stopped being true.
 
-## The core idea
+These skills push an agent toward work a tired human can return to without
+starting over.
 
-ADHD-friendly code tends to be:
+## The skills
 
-- interruption-friendly;
-- review-friendly;
-- maintenance-friendly.
+**Writing and judging code.**
 
-Not because it is simplified or shallow, but because it externalizes context the reader would otherwise have to remember.
+- **`maintainable-code`** keeps real complexity visible and removes the rest.
+  Clear business flow, explicit effects, no hidden dependencies, no
+  fragmentation for its own sake.
+- **`typescript-skills`** is the same idea in one ecosystem: a router over nine
+  topics, forty-one rules, each with a decision, conditions, and a check.
 
-The structure should answer orientation questions directly:
+**Judging and repairing work.**
+
+- **`evidence-backed-review`** judges a change before it lands, and says what it
+  did not inspect rather than calling it clean.
+- **`debugging-by-evidence`** refuses a hypothesis before a command that already
+  reproduces the symptom.
+- **`keep-git-work-recoverable`** establishes where you are before doing
+  anything a repository refuses, and never destroys what cannot be recovered.
+
+**Keeping the written parts true.**
+
+- **`make-the-docs-trustworthy`** corrects, places, or removes prose so a later
+  reader can act on it without checking it first.
+- **`progressive-reading`** applies the same reader-first idea to answers:
+  useful answer first, one idea per paragraph, nothing dense for its own sake.
+- **`authoring-verifiable-skills`** is how every skill here is written and
+  proved. Start there before adding one.
+
+## What makes a skill here
+
+Every skill is a router plus rules. The router is a gate: it maps something an
+agent can actually see to the one rule that decides. A rule is read when its
+row's signal is present, and an absent signal is reported as not-applicable
+rather than skipped in silence.
+
+Each rule states one decision in five blocks:
 
 ```txt
-Where is the main flow?
-What level am I reading?
-Which details can wait?
-What effects can happen?
-How do I resume after losing the thread?
+Decision:   what to choose, in one sentence
+Use when:   the conditions, as things you can see
+Do:         the choice
+Avoid:      the failure it prevents
+Verify:     a check that can come back negative
 ```
 
-When the code answers those questions, the reader does not need to reload the whole system in their head.
+## Checking the collection
 
-## The style
+Everything runs on bare node. No install, no toolchain, no dependency.
 
-The skills in this repo prefer:
+```bash
+node tools/check-all.mjs --report
+```
 
-- visible main flow;
-- progressive disclosure;
-- explicit effects;
-- fewer, stronger names;
-- feature-oriented folders;
-- top-down files;
-- practical examples over abstract rules;
-- readable depth over shallow brevity.
+| Script | What it proves |
+| --- | --- |
+| `check-all.mjs` | the whole suite, with totals that compare between runs |
+| `verify-skill.mjs` | structural invariants, frontmatter validation included |
+| `mutate-skill.mjs` | that each invariant fires for its own reason |
+| `readability.mjs` | prose share, bullets, bold, clause density, paragraph length |
+| `check-yaml-parity.mjs` | the built-in frontmatter parser against a full YAML one |
 
-The goal is not minimal code. The goal is to keep real complexity visible while removing avoidable cognitive load.
+Frontmatter validation is built in. A strict parser ships inside the checker and
+fails on anything it does not understand, because a parser that skips the line
+it cannot read reports a valid document while the key nobody validated quietly
+does nothing. That check found three skills whose descriptions did not parse at
+all, which is a skill that silently never loads.
 
-## Why this matters
+## What is not proved yet
 
-A maintainer is often tired, interrupted, or reading unfamiliar code under pressure.
+Activation and routing are declared, not measured. The scenarios exist and none
+of them have been executed against a model. `typescript-skills` has no scenarios
+at all, and its remaining gaps are listed in `docs/typescript-skills/`.
 
-Good code should reduce defensive reading. A function that looks pure should not secretly read the clock, mutate globals, write caches, or change caller-owned objects. A name should not create a new question unless it marks a real concept.
-
-## Main skills
-
-### `maintainable-code`
-
-The center of this repo.
-
-It captures the coding philosophy: clear business flow, explicit effects, no hidden dependencies, no unnecessary fragmentation, progressive disclosure, and vocabulary that earned its place.
-
-Use it when designing, implementing, reviewing, or refactoring code.
-
-### `progressive-reading`
-
-The companion communication skill.
-
-It applies the same reader-first idea to answers: useful answer first, details later, clear headings, short paragraphs, and no dense blocks.
-
-Use it when the explanation itself needs to be easier to start reading.
-
-### `typescript-skills`
-
-A TypeScript skill set organized as a router plus nine focused bundles (coding standards, boundaries, composition, configs, async, error handling, observability, security, testing).
-
-Each rule is compact and operational: Decision, Use when, Do, Avoid, one example, Verify. Structural invariants and behavioral evals live in `skills/typescript-skills/evals/`; authoring history lives in `docs/typescript-skills/`.
+The current state is always what the suite prints, never what this file claims.
 
 ## In short
 
 ```txt
 Show the main path first.
-Hide secondary detail by level.
 Make effects visible.
-Use fewer names.
-Prefer familiar structure.
-Let the code restore context for the reader.
+Say what you did not check.
+Prove the cause before the fix.
+Never destroy what cannot be recovered.
+Let the work restore context for whoever comes next.
 ```
 
-These skills are not trying to make agents write clever code.
-
-They are trying to make agents write code a human can return to without starting over.
+These skills are not trying to make an agent look clever. They are trying to
+make it leave behind something a human can pick up cold.
