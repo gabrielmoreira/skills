@@ -18,6 +18,7 @@ description: >-
 
 - **A second copy of a fact destroys that.** The two disagree in the end, and neither one announces itself as the stale one.
 - **The weight sits in *Search before you write*.** Everything after it is what to do once the search has answered.
+- **You opened this in the middle of something.** This is how to do that work, not a replacement for it. Name what you were doing before you start, and return to it when this is done.
 
 ## Search before you write
 

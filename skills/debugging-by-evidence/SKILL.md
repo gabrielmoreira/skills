@@ -18,6 +18,7 @@ description: >-
 
 - **Without a loop the cause stays hidden.** No amount of reading the code will find it.
 - **The weight sits in the loop and in the five states.** Every rule below either sharpens the loop or spends it.
+- **You opened this in the middle of something.** This is how to do that work, not a replacement for it. Name what you were doing before you start, and return to it when this is done.
 
 ## No hypothesis before a command that reproduces it
 - **The command MUST already have been run.** A command you wrote down and never ran is not a loop.

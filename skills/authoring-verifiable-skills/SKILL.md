@@ -19,6 +19,7 @@ description: >-
 
 - **Those two failures are silent.** Both look exactly like a skill that works.
 - **The weight sits in *the activation surface* and *the gate*.** Everything after them improves a skill that is already being reached.
+- **You opened this in the middle of something.** This is how to do that work, not a replacement for it. Name what you were doing before you start, and return to it when this is done.
 
 ## Read the rule whose signal is in front of you
 

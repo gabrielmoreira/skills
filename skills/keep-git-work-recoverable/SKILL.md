@@ -19,6 +19,7 @@ description: >-
 - **The refusal you are looking at is the tool protecting work that exists nowhere else.**
 - **The weight sits in *Tag every claim that rests on the remote*.** Every removal downstream
   rests on whether that tag was honest.
+- **You opened this in the middle of something.** This is how to do that work, not a replacement for it. Name what you were doing before you start, and return to it when this is done.
 
 ## A refused command is information
 
@@ -56,6 +57,21 @@ description: >-
 - **Whether the environment points the tools somewhere other than the current directory.**
 
 **Get any of these wrong and every later observation describes a different repository.**
+
+## Say which state you are in
+
+**Report it every time.** Each state licenses only what it names, and acting from a state you
+have not established is how work that existed nowhere else stops existing.
+
+| State | Means | Licenses |
+| --- | --- | --- |
+| `UNLOCATED` | the checkout, the head, or the remote is still unnamed | reading, and nothing that writes |
+| `LOCATED` | all four of the above are read from the repository | inspecting refs, proposing a move |
+| `SECURED` | everything uncommitted is recoverable without this command succeeding | the move that was refused |
+| `CONFIRMED` | the work is observed to exist somewhere it survives this checkout | removing the local copy |
+
+- **No state is reached by assumption.** Each one names a reading you performed.
+- **Removal is licensed by `CONFIRMED` alone.** The absence of a signal never reaches it.
 
 ## Which rules to read
 

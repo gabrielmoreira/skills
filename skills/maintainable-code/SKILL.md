@@ -14,6 +14,7 @@ description: >-
 
 - **The repository's proven conventions come first.** Apply these defaults only where they improve flow, boundaries, testing, or re-entry.
 - **The weight sits in *Investigate before changing* and *Make effects and dependencies explicit*.** The other eight are easier to apply, and easier to skip, once those two hold.
+- **You opened this in the middle of something.** This is how to do that work, not a replacement for it. Name what you were doing before you start, and return to it when this is done.
 
 ## Language
 

@@ -12,6 +12,7 @@ description: >-
 **Core principle.** The reader can start, scan, pause, resume, and understand, without losing what matters.
 
 - **Lower the effort to read, never the correctness or the depth.** Cutting substance is not simplifying. It is losing the answer.
+- **You opened this in the middle of something.** This is how to do that work, not a replacement for it. Name what you were doing before you start, and return to it when this is done.
 
 ## Order and structure
 

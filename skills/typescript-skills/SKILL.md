@@ -16,6 +16,7 @@ description: >-
 - **This is the only discoverable skill in the package.** Everything under it is reference material.
 - **An internal `INDEX.md` is not a skill.** Never invoke a topic name. Read the exact path shown for it.
 - **`skill://` is this package's reference notation**, not a protocol. Where a harness does not recognise it, translate it to the equivalent file path and read the target directly.
+- **You opened this in the middle of something.** This is how to do that work, not a replacement for it. Name what you were doing before you start, and return to it when this is done.
 
 ## Open one topic first
 
