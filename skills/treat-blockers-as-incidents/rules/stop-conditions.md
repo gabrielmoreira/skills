@@ -19,6 +19,8 @@ Use when:
 Do:
 - **Stop and hand back when the mechanism is still unknown after the budget you declared.**
 - **Stop when the next attempt would need a secret printed, transmitted, or pasted anywhere.**
+- **Stop when the replacement carries broader permissions than what it replaces.** A wider credential that works is a worse outcome than a narrow one that does not.
+- **Stop when one tool authenticates and its neighbour does not.** That asymmetry names the boundary, and guessing past it widens the blast radius.
 - **Stop when the owner of the tool, package, or channel is unknown.** Installing from an unidentified source is worse than the blocker.
 - **Stop when the fix would change shared configuration** that other people depend on.
 - **Stop when each attempt is producing a new unrelated error.** The ground is moving and more attempts will not settle it.

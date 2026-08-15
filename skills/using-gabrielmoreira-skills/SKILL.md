@@ -45,7 +45,15 @@ description: >-
 | judging work that already exists as commits | `evidence-backed-review` | `maintainable-code` |
 | designing work that does not exist yet | `maintainable-code` | `evidence-backed-review` |
 
-- **Where two still match, read both.** Under-reading costs the work; over-reading costs one file.
+- **Two or more matching is normal.** Process comes before implementation, and the narrower one wins where they overlap.
+- **Not finding a match is an answer.** Do not stretch one to fit.
+- **My own skills come first**, ahead of any borrowed collection, because they are being validated against real work.
+
+## Discussion is not authorization
+
+- **Analysis, alternatives, proposals and plans do not authorize anything.** Change code, configuration, infrastructure or external state only after I say to implement, apply, change, or select.
+- **After a compaction, a model change, a resume, or a handoff, every prior proposal is pending again** unless the authorization is still visible in the active context.
+- **Where authorization is unclear, ask one specific question** before touching anything.
 
 ## What I do not want
 
