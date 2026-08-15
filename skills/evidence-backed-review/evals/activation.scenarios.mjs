@@ -836,6 +836,86 @@ const scenarios = [
     ],
     tags: ["activation", "negative", "maintenance-not-review"],
   },
+  // Written from a real failure. The reviewer was asked for six things, ran the
+  // local tests and lints, reported on those, and never touched the pipeline.
+  // Nothing conflicted, so the "a direct instruction outranks anything here"
+  // line at the end of this file's router had nothing to say: the request was
+  // not contradicted, it was under-answered.
+  {
+    id: "whole-pr-including-the-pipeline",
+    bundle: "evidence-backed-review",
+    rule: "execution-and-pipeline",
+    tier: "P0",
+    mode: "router",
+    skillMode: "review",
+    difficulty: "mixed",
+    prompt:
+      "do a full review of this pr, the description, the changes, the code, the tests, the execution and the pipelines",
+    expectedPrimary: "rules/execution-and-pipeline.md",
+    expectedAll: ["rules/execution-and-pipeline.md", "rules/correctness-in-the-diff.md"],
+    activation: {
+      layer: "public-skill",
+      target: "evidence-backed-review",
+      shouldActivate: true,
+      forbiddenRoutes: [],
+    },
+    must: [
+      "Answers all six named things by name, each inspected or each reported as not inspected",
+      "Names the pipeline for this range and its state, or names the Gap and what blocked reaching it",
+      "Separates what it observed from what was relayed to it",
+      "Does not offer local test and lint output as proof the change works",
+    ],
+    mustNot: [
+      "Closes the review on local test and lint results alone",
+      "Reports completeness against its own rule table rather than the six things asked for",
+      "Counts a green check it never opened",
+    ],
+    tags: ["activation", "positive", "pipeline", "scope-from-request"],
+  },
+  {
+    id: "green-checks-nobody-opened",
+    bundle: "evidence-backed-review",
+    rule: "execution-and-pipeline",
+    tier: "P1",
+    mode: "apply",
+    skillMode: "review",
+    difficulty: "mixed",
+    prompt: "ci is green on this branch so it should be fine to merge right",
+    expectedPrimary: "rules/execution-and-pipeline.md",
+    activation: {
+      layer: "public-skill",
+      target: "evidence-backed-review",
+      shouldActivate: true,
+      forbiddenRoutes: [],
+    },
+    must: [
+      "Treats a green result it did not open as relayed rather than observed",
+      "Checks whether the pipeline runs what this change now needs",
+      "Says a passing suite is not a judgment that the change was worth making",
+    ],
+    mustNot: ["Accepts the green as the review", "Treats a skipped or cancelled job as a pass"],
+    tags: ["activation", "positive", "pipeline", "relayed-evidence"],
+  },
+  {
+    id: "make-the-pipeline-faster",
+    bundle: "evidence-backed-review",
+    rule: "activation-boundary",
+    tier: "P1",
+    mode: "exception",
+    skillMode: "none",
+    difficulty: "hard",
+    prompt: "our pipeline run takes eleven minutes, can we get it under five",
+    nearMiss:
+      "Names the pipeline, which this skill now has a rule for; but there is no range and no change to judge, and making a workflow faster is ordinary work on the workflow rather than a review of anything.",
+    activation: {
+      layer: "public-skill",
+      target: "evidence-backed-review",
+      shouldActivate: false,
+    },
+    must: ["Treats it as work on the workflow itself"],
+    mustNot: ["Enters a review mode", "Reports axes or a status for a range nobody named"],
+    tags: ["activation", "negative", "pipeline-work-not-review"],
+  },
 ];
 
 export default scenarios;

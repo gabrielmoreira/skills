@@ -18,10 +18,19 @@ description: >-
 
 - **A review that inspected nothing reads like a review that found nothing.** Only the first line of the report separates them.
 - **The weight sits in *Verify before critiquing* and *Finding eligibility*.** Everything else routes to them, or reports what they produced.
+- **You opened this in the middle of something.** This is how to do that work, not a replacement for it.
+
+## The request sets the floor
+
+**Write the request down as the task list before matching a single row.** One item per thing it named, in its words. Rows from the table below are added to that list, never substituted for it.
+
+- **A list built from this gate answers this gate.** Six things were asked for and the table has ten rows, so a list built from rows is complete and wrong.
+- **Everything the request named is owed back by name**, each one found or each one reported as not inspected. An axis it named with no rule here is still owed.
+- **Read the list again before the report.** By then the range, the diff and ten rules have been in front of you, and those six things have not.
+- **Cheap evidence crowds out what matters.** A local run is one command away and a pipeline is not, so the near one gets cited and the far one dropped. Distance is not a reason, and a green suite says it ran, not that the change was worth making.
 
 ## Read-only guard
-- **You MUST NOT mutate anything:** not the working tree, the index, the current commit, or a branch.
-- **Inspect another revision in a separate worktree.**
+- **You MUST NOT mutate anything:** not the working tree, the index, the current commit, or a branch. Inspect another revision in a separate worktree.
 - **Send nothing.** No comment on the change request, no work item, no notification, no commit.
 - **Report a finding, never apply it.** This holds when the fix is one character.
 
@@ -41,7 +50,7 @@ description: >-
 - **In `pre-commit` the range is the staged content against the current commit.**
 - **Name unstaged edits separately.** Never judge them as if they were landing.
 - **Confirm the point resolves and the range is non-empty** before any further work.
-- **Read the declared build and test result for this range first.**
+- **Read the declared build and test result for this range first**, then open `rules/execution-and-pipeline.md` for what to do with it.
   - A failure is the review's first finding, labelled relayed. It was reported to you, not observed by you.
   - A check nobody ran is a Gap.
 
@@ -61,6 +70,7 @@ description: >-
 | the request is **"before I commit"** / "check this first"; nothing pushed, tree dirty or staged | `rules/pre-commit-self-review.md` |
 | **authentication**, a permission or role check, user input reaching a query, path, command or template, a file upload, an ownership check, a secret-shaped literal, or a new outbound call | `rules/security-and-abuse-paths.md` |
 | **any hunk** changing a condition, a bound, an assignment, or an error path; lines deleted or replaced | `rules/correctness-in-the-diff.md` |
+| the range is **pushed or open as a change request**, the repository declares a **workflow, build, or deploy**, or the request named **execution, a run, or a pipeline** | `rules/execution-and-pipeline.md` |
 | the diff adds a **capability nobody asked for** in the request, issue, or spec | `rules/motivation-and-necessity.md` |
 | one diff both **restructures and adds behaviour**; unrelated files, or ~1000 changed lines in one change | `rules/scope-and-slicing.md` |
 | new code **deviating from a written convention**, in this repository or one the organisation documents elsewhere | `rules/standards-conformance.md` |
@@ -87,11 +97,7 @@ description: >-
 ## Verify before critiquing
 - **Confirm a finding before reporting it.** Reproduce it, or read the actual code path.
 - **Emit exactly one label:** `confirmed-with-code-path`, `plausible-mechanism`, `not-reproduced`, `insufficient-detail`.
-- **`plausible-mechanism` is a defect you can name a path to but cannot run here.**
-  - A race.
-  - A nil on a rare but reachable branch.
-  - Zero treated as absent.
-  - An off-by-one on a bound nothing excludes.
+- **`plausible-mechanism` is a defect you can name a path to but cannot run here:** a race, a nil on a rare but reachable branch, zero treated as absent, an off-by-one on a bound nothing excludes.
 - **Report it with the state that would produce it.** Never refute it for failing to reproduce; that is what the label is for.
 - **`not-reproduced` and `insufficient-detail` are Gaps or Questions.**
 

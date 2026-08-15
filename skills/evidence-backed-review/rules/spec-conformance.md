@@ -11,7 +11,8 @@ references: [acceptance criteria review, plan-alignment review]
 Decision: Judge the change against the requirement that caused it. Find that requirement.
 Never infer it. A change can be conventional and still not be the thing that was asked for.
 Owns the ask. Why the ask exists → `rules/motivation-and-necessity.md`. Whether the code
-follows written convention → `rules/standards-conformance.md`.
+follows written convention → `rules/standards-conformance.md`. Whether anything ran it
+where it will actually run → `rules/execution-and-pipeline.md`.
 
 Use when:
 
