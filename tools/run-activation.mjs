@@ -155,6 +155,30 @@ export function targetOf(args) {
   return { path: "", cmd: "" };
 }
 
+/**
+ * Whether this run measured the model it claimed to measure.
+ *
+ * A quota that runs out mid-suite does not stop the agent: it retries, falls
+ * back to another model, and keeps answering. The events look ordinary and the
+ * results look like data. Ninety-six runs were recorded that way, every one on
+ * a fallback chain, before the empty traces gave it away.
+ *
+ * Any degradation aborts the run rather than writing a number nobody can trust.
+ */
+export function degraded(stream) {
+  for (const line of stream.split("\n")) {
+    let j;
+    try {
+      j = JSON.parse(line);
+    } catch {
+      continue;
+    }
+    if (j.type === "retry_fallback_applied") return `fell back from ${j.from} to ${j.to}`;
+    if (j.type === "auto_retry_start") return String(j.errorMessage ?? "retried").split("\n")[0].slice(0, 120);
+  }
+  return null;
+}
+
 /** A command that runs tests, as opposed to one that lists a directory. */
 export const isTestRun = (cmd) =>
   /\b(npm|pnpm|yarn|bun)\s+(run\s+)?test\b|\bnode\s+--test\b|\b(vitest|jest|pytest|mocha|ava|go\s+test|cargo\s+test|rspec|phpunit)\b/.test(cmd);
@@ -573,6 +597,8 @@ async function main() {
   // Self-checks. Each names a way a run can be worth less than it looks, and
   // each is counted rather than assumed away.
   const flags = { delegated: 0, sawHarness: 0, foreign: new Set() };
+  // Set by the first degraded call. Everything after it stops immediately.
+  let stop = null;
   // The whole collection, not the selected subset: a sibling skill opening is
   // normal and interesting, a skill from somewhere else means a source is still
   // loading that the overlay was supposed to have silenced.
@@ -581,6 +607,7 @@ async function main() {
   );
 
   const results = await pool(selected, args.concurrency, async (c) => {
+    if (stop) return { skill: c.skill, id: c.id, kind: c.kind, arm: c.arm, passes: 0, samples: 0, verdict: "SKIPPED" };
     let passes = 0;
     const answers = [];
     const opened = [];
@@ -600,6 +627,11 @@ async function main() {
         continue;
       } finally {
         if (workspace) await rm(workspace, { recursive: true, force: true }).catch(() => {});
+      }
+      const bad = backend.agentic ? degraded(answer) : null;
+      if (bad) {
+        stop ??= bad;
+        break;
       }
       if (c.kind === "far-miss") {
         const seen = observe(answer, paths?.conf);
@@ -632,6 +664,15 @@ async function main() {
     }
     return { skill: c.skill, id: c.id, kind: c.kind, arm: c.arm, opened: [...new Set(opened)], negative: c.scenario.activation?.shouldActivate === false, passes, samples: args.samples, verdict: verdictOf(passes, args.samples), seq, answers: args.verbose ? answers : undefined };
   });
+
+  if (stop) {
+    console.log(`
+ABORTED  ${stop}`);
+    console.log("The provider stopped serving the model this run asked for, so the");
+    console.log("remaining calls were skipped and nothing was written. Check quota,");
+    console.log("then re-run once the intended model is being served again.");
+    process.exit(3);
+  }
 
   report(results, args, flags);
   const record = { ranAt: new Date().toISOString(), model: args.model, backend: backend.name, clean: backend.clean, rules: args.rules, samples: args.samples, thinking: args.thinking, selfChecks: { delegated: flags.delegated, sawHarness: flags.sawHarness, foreign: [...flags.foreign] }, results: results.map(({ answers, ...r }) => r) };
