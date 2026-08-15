@@ -304,6 +304,18 @@ async function freshWorkspace(base, skillDir, id) {
   const fixture = join(skillDir, "evals", "fixtures", id);
   if (await stat(fixture).then(() => true, () => false)) {
     await cp(fixture, dir, { recursive: true, force: true });
+    // Some scenarios need history rather than files: a review needs a range,
+    // and a range needs commits. A fixture may ship setup.sh to build one, and
+    // it runs once in the throwaway workspace before the agent sees it.
+    const setup = join(dir, "setup.sh");
+    if (await stat(setup).then(() => true, () => false)) {
+      await new Promise((ok) => {
+        const c = spawn("bash", ["setup.sh"], { cwd: dir, stdio: "ignore" });
+        c.on("close", ok);
+        c.on("error", ok);
+      });
+      await rm(setup, { force: true }).catch(() => {});
+    }
   }
   return dir;
 }
