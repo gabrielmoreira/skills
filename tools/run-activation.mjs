@@ -134,6 +134,31 @@ const OVERLAYS = {
  */
 const DELEGATES = /^(task|agent|subagent|dispatch|spawn|delegate)/i;
 
+/**
+ * Not every tool names its target the same way, and assuming they do loses the
+ * ones that matter most. read, write, glob and grep carry `path`. edit carries
+ * `input`, whose first line is a patch header naming the file. bash carries
+ * `command` and no path at all.
+ *
+ * Reading only `path` silently dropped every edit target and every command,
+ * which made "the test came before the implementation" and "a test ran after
+ * it" unmeasurable while still reporting a number.
+ */
+export function targetOf(args) {
+  if (!args) return { path: "", cmd: "" };
+  if (typeof args.command === "string") return { path: "", cmd: args.command };
+  if (typeof args.path === "string") return { path: args.path, cmd: "" };
+  if (typeof args.input === "string") {
+    const m = args.input.match(/^\s*\[([^\]#]+?)(?:#[^\]]*)?\]/);
+    if (m) return { path: m[1], cmd: "" };
+  }
+  return { path: "", cmd: "" };
+}
+
+/** A command that runs tests, as opposed to one that lists a directory. */
+export const isTestRun = (cmd) =>
+  /\b(npm|pnpm|yarn|bun)\s+(run\s+)?test\b|\bnode\s+--test\b|\b(vitest|jest|pytest|mocha|ava|go\s+test|cargo\s+test|rspec|phpunit)\b/.test(cmd);
+
 export function observe(stream, harnessDir = null) {
   const skills = new Set();
   const rules = new Set();
@@ -148,8 +173,8 @@ export function observe(stream, harnessDir = null) {
       continue;
     }
     if (j.type !== "tool_execution_start") continue;
-    const path = String(j.args?.path ?? "");
-    seq.push({ tool: j.toolName, path });
+    const { path, cmd } = targetOf(j.args);
+    seq.push({ tool: j.toolName, path, cmd });
     if (DELEGATES.test(j.toolName ?? "")) delegated = true;
     if (harnessDir && path.replace(/\\/g, "/").includes(harnessDir.replace(/\\/g, "/"))) sawHarness = true;
     const m = path.match(/^skill:\/\/([a-z0-9-]+)(?:\/(.+))?$/);
@@ -686,7 +711,7 @@ async function checkAgainstBaseline(results) {
   return true;
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((e) => {
     console.error(e.message);
     process.exit(2);

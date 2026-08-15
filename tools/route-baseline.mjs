@@ -179,4 +179,4 @@ async function main() {
   console.log("A solved scenario is a giveaway. It measures shared vocabulary, not the gate.");
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) await main();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await main();

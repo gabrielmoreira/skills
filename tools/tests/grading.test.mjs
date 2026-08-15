@@ -8,7 +8,7 @@
  * made a file look better without being better. These fixtures are the messy
  * answers a real model gives, not the tidy one the parser was written against.
  */
-import { pathsIn, saidYes, gradeRouting } from "../run-activation.mjs";
+import { pathsIn, saidYes, gradeRouting, targetOf, isTestRun } from "../run-activation.mjs";
 import { gateRows, naiveRoute, terms } from "../route-baseline.mjs";
 
 let failed = 0;
@@ -66,6 +66,23 @@ is("a partial directory is not a match", gradeRouting("async/INDEX.md", deep).pa
 const forbidden = { expectedPrimary: "rules/a.md", activation: { forbiddenRoutes: ["rules/z.md"] } };
 is("right rule, forbidden one too, still a failure", gradeRouting("rules/a.md\nrules/z.md", forbidden).pass, false);
 is("forbidden reported by name", gradeRouting("rules/a.md\nrules/z.md", forbidden).violated, ["rules/z.md"]);
+
+console.log("targetOf");
+// Every tool names its target differently. Reading only args.path dropped each
+// edit target and each command, and three outcome measures silently collapsed
+// into one while still reporting numbers.
+is("read and write carry path", targetOf({ path: "src/a.js", content: "x" }), { path: "src/a.js", cmd: "" });
+is("edit carries a patch header", targetOf({ input: "[src/a.js#D61B]\nPUT 1*:\n+x" }), { path: "src/a.js", cmd: "" });
+is("edit without a hash", targetOf({ input: "[src/a.js]\nPUT 1*:" }), { path: "src/a.js", cmd: "" });
+is("bash carries a command", targetOf({ command: "npm test", cwd: "/w" }), { path: "", cmd: "npm test" });
+is("nothing recognisable", targetOf({ pattern: "x" }), { path: "", cmd: "" });
+
+console.log("isTestRun");
+is("npm test", isTestRun("npm test"), true);
+is("node --test", isTestRun("node --test src/"), true);
+is("pytest", isTestRun("pytest -q"), true);
+is("listing is not a test run", isTestRun("ls -la"), false);
+is("a word containing test is not a test run", isTestRun("cat src/latest.js"), false);
 
 console.log("naiveRoute");
 const rows = gateRows([

@@ -1,0 +1,6 @@
+POST /signup 201 4ms
+  user created: { email: '', name: 'ana' }
+POST /signup 500 2ms
+  Error: already registered
+      at handleSignup (src/signup-handler.js:6:33)
+      at route (src/server.js:22:12)

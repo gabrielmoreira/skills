@@ -150,6 +150,45 @@ instructions rather than the skill. Proved rather than assumed: with that file
 loaded the agent recites the routing table when asked what skills it has, and
 without it says it has none.
 
+## Asking whether more context would have helped
+
+**A model asked whether reading more would have improved its work says yes.**
+Agreeing is cheaper than disagreeing, so the question measures acquiescence and
+returns the answer whoever asked it was hoping for.
+
+So the question was settled by running it instead. The same six scenarios ran
+twice against the same model, once normally and once with one extra line, *read
+every rule file in the skill you are using*, and the two were compared on facts
+about the transcript rather than on anyone's opinion of it.
+
+| | routed | every rule |
+| --- | --- | --- |
+| wrote a test | 13/18 | 12/18 |
+| touched the implementation | 13/18 | 12/18 |
+| test before the implementation | 10/18 | 9/18 |
+| ran the tests before it | 13/18 | 12/18 |
+| ran the tests after it | 13/18 | 12/18 |
+| rule files read | 3.8 | 13.8 |
+| turns | 10.4 | 13.4 |
+| cost | $1.68 | $2.50 |
+
+**The instruction took hold and changed nothing.** Rule reads more than tripled,
+cost rose by half, and no outcome improved. Across all six scenarios exactly one
+cell differs, on the most ambiguous prompt in the set, by one run out of three.
+
+**The routed arm already reads 3.8 rule files.** Reading one rule and stopping
+was never what the agent did, so an instruction telling it to stop being lazy
+was answering a question nobody had.
+
+**The measures had to be repaired twice before they could say this.** The first
+run used one generic workspace for every scenario, and four of six wrote no test
+in either arm because the state they describe, an implementation with no test, a
+bug with a trace, a red waiting for code, was not there to find. The second run
+reported three measures with identical numbers, which was the tell: the `edit`
+tool names its target inside a patch header rather than in `path`, and `bash`
+carries a command and no path at all, so every edit and every command was
+invisible and two of the ordering measures could not be false.
+
 ## Nothing may name the machine that produced it
 
 **Results are built from absolute paths**, a working directory and a skills
