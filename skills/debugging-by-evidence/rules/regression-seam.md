@@ -10,7 +10,9 @@ references: [regression testing, test seams, characterization tests]
 
 Decision: Put the test at the real call site, not where a test is convenient to
 write. The caller never reaches the helper with the failing shape. A test there
-proves the helper, not the bug.
+proves the helper, not the bug. Placing a test for behaviour being added, rather
+than for a defect being pinned, belongs to
+`test-first-by-evidence/rules/where-the-test-goes.md`.
 
 - **You should see a recorded failure with the fix absent.** You should not see a green test nobody has watched go red.
 - **Owns where the test goes and what it must have been seen doing.** That a fix waits for a red at all → `test-first-by-evidence/rules/bug-fix-starts-red.md`. Where the fix itself goes → `rules/fix-at-the-source.md`. The throwaway command that first showed the symptom → `rules/runnable-signal.md`.

@@ -8,7 +8,7 @@ references: [Test Pyramid (Cohn), Test Sizes (Google Testing Blog), Seams (Feath
 
 # Where the Test Goes
 
-Decision: **Put the test at the narrowest seam that can observe the behaviour you are adding.** What it asserts once it is there belongs to `rules/tests-that-cannot-lie.md`.
+Decision: **Put the test at the narrowest seam that can observe the behaviour you are adding.** What it asserts once it is there belongs to `rules/tests-that-cannot-lie.md`. A defect's seam belongs to `debugging-by-evidence/rules/regression-seam.md`.
 
 Use when:
 - **There is no obvious place** for the new test.
@@ -23,13 +23,13 @@ Do:
   - Nothing outside the process: keep it in memory, and run it always.
   - One local dependency, such as a database or the filesystem: expect it to be slower and rarer.
   - A browser or several services: reserve it for a journey nobody else covers.
-- **Follow the shape the repository already has.** A neighbouring test shows the seam its authors chose.
+- **Follow the shape the repository has.** A neighbouring test shows the seam its authors chose.
 - **Test through the public surface of the unit**, so a refactor behind it does not break the test.
-- **Move up a level only when the behaviour is invisible from below.** Coordination between parts is a reason. Convenience is not.
+- **Move up a level only when the behaviour is invisible from below.** Coordination is a reason; convenience is not.
 - **Where a shared library changes, test one representative consumer.**
 
 Avoid:
-- **Reaching for the widest seam because it is easiest.** A slow suite gets skipped, and a skipped suite tests nothing.
+- **Reaching for the widest seam because it is easiest.** A slow suite gets skipped, and tests nothing.
 - **A unit test that needs six mocks to stand up.** That is a design report, not a placement problem.
 - **Duplicating the same assertion at three levels.** Pick the one that owns it.
 - **A new seam introduced in a drive-by change**, where the local style already had one.
