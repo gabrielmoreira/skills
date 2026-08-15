@@ -296,8 +296,8 @@ async function verify(skillDir) {
     ? (await readdir(rulesDir)).filter((f) => f.endsWith(".md")).map((f) => f.replace(/\.md$/, "")).sort()
     : [];
   const ruleText = new Map();
-  for (const n of ruleNames) ruleText.set(n, await readFile(join(rulesDir, `${n}.md`), "utf8"));
-  const skillText = await readFile(join(SKILL_DIR, shape.entry), "utf8");
+  for (const n of ruleNames) ruleText.set(n, (await readFile(join(rulesDir, `${n}.md`), "utf8")).split("\r\n").join("\n"));
+  const skillText = (await readFile(join(SKILL_DIR, shape.entry), "utf8")).split("\r\n").join("\n");
   const docs = [[shape.entry, skillText], ...ruleNames.map((n) => [`rules/${n}.md`, ruleText.get(n)])];
   const ENTRY = shape.entry;
 
@@ -397,6 +397,15 @@ async function verify(skillDir) {
 
   { // C-06 portability
     const bad = [], suspects = [];
+    // One skill per collection holds its owner's own locations, and it earns
+    // that by declaring it where a reader sees it first. Without the
+    // declaration the exemption does not apply, so a skill cannot acquire it
+    // by accident.
+    // Two locks, both deliberate: the declaration must sit in the description,
+    // where a reader meets it first, and the skill must be named as a router.
+    // A domain skill cannot acquire the exemption by pasting a sentence.
+    const fm = skillText.match(/^---[\s\S]*?\n---/)?.[0] ?? "";
+    const personal = /^using-/.test(NAME) && /machine-specific\s+on\s+purpose/i.test(fm);
     for (const [label, text] of docs) {
       // Vendor coupling is a property of what a rule tells you to do, so this
       // reads instruction prose only. The `references:` field exists to cite
@@ -405,7 +414,7 @@ async function verify(skillDir) {
       // provider's vocabulary needs that provider in its example.
       const prose = stripFences(stripFrontmatter(text));
       // A machine path is a leak wherever it appears, an example included.
-      for (const { label: k, re } of ABSOLUTE_PATHS) { const m = text.match(re); if (m) bad.push(`${label}: ${k}, ${m[0].trim()}`); }
+      if (!personal) for (const { label: k, re } of ABSOLUTE_PATHS) { const m = text.match(re); if (m) bad.push(`${label}: ${k}, ${m[0].trim()}`); }
       for (const m of prose.matchAll(/https?:\/\/\S+/g)) { if (!LOCAL_HOST.test(m[0])) bad.push(`${label}: embedded URL, ${m[0]}`); }
       const lower = prose.toLowerCase();
       for (const t of PACKAGE_MANAGERS) if (new RegExp(`(?:^|[^a-z0-9-])${t}(?:[^a-z0-9-]|$)`).test(lower)) bad.push(`${label}: package-manager name, ${t}`);
@@ -637,7 +646,7 @@ async function verify(skillDir) {
     const bad = [], withFm = [];
     const all = new Map();
     for (const f of (await readdir(SKILL_DIR)).filter((f) => f.endsWith(".md"))) {
-      all.set(f, await readFile(join(SKILL_DIR, f), "utf8"));
+      all.set(f, (await readFile(join(SKILL_DIR, f), "utf8")).split("\r\n").join("\n"));
     }
     for (const n of ruleNames) all.set(`rules/${n}.md`, ruleText.get(n));
 

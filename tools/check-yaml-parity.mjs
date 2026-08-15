@@ -44,7 +44,7 @@ async function markdownFiles(dir) {
 
 // verify-skill.mjs runs its driver on import, so the parser is lifted out as
 // source text and loaded on its own.
-const src = await readFile(join(HERE, "verify-skill.mjs"), "utf8");
+const src = (await readFile(join(HERE, "verify-skill.mjs"), "utf8")).split("\r\n").join("\n");
 const from = src.indexOf("function parseYamlFrontmatter");
 const to = src.indexOf("/** Back-compatible accessor");
 if (from < 0 || to < 0 || to <= from) {
@@ -64,7 +64,7 @@ let compared = 0, agreed = 0;
 const disagreements = [];
 
 for (const p of files) {
-  const text = await readFile(p, "utf8");
+  const text = (await readFile(p, "utf8")).split("\r\n").join("\n");
   if (!text.startsWith("---")) continue;
   compared++;
 

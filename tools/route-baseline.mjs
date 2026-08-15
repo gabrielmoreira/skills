@@ -102,7 +102,7 @@ async function scenariosIn(skillDir) {
 async function entryText(skillDir) {
   for (const name of ["SKILL.md", "INDEX.md"]) {
     try {
-      return await readFile(join(skillDir, name), "utf8");
+      return (await readFile(join(skillDir, name), "utf8")).split("\r\n").join("\n");
     } catch {}
   }
   return null;

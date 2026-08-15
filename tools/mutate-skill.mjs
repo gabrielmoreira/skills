@@ -29,7 +29,7 @@ const rulesOf = (dir) =>
 const entryOf = (dir) =>
   path.join(dir, fs.existsSync(path.join(dir, "SKILL.md")) ? "SKILL.md" : "INDEX.md");
 
-const readRule = (dir, f) => fs.readFileSync(path.join(dir, "rules", f), "utf8");
+const readRule = (dir, f) => fs.readFileSync(path.join(dir, "rules", f), "utf8").split("\r\n").join("\n");
 const writeRule = (dir, f, t) => fs.writeFileSync(path.join(dir, "rules", f), t, "utf8");
 
 /** The `Decision:` paragraph, where demarcation lives. */
@@ -86,7 +86,7 @@ const MUTATIONS = [
     apply(dir) {
       const p = entryOf(dir);
       if (!fs.existsSync(p)) return false;
-      const t = fs.readFileSync(p, "utf8");
+      const t = fs.readFileSync(p, "utf8").split("\r\n").join("\n");
       const rows = t.split("\n");
       const last = rows.map((l, i) => [l, i]).filter(([l]) => l.trimStart().startsWith("|")).pop();
       if (!last) return false;
@@ -216,13 +216,13 @@ const MUTATIONS = [
       const file = fs.readdirSync(evals).find((f) => /\.scenarios\.(mjs|ts)$/.test(f));
       if (!file) return NA;
       const p = path.join(evals, file);
-      const t = fs.readFileSync(p, "utf8");
+      const t = fs.readFileSync(p, "utf8").split("\r\n").join("\n");
       // Find a scenario that claims two or more rules, and the first rule it claims.
       const m = t.match(/expectedAll:\s*\[\s*"[^"]*rules\/([a-z0-9-]+)\.md"/);
       if (!m) return NA;
       const rule = m[1];
       // Its gate row, which is exactly what an honest prompt must not repeat.
-      const entry = fs.readFileSync(entryOf(dir), "utf8");
+      const entry = fs.readFileSync(entryOf(dir), "utf8").split("\r\n").join("\n");
       const row = entry.split("\n").find((l) => l.trimStart().startsWith("|") && l.includes(`rules/${rule}.md`));
       if (!row) return false;
       const signal = (row.split("|")[1] ?? "").replace(/\*\*/g, "").trim();
@@ -243,7 +243,7 @@ const MUTATIONS = [
     apply(dir) {
       const p = entryOf(dir);
       if (!fs.existsSync(p)) return NA;
-      const t = fs.readFileSync(p, "utf8");
+      const t = fs.readFileSync(p, "utf8").split("\r\n").join("\n");
       if (!/\*\*Default stance\.?\*\*/.test(t)) return NA;
       fs.writeFileSync(p, t.replace(/\*\*Default stance\.?\*\*/, "Notes."), "utf8");
       return true;
@@ -259,7 +259,7 @@ const MUTATIONS = [
       const file = fs.readdirSync(evals).find((f) => /\.scenarios\.(mjs|ts)$/.test(f));
       if (!file) return NA;
       const p = path.join(evals, file);
-      const t = fs.readFileSync(p, "utf8");
+      const t = fs.readFileSync(p, "utf8").split("\r\n").join("\n");
       const rule = rulesOf(dir)[0].replace(/\.md$/, "");
       const m = t.match(/prompt:\s+"([^"]{20,})"/);
       if (!m) return false;
@@ -274,7 +274,7 @@ const MUTATIONS = [
     apply(dir) {
       const p = path.join(dir, "SKILL.md");
       if (!fs.existsSync(p)) return NA;   // a topic index declares no name
-      const t = fs.readFileSync(p, "utf8");
+      const t = fs.readFileSync(p, "utf8").split("\r\n").join("\n");
       if (!/^name:.*$/m.test(t)) return NA;
       fs.writeFileSync(p, t.replace(/^name:.*$\n/m, ""), "utf8");
       return true;
@@ -290,7 +290,7 @@ const MUTATIONS = [
       const file = fs.readdirSync(evals).find((f) => /\.scenarios\.(mjs|ts)$/.test(f));
       if (!file) return NA;
       const p = path.join(evals, file);
-      let t = fs.readFileSync(p, "utf8");
+      let t = fs.readFileSync(p, "utf8").split("\r\n").join("\n");
       // Two fields can carry the scenario-to-rule link, and a scenario may
       // carry both. Rewriting only one left the other still naming the real
       // rule, so coverage survived the mutation and the check never fired.

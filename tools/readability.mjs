@@ -150,7 +150,7 @@ console.log("\nfile".padEnd(34) + "words bull bold  avgP maxP  cl/s prose%");
 let bad = 0;
 for (const f of files) {
   const perUnit = /[\\/]rules[\\/]/.test(f) || isFlatEntry(f);
-  const s = shape(fs.readFileSync(f, "utf8"));
+  const s = shape(fs.readFileSync(f, "utf8").split("\r\n").join("\n"));
   const n = perUnit ? 0 : routedCount(f);
   // A topic index is a gate only; a skill router frames the whole skill.
   const isTopicIndex = !perUnit && path.basename(f) === "INDEX.md";

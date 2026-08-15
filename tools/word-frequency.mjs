@@ -96,7 +96,7 @@ async function collect(root, only) {
       for (const f of files) {
         if (!f.endsWith(".md")) continue;
         if (label === "entry" && !["SKILL.md", "INDEX.md"].includes(f)) continue;
-        const text = await readFile(join(dir, f), "utf8");
+        const text = (await readFile(join(dir, f), "utf8")).split("\r\n").join("\n");
         units.push({ skill: e.name, kind: label, name: `${e.name}/${f.replace(/\.md$/, "")}`, counts: count(words(text)) });
       }
     }
@@ -112,7 +112,7 @@ async function collect(root, only) {
         }
         for (const f of files) {
           if (!f.endsWith(".md")) continue;
-          const text = await readFile(join(sub, f), "utf8");
+          const text = (await readFile(join(sub, f), "utf8")).split("\r\n").join("\n");
           units.push({ skill: e.name, kind: sub.endsWith("rules") ? "rule" : "entry", name: `${e.name}/${d.name}/${f.replace(/\.md$/, "")}`, counts: count(words(text)) });
         }
       }

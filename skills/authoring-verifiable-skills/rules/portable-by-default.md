@@ -28,19 +28,19 @@ Do:
 - **Keep concrete detail in the example**, where being specific is the point.
 - **Keep citations in `references:`**, which exists to name outside sources.
 - **Let a skill whose subject is one ecosystem name that ecosystem**, and say so in its scope.
-- **Where a skill writes a file, resolve the location rather than declare it.** What the request named, then what the instruction file declares, then a directory that already exists. Report the path and whether it is tracked.
-- **Check for a leaked path everywhere.** A path is a leak inside an example too.
+- **Where a skill writes a file, resolve the location rather than declare it.** What the request named, then what the instruction file declares, then a directory that already exists. Report the path chosen.
 
 Avoid:
 - **A user directory, a home path, or a drive letter.** These identify one machine.
-- **An embedded URL in prose.** A loopback or documentation host is fine; anything else couples.
+- **An embedded URL in prose**, unless it is a loopback or a documentation host.
 - **A company or product name in an instruction.** In an example it illustrates. In an instruction it is a dependency.
 - **A personal handle**, which dates the file and may not stay reachable.
-- **Assuming a package manager.** The repository already declares which one it uses.
+- **Assuming a package manager.** The repository declares which one it uses.
 
 Exceptions:
-- **An example MAY name a real provider**, where the rule is about containing that provider's vocabulary.
+- **An example MAY name a real provider**, where the rule is about containing it.
 - **A `references:` entry MAY name a company**, because it is a citation rather than an instruction.
+- **A personal router MAY name paths.** One skill per collection holds its owner's locations, and says so in its scope.
 
 Example (one instance, not the set):
 
@@ -50,6 +50,6 @@ Example (one instance, not the set):
 | a specific CI product's file | the repository's pipeline definition |
 
 Verify:
-- **Read the instruction prose with frontmatter and code fences removed.** That is where coupling matters.
+- **Read the instruction prose with frontmatter and fences removed.** Coupling matters there.
 - **Search for a drive letter, a home path, and an embedded URL across the whole file**, examples included.
 - **Ask whether the rule works on a machine you have never seen.** Where the answer needs a name, that name is a dependency.
