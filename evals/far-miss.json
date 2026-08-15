@@ -1,0 +1,100 @@
+{
+  "ranAt": "2026-08-15T02:36:50.186Z",
+  "model": "github-copilot/gpt-5.6-terra",
+  "backend": "omp",
+  "clean": true,
+  "rules": false,
+  "samples": 3,
+  "thinking": "high",
+  "selfChecks": {
+    "delegated": 0,
+    "sawHarness": 0,
+    "foreign": []
+  },
+  "results": [
+    {
+      "skill": "(collection)",
+      "id": "cron-expression",
+      "kind": "far-miss",
+      "arm": "with",
+      "opened": [],
+      "negative": false,
+      "passes": 3,
+      "samples": 3,
+      "verdict": "PASS",
+      "seq": []
+    },
+    {
+      "skill": "(collection)",
+      "id": "dockerfile-node-bump",
+      "kind": "far-miss",
+      "arm": "with",
+      "opened": [],
+      "negative": false,
+      "passes": 3,
+      "samples": 3,
+      "verdict": "PASS",
+      "seq": []
+    },
+    {
+      "skill": "(collection)",
+      "id": "stuck-staging-deploy",
+      "kind": "far-miss",
+      "arm": "with",
+      "opened": [],
+      "negative": false,
+      "passes": 3,
+      "samples": 3,
+      "verdict": "PASS",
+      "seq": []
+    },
+    {
+      "skill": "(collection)",
+      "id": "postgres-default-port",
+      "kind": "far-miss",
+      "arm": "with",
+      "opened": [],
+      "negative": false,
+      "passes": 3,
+      "samples": 3,
+      "verdict": "PASS",
+      "seq": []
+    },
+    {
+      "skill": "(collection)",
+      "id": "ssh-key-staging",
+      "kind": "far-miss",
+      "arm": "with",
+      "opened": [],
+      "negative": false,
+      "passes": 3,
+      "samples": 3,
+      "verdict": "PASS",
+      "seq": []
+    },
+    {
+      "skill": "(collection)",
+      "id": "slow-npm-install",
+      "kind": "far-miss",
+      "arm": "with",
+      "opened": [],
+      "negative": false,
+      "passes": 3,
+      "samples": 3,
+      "verdict": "PASS",
+      "seq": []
+    },
+    {
+      "skill": "(collection)",
+      "id": "mutex-vs-semaphore",
+      "kind": "far-miss",
+      "arm": "with",
+      "opened": [],
+      "negative": false,
+      "passes": 3,
+      "samples": 3,
+      "verdict": "PASS",
+      "seq": []
+    }
+  ]
+}

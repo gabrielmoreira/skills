@@ -36,7 +36,7 @@
  *   node tools/run-activation.mjs --check          compare against the baseline
  *   node tools/run-activation.mjs --write-baseline
  */
-import { readdir, readFile, writeFile, mkdir, rm } from "node:fs/promises";
+import { readdir, readFile, writeFile, mkdir, rm, cp, stat } from "node:fs/promises";
 import { join, resolve, basename, dirname } from "node:path";
 import { pathToFileURL } from "node:url";
 import { spawn } from "node:child_process";
@@ -75,7 +75,7 @@ function parseArgs(argv) {
     else if (k === "--verbose") a.verbose = true;
     else throw new Error(`unknown argument: ${k}`);
   }
-  if (!["all", "routing", "activation"].includes(a.kind)) throw new Error(`--kind must be all, routing or activation`);
+  if (!["all", "routing", "activation", "far-miss"].includes(a.kind)) throw new Error(`--kind must be all, routing, activation or far-miss`);
   a.backend ??= process.env.ANTHROPIC_API_KEY ? "api" : "omp";
   a.model ??= a.backend === "omp" ? "github-copilot/gpt-5.6-terra" : "claude-haiku-4-5-20251001";
   return a;
@@ -290,12 +290,20 @@ const SEED = {
   "src/index.js": "export function main() {\n  return null;\n}\n",
 };
 
-async function freshWorkspace(base) {
+async function freshWorkspace(base, skillDir, id) {
   const dir = join(base, `w-${randomUUID().slice(0, 8)}`);
   for (const [rel, content] of Object.entries(SEED)) {
     const target = join(dir, rel);
     await mkdir(dirname(target), { recursive: true });
     await writeFile(target, content);
+  }
+  // A scenario describing a state that already exists needs that state to be
+  // there. Measured without it, four of six scenarios in the first experiment
+  // did nothing in either arm, and the run scored the fixture rather than the
+  // skill.
+  const fixture = join(skillDir, "evals", "fixtures", id);
+  if (await stat(fixture).then(() => true, () => false)) {
+    await cp(fixture, dir, { recursive: true, force: true });
   }
   return dir;
 }
@@ -472,6 +480,22 @@ async function pool(items, limit, fn) {
   return out;
 }
 
+/**
+ * A Wilson 95% interval. A rate printed without one invites reading noise as
+ * movement, which is exactly what happened to the first three baselines.
+ */
+export function interval(p, n) {
+  if (!n) return "";
+  const z = 1.96;
+  const rate = p / n;
+  const d = 1 + (z * z) / n;
+  const centre = (rate + (z * z) / (2 * n)) / d;
+  const half = (z * Math.sqrt((rate * (1 - rate)) / n + (z * z) / (4 * n * n))) / d;
+  const lo = Math.max(0, Math.round(100 * (centre - half)));
+  const hi = Math.min(100, Math.round(100 * (centre + half)));
+  return `[${lo}-${hi}%]`;
+}
+
 function verdictOf(passes, samples) {
   if (passes === samples) return "PASS";
   if (passes === 0) return "FAIL";
@@ -485,9 +509,18 @@ async function main() {
     .map((d) => join(ROOT, d.name));
 
   const cases = [];
-  for (const dir of dirs) {
-    const skill = await loadSkill(dir);
-    if (skill) cases.push(...casesFor(skill, args));
+  if (args.kind === "far-miss") {
+    // One arm only. The control is trivial: nothing fires when nothing is
+    // loaded, so measuring it would add cost and no information.
+    const mod = await import(pathToFileURL(resolve("evals/far-miss.scenarios.mjs")).href);
+    for (const s of mod.default ?? []) {
+      cases.push({ kind: "far-miss", arm: "with", skill: "(collection)", id: s.id, scenario: s, user: s.prompt });
+    }
+  } else {
+    for (const dir of dirs) {
+      const skill = await loadSkill(dir);
+      if (skill) cases.push(...casesFor(skill, args));
+    }
   }
   const selected = cases.slice(0, args.limit === Infinity ? cases.length : args.limit);
 
@@ -538,13 +571,14 @@ async function main() {
   const results = await pool(selected, args.concurrency, async (c) => {
     let passes = 0;
     const answers = [];
+    const opened = [];
     let seq = null;
     for (let i = 0; i < args.samples; i++) {
       let answer;
       let workspace = null;
       try {
         if (backend.agentic) {
-          workspace = await freshWorkspace(paths.base);
+          workspace = await freshWorkspace(paths.base, join(ROOT, c.skill), c.id);
           answer = await ompRun(args, c.arm, c.user, paths, workspace);
         } else {
           answer = await backend.call(args.model, c.system, c.user);
@@ -554,6 +588,14 @@ async function main() {
         continue;
       } finally {
         if (workspace) await rm(workspace, { recursive: true, force: true }).catch(() => {});
+      }
+      if (c.kind === "far-miss") {
+        const seen = observe(answer, paths?.conf);
+        seq ??= seen.seq.slice(0, 12).map((s) => redact(`${s.tool} ${s.path || s.cmd || ""}`.trim(), roots));
+        if (seen.skills.length === 0) passes++;
+        answers.push(seen.skills.join(", ") || "(quiet)");
+        opened.push(...seen.skills);
+        continue;
       }
       if (c.kind === "observed") {
         const seen = observe(answer, paths.conf);
@@ -576,7 +618,7 @@ async function main() {
         if (yes !== null && yes === c.scenario.activation.shouldActivate) passes++;
       }
     }
-    return { skill: c.skill, id: c.id, kind: c.kind, arm: c.arm, negative: c.scenario.activation?.shouldActivate === false, passes, samples: args.samples, verdict: verdictOf(passes, args.samples), seq, answers: args.verbose ? answers : undefined };
+    return { skill: c.skill, id: c.id, kind: c.kind, arm: c.arm, opened: [...new Set(opened)], negative: c.scenario.activation?.shouldActivate === false, passes, samples: args.samples, verdict: verdictOf(passes, args.samples), seq, answers: args.verbose ? answers : undefined };
   });
 
   report(results, args, flags);
@@ -584,8 +626,11 @@ async function main() {
   await mkdir(resolve("evals"), { recursive: true });
   await writeFile(resolve("evals/last-run.json"), `${JSON.stringify(record, null, 2)}\n`);
   if (args.writeBaseline) {
-    await writeFile(BASELINE, `${JSON.stringify(record, null, 2)}\n`);
-    console.log(`\nbaseline written to ${BASELINE}`);
+    // Two different questions, two different records. Folding them into one
+    // file would let a far-miss run silently replace the behaviour numbers.
+    const target = args.kind === "far-miss" ? resolve("evals/far-miss.json") : BASELINE;
+    await writeFile(target, `${JSON.stringify(record, null, 2)}\n`);
+    console.log(`\nwritten to ${target}`);
   }
   if (args.check) process.exit(await checkAgainstBaseline(results) ? 0 : 1);
 }
@@ -629,10 +674,25 @@ function reportObserved(results, flags) {
   const controlPass = pos.filter((r) => r.o?.verdict === "PASS").length;
   const both = pos.filter((r) => r.w.verdict === "PASS" && r.o?.verdict === "PASS").length;
 
+  // Pooled samples first, per-scenario verdicts second.
+  //
+  // Three runs of unchanged code produced the same headline and a different
+  // composition every time, with one scenario scoring 0, then 2, then 1 out of
+  // 3. That is what a rate near 60% does to a three-sample verdict: it lands on
+  // UNSTABLE most of the time and on PASS about one run in five. Counting
+  // verdicts measures the coin. Pooling the samples measures the skill.
+  const pool = (rows, arm) => {
+    const r = rows.map((x) => (arm === "with" ? x.w : x.o)).filter(Boolean);
+    return { p: r.reduce((s, x) => s + x.passes, 0), n: r.reduce((s, x) => s + x.samples, 0) };
+  };
+  const rate = ({ p, n }) => (n ? `${p}/${n} ${Math.round((100 * p) / n)}% ${interval(p, n)}` : "n/a");
+  const withPool = pool(pos, "with");
+  const withoutPool = pool(pos, "without");
+
   console.log("observed behaviour");
-  console.log(`  with the skills    ${pass}/${pos.length}`);
-  console.log(`  without them       ${controlPass}/${pos.length}`);
-  console.log(`  the skills earn    ${pass - controlPass >= 0 ? "+" : ""}${pass - controlPass}`);
+  console.log(`  with the skills    ${rate(withPool)}`);
+  console.log(`  without them       ${rate(withoutPool)}`);
+  console.log(`  by scenario        ${pass}/${pos.length} pass, ${controlPass}/${pos.length} without`);
   console.log(`  passed both ways   ${both}   the agent did this anyway`);
   if (neg.length) {
     console.log(`  stayed shut        ${neg.filter((r) => r.w.verdict === "PASS").length}/${neg.length}   near misses, control not applicable`);
@@ -654,7 +714,20 @@ function reportObserved(results, flags) {
   }
 }
 
+function reportFarMiss(results) {
+  const quiet = results.filter((r) => r.verdict === "PASS").length;
+  console.log("prompts no skill should claim");
+  console.log(`  stayed quiet       ${quiet}/${results.length}`);
+  const noisy = results.filter((r) => r.verdict !== "PASS");
+  if (!noisy.length) return;
+  console.log("\nopened anyway");
+  for (const r of noisy) {
+    console.log(`  ${r.verdict.padEnd(8)} ${r.id.padEnd(24)} ${r.passes}/${r.samples} quiet   ${r.opened.join(", ")}`);
+  }
+}
+
 function report(results, args, flags) {
+  if (results.some((r) => r.kind === "far-miss")) return reportFarMiss(results);
   if (results.some((r) => r.kind === "observed")) return reportObserved(results, flags);
   const key = (r) => `${r.skill}/${r.id}`;
   const gated = new Map(results.filter((r) => r.kind === "routing" && r.arm === "gated").map((r) => [key(r), r]));

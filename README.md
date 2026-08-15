@@ -348,6 +348,12 @@ every call and sends nothing.
 **Most scenarios have still never been run.** The baseline covers what has been
 measured and the suite prints its age. Everything outside it is a claim.
 
+**The measured rate separates from its control and not much more.** With the
+collection loaded the scenarios pass 60% of the time, and without it 0%, which
+is a real gap. The interval around that 60% is wide enough that a single edit
+moving it a few points would be invisible, so the number is evidence the skills
+do something and not yet a regression detector.
+
 **A quarter of the routed scenarios are giveaways.** The suite reports how many
 a bag-of-words router solves with no understanding at all. Those pass for
 reasons that have nothing to do with the skill.

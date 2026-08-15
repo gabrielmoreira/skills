@@ -23,6 +23,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join, resolve, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
+import { interval } from "./run-activation.mjs";
 
 const TOOLS = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(TOOLS, "..");
@@ -156,18 +157,40 @@ function behaviourLine() {
   // Near misses are counted apart. A skill that was never loaded cannot fire
   // wrongly, so every negative passes the control for free, and folding them in
   // credits the skill with work the absence of the skill did.
+  // Pooled samples, not per-scenario verdicts. At three samples a scenario
+  // whose true rate is near 60% reports UNSTABLE most runs and PASS about one
+  // in five, so counting verdicts tracks the sampling and not the collection.
   const on = (r) => r.arm === "with" || r.arm === "gated";
+  const pool = (rows) => rows.reduce((a, r) => ({ p: a.p + r.passes, n: a.n + r.samples }), { p: 0, n: 0 });
+  const pct = ({ p, n }) => (n ? `${Math.round((100 * p) / n)}% ${interval(p, n)}` : "n/a");
   const pos = base.results.filter((r) => !r.negative);
-  const pass = pos.filter((r) => on(r) && r.verdict === "PASS").length;
-  const total = pos.filter(on).length;
-  const control = pos.filter((r) => !on(r));
-  const controlPass = control.filter((r) => r.verdict === "PASS").length;
-  const neg = base.results.filter((r) => r.negative && on(r));
-  const shut = neg.filter((r) => r.verdict === "PASS").length;
+  const withS = pool(pos.filter(on));
+  const without = pool(pos.filter((r) => !on(r)));
+  const neg = pool(base.results.filter((r) => r.negative && on(r)));
   const days = Math.floor((Date.now() - Date.parse(base.ranAt)) / 86400000);
   const age = days === 0 ? "today" : `${days}d old`;
-  const shutPart = neg.length ? `, ${shut}/${neg.length} stayed shut` : "";
-  return `${pass}/${total} with the skills, ${controlPass}/${control.length} without${shutPart}, ${base.model}, ${age}`;
+  const shutPart = neg.n ? `, ${pct(neg)} stayed shut` : "";
+  return `${pct(withS)} with the skills, ${pct(without)} without${shutPart}, ${base.model}, ${age}`;
+}
+
+/**
+ * Whether anything fired on work no skill in the collection covers. Near misses
+ * live inside each skill and test where its boundary sits; these test whether a
+ * description is greedy in general, which is the cost a reader pays for a file
+ * that had nothing to say.
+ */
+function farMissLine() {
+  let base;
+  try {
+    base = JSON.parse(readFileSync(join(ROOT, "evals/far-miss.json"), "utf8"));
+  } catch {
+    return "never run; node tools/run-activation.mjs --backend omp --kind far-miss --write-baseline";
+  }
+  const quiet = base.results.filter((r) => r.verdict === "PASS").length;
+  const noisy = base.results.filter((r) => r.verdict !== "PASS");
+  const days = Math.floor((Date.now() - Date.parse(base.ranAt)) / 86400000);
+  const who = noisy.length ? `; opened: ${[...new Set(noisy.flatMap((r) => r.opened ?? []))].join(", ")}` : "";
+  return `${quiet}/${base.results.length} stayed quiet${who}, ${days === 0 ? "today" : `${days}d old`}`;
 }
 
 // ---------------------------------------------------------------- output
@@ -203,6 +226,7 @@ console.log(`  graders           ${graders.ok ? "passed" : "FAILED"}`);
 console.log(`  local paths       ${paths.ok ? "none committed" : "FOUND"}`);
 console.log(`  scenarios         ${baselineLine}`);
 console.log(`  behaviour         ${behaviourLine()}`);
+console.log(`  far misses        ${farMissLine()}`);
 
 if (!reportOnly) {
   for (const r of rows.filter((x) => x.bad)) {

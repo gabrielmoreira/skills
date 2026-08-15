@@ -150,6 +150,41 @@ instructions rather than the skill. Proved rather than assumed: with that file
 loaded the agent recites the routing table when asked what skills it has, and
 without it says it has none.
 
+## Counting verdicts measured the coin, not the collection
+
+**Three runs of unchanged code reported the same headline and a different
+composition every time.** One scenario scored 0 of 3, then 2 of 3, then 1 of 3,
+with nothing between the runs but sampling.
+
+That is what a per-scenario verdict does at three samples. A scenario whose
+true rate is near 60% lands on `UNSTABLE` about seven runs in ten and on `PASS`
+about two, so counting how many reached 3 of 3 tracks the dice.
+
+- **The reported figure is the pooled sample rate**, with a Wilson 95%
+  interval. Per-scenario verdicts stay in the output as diagnostics, because
+  they name which scenario to go and look at.
+- **A rate printed without an interval invites reading noise as movement**,
+  which is how a jump from 0 of 3 to 2 of 3 nearly got written up as progress.
+- **What the interval currently supports** is that the collection beats its own
+  absence, 60% against 0% with no overlap. It does not yet support a claim that
+  one edit moved the number ten points.
+
+## Near misses test a boundary, far misses test greed
+
+**Each skill carries prompts that look like its subject and are not.** Those
+say where its edge sits. They cannot say whether a description is greedy in
+general, because a near miss is still in the neighbourhood.
+
+**A second set sits above the collection**, holding ordinary developer work no
+skill here covers: a cron expression, a base image bump, a default port, an ssh
+key, a slow install, a concept question. It passes only when nothing opens.
+
+The first run of it found one failure that turned out to be the test's fault.
+`convert this csv into an xlsx` pulled in `test-first-by-evidence` once in three
+runs, and writing a converter is implementing a feature, which that skill's
+description claims out loud. The prompt was withdrawn with the reason recorded
+next to it, rather than deleted, so it does not come back.
+
 ## Asking whether more context would have helped
 
 **A model asked whether reading more would have improved its work says yes.**
