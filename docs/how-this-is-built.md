@@ -150,6 +150,41 @@ instructions rather than the skill. Proved rather than assumed: with that file
 loaded the agent recites the routing table when asked what skills it has, and
 without it says it has none.
 
+## A description cannot reach a catalogue nobody opens
+
+**Two model families were given the same nine skills and behaved differently.**
+One opened them unprompted. The other listed all nine correctly when asked, and
+then went straight to editing the implementation without opening any.
+
+That is not a configuration fault. The catalogue arrives complete, descriptions
+included, in a `<skills>` block in the system prompt, and the model quoted it
+back verbatim. It read `Use when implementing a feature or a bugfix` and was
+asked to implement a feature.
+
+Three things were tried on the model that ignored it, same scenario each time.
+
+| what changed | opened the skill |
+| --- | --- |
+| nothing | 0 of 3 |
+| the description, rewritten so the trigger is the first clause | 0 of 2 |
+| a standing instruction to check for skills, in the system prompt | 0 of 3 |
+| the same instruction, in the user's turn | 3 of 4 |
+
+**Only the position moved it.** The same sentence is inert in the system prompt
+and effective one turn later, so no amount of rewriting a description reaches
+this. The trigger does not live in the collection.
+
+This is why the ecosystem's plan-file skill re-injects on `UserPromptSubmit`
+rather than writing its instruction once. That looked like an implementation
+preference and is the only position that works on some models.
+
+- **Everything measured here was measured on one family.** The numbers say what
+  that family did, and the other family produced zero with the same files.
+- **Portability across model families is not established**, and no invariant in
+  this repository can establish it, because the defect is not in the files.
+- **Small numbers.** One skill, one scenario, three or four samples per arm.
+  The contrast is stark; it is not a law.
+
 ## Counting verdicts measured the coin, not the collection
 
 **Three runs of unchanged code reported the same headline and a different
