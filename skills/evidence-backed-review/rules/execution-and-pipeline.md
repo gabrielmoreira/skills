@@ -17,19 +17,21 @@ Use when:
 - **A local run is the only evidence offered** for a change that ships somewhere else.
 
 Do:
+- **Perform mechanical verification in review mode.** Run build, lint, and test commands before commenting. Capture raw command outputs directly.
 - **Name the pipeline for this range and its state.** Passing, failing, running, or never started.
-- **Open the failing job's log.** A red name is not a finding until you can say which step and which line.
-- **Report a pipeline that never ran as a Gap**, in the first line of the status rather than at the end.
+- **Open the failing job log and quote captured output.** Never paraphrase failure text from memory. Cite the exact failing step, line, and log excerpt.
+- **Report a pipeline that never ran as a Gap.** Place it in the first line of the status.
 - **Separate what you observed from what was relayed.** A green check you did not open was reported to you.
-- **Check the pipeline runs what this change now needs.** A new dependency, environment variable, service, or migration that no job performs is a finding.
-- **Where the pipeline is unreachable, name the command or permission that was missing.** An unreachable check is a Gap with a name, never a silence.
+- **Check that the pipeline runs what this change now needs.** A missing dependency, variable, or migration is a finding.
+- **Name missing commands or permissions when unreachable.** An unreachable check is a named Gap, never silence.
 
 Avoid:
-- **Offering local test and lint output as proof the change works.** It proves the code runs on a machine that already had everything installed.
+- **Paraphrasing pipeline or test failures without quoting captured text.**
+- **Claiming local runs prove production correctness without mechanical verification.**
 - **Counting green checks without opening one.**
 - **Reading a skipped or cancelled job as a pass.**
-- **Waiting in silence.** A run still in progress is reported as in progress, with the time it started.
-- **Letting a number stand in for a judgment.** A suite that passes says nothing about whether the change was the one worth making.
+- **Waiting in silence while runs stay in progress.**
+- **Letting a passing suite substitute for judging change merit.**
 
 Exceptions:
 - **A repository with no pipeline MAY close on local evidence**, provided the review says no pipeline exists.
@@ -37,5 +39,6 @@ Exceptions:
 
 Verify:
 - **Name the pipeline, the run, and its state**, or name the Gap and what blocked reaching it.
-- **Quote the failing step and the line** behind every pipeline finding.
+- **Quote the exact failing step, line, and captured log output** behind every pipeline finding.
 - **State which evidence you observed and which was relayed to you.**
+- **Verify mechanical build, lint, and test commands ran when local evidence is claimed.**

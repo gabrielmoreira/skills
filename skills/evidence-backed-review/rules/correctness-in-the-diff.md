@@ -21,29 +21,23 @@ Use when:
 
 Do:
 
-1. **Read each changed line and name what would make it wrong.** These shapes recur. They are illustrative, not the set.
-   - An inverted or wrong condition.
-   - An off-by-one on a bound.
-   - A dereference where nearby lines show the value can be absent.
-   - A missing await.
-   - A check that treats zero as absent.
-   - A wrong variable copied from the line above.
-   - An error swallowed in a catch that should propagate.
-2. **Read the whole enclosing function, not only the hunk.** A defect in an unchanged line of a
-   touched function is in scope. This change re-exposes it, and the next reader will assume it
-   was looked at.
-3. **Name the invariant each deleted or replaced line enforced.** Then find where the new code
-   re-establishes it. Not finding it is the finding: a removed guard, a dropped error path, a
-   validation narrowed without saying so.
-4. **Find the callers of each changed function.** Name what the change does to them.
-   - A new precondition.
-   - A changed return shape.
-   - A new thrown error.
-   - An ordering it now depends on.
+1. **Read each changed line and probe what would make it wrong.** Probe neighboring values and inverted conditions; record negative probe results in the report.
+   - An inverted or wrong condition, or an off-by-one on a bound.
+   - A dereference where nearby lines show the value can be absent; distinguish no-signal from confirmed-safe by reading the guard.
+   - A missing await, or a check treating zero as absent.
+   - A copied variable pointing to the wrong binding.
+2. **Apply the three-class error taxonomy to every catch or fallback:**
+   - *Propagate:* caller owns recovery or boundary reporting.
+   - *Log-and-continue:* degradation is isolated and observable.
+   - *Swallow:* silent failure concealing defects is a finding.
+3. **Read the whole enclosing function, not only the hunk.** A defect in an unchanged line of a touched function is in scope when re-exposed.
+4. **Name the invariant each deleted or replaced line enforced.** Re-establish it or report the dropped guard or narrowed validation.
+5. **Find callers of each changed function.** Check new preconditions, altered return shapes, thrown errors, and order dependencies.
 
 Avoid:
 
 - **A review that read the shape of the change and never its lines.**
+- **Assuming confirmed-safe without reading the guard that enforces it.**
 - **Reporting a defect with no path from a line this diff changed.**
 - **Reading "the tests pass" as evidence a line is right.** The test may not reach it.
 - **Treating a hunk as read because you understood its intent.**
@@ -51,13 +45,14 @@ Avoid:
 Example (one instance, not the set):
 ```
 Important: <handler>:41 `if (!count)` treats a count of 0 as missing and
-falls through to the default. The line above proves 0 is reachable.
+falls through to the default. Probe: passing count=0 triggers the fallback.
 Important: the diff deletes the length check at <parser>:12. Nothing in the
-new code re-establishes it; a payload over the limit now reaches the decoder.
+new code re-establishes it; a payload over the limit reaches the decoder.
 ```
 
 Verify:
 
-- **Confirm every hunk was read line by line**, not summarised.
-- **Account for every deleted line.** It was re-established, deliberately dropped, or it is a finding.
-- **Read each finding.** It names the input or state that triggers it, not just the shape.
+- **Confirm every hunk was read line by line**, and probe outcomes are cited.
+- **Distinguish confirmed-safe guards from uninspected signal paths.**
+- **Account for every deleted line.** It was re-established, dropped by design, or is a finding.
+- **Check catch blocks follow the three-class error taxonomy.**

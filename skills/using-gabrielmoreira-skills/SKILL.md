@@ -1,13 +1,14 @@
 ---
 name: using-gabrielmoreira-skills
 description: >-
-  Read at the start of a task, before following any procedure from this
-  collection. Holds one person's decisions rather than a recommendation: where
-  generated files go, which skill wins when two match, where the ceremony is not
-  wanted, and what the portable skills deliberately leave open. Machine-specific
-  on purpose. Use when a skill in this collection needs a location, a precedence,
-  or a default it does not carry itself. Not a summary of the other skills, and
-  not a substitute for reading the one that matched.
+  Read at the start of every session, before any other skill, and again after
+  any compaction, model change, resume, or handoff. Routes the work to the
+  right skill in this collection and holds one person's decisions rather than
+  a recommendation: where generated files go, which skill wins when two match,
+  which borrowed collections are trusted, where the ceremony is not wanted, and
+  what the portable skills deliberately leave open. Machine-specific on
+  purpose. Not a summary of the other skills, and not a substitute for reading
+  the one that matched.
 ---
 
 # Using Gabriel Moreira's Skills
@@ -17,6 +18,26 @@ description: >-
 - **Nothing here is a recommendation.** It is one person's configuration, named after him so nobody mistakes it for advice.
 - **The skill that matched still owns its subject.** This resolves what that skill left open, and never overrides it.
 - **You opened this in the middle of something.** This is how to do that work, not a replacement for it. Name what you were doing before you start, and return to it when this is done.
+
+## Routing the work
+
+**Match the work to a row and open that skill.** Then come back here only for what the matched skill left open.
+
+| When the work is | Open |
+| --- | --- |
+| a change to judge before it lands: a branch, a pull request, a diff against a base point, or uncommitted work | `evidence-backed-review` |
+| something failing, flaky, hanging, or newly slow, with the cause not yet established | `debugging-by-evidence` |
+| a feature or bugfix about to be implemented, or a test written after the code | `test-first-by-evidence` |
+| a tool, runtime, install, auth, or network failure that is not the change being made | `treat-blockers-as-incidents` |
+| a git operation that refused, a state you cannot name, or work about to be deleted or cleaned up | `keep-git-work-recoverable` |
+| written material to create, correct, place, or remove, including whether a decision is worth recording | `make-the-docs-trustworthy` |
+| code that should stay simple and testable: boundaries, cohesion, layering, hidden effects, abstraction added too early | `maintainable-code` |
+| TypeScript specifics: standards, boundaries, composition, config, async, errors, observability, security, testing | `typescript-skills` |
+| an answer that is dense, buried, or hard to resume | `progressive-reading` |
+| a skill to write, split, rename, or check, or one that never fires | `authoring-verifiable-skills` |
+
+- **Boundaries, so they do not fight.** Review judges a change that already exists; debugging establishes a cause when there is no change yet; once a fix exists it becomes a change again. `maintainable-code` owns language-neutral structure and only material architecture work; `typescript-skills` owns the ecosystem and is the primary one when both apply. Docs inside a diff belong to review; docs on their own belong to `make-the-docs-trustworthy`.
+- **Other skills may fire alongside these.** On a procedure conflict, follow the one more adequate to the situation and say which one lost.
 
 ## Where generated files go
 

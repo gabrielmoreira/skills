@@ -24,30 +24,20 @@ Use when:
 
 Do:
 
-1. **Name the identity each changed route or handler trusts.** Name the object it returns. Then
-   read whether that object is scoped to that identity. An authenticated caller reaching another
-   caller's record is the finding. A credential check never shows it.
-2. **Trace each user-controlled value from entry to use.** Cite the line where it is validated or
-   encoded. Untraced is a Gap, not a pass.
-3. **Walk one abuse path per changed surface.** Name the invariant it breaks. These are illustrative, not the set.
-   - The same request with a substituted identifier.
-   - A state transition taken twice.
-   - A retry after a failure.
-4. **Read a credential-shaped literal against what produced it.** Three shapes are not secrets
-   Name which one it is rather than dropping it silently.
-   - An example value.
-   - A marked test credential.
-   - A checksum.
-5. **Report a Critical before the remaining axes.** A reader who stops early still sees it. Name
-   rotation as the next action, and never perform it.
+1. **Check house patterns first.** Audit against this repository's established authorization, sanitization, and guard conventions before applying generic external categories.
+2. **Name the identity each changed route or handler trusts.** Read whether returned objects are scoped to that identity. An authenticated caller reaching another caller's record is the finding.
+3. **Trace each user-controlled value from entry to sink.** Cite the line where it is validated or encoded. Untraced is a Gap, not a pass.
+4. **Walk one concrete abuse path per changed surface.** Name the invariant it breaks (substituted identifier, replayed transition, unmetered retry).
+5. **Apply the security confidence bar and false-positive catalogue.** Distinguish confirmed exploit paths from speculative risks; catalog known safe shapes (example values, marked test fixtures, public checksums/hashes).
+6. **Report a Critical before remaining axes.** Name rotation as the next action, and never perform it.
 
 Avoid:
 
+- **Applying generic external threat models while ignoring the repository's own security patterns.**
+- **Speculative security findings without a demonstrable path from user input to an unguarded sink.**
 - **A dismissal resting on the presence of a login.**
-- **Dismissing constrained user input without naming the guard you read.** The constraint may be
-  a type, a parameterised query, or an upstream caller.
-- **Accepting a framework default as the authorization check**, without reading what it checks.
-- **Passing over an error message.** Say what it discloses about identity, path, or query shape.
+- **Dismissing constrained user input without naming the guard you read.**
+- **Accepting a framework default as the authorization check without reading what it checks.**
 
 Example (one instance, not the set):
 ```
@@ -59,6 +49,8 @@ Gap: the upload at <upload>:12 is size-limited; no line validates type.
 ```
 Verify:
 
+- **Confirm house security patterns were checked before external lists.**
+- **Verify every reported finding clears the confidence bar with an end-to-end path.**
 - **Confirm each changed route names its trusted identity and returned object.**
-- **Check each user-controlled value has a validating line**, or a stated Gap.
+- **Check each user-controlled value has a validating line, or a stated Gap.**
 - **Read each dismissal.** It names the guard read, not the absence of a worry.

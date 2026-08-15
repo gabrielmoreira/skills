@@ -149,15 +149,14 @@ pre-commit    Actions: blocking first, each with file:line
 focused       Risk inspected, findings, and the axes left out: no verdict
 
 ```
-- **- **Report two channels, not one.** Findings pass the gate. **Noticed** is ungated: if it made you pause, it goes there, unranked and unresolved.
-
-A finding is location, impact, fix.**
+- **Report two channels, not one.** Findings pass the gate. **Noticed** is ungated: if it made you pause, it goes there, unranked and unresolved.
+- **Every finding is location, impact, fix.**
 - **Every mode closes asserting nothing was mutated:** no file, comment, work item, commit, deployment, or mirror synced.
 - **A full mode also closes with the run status.**
 
 ## Delegating a check
-- **A subagent receives the artifact and the constraint.** Never your conclusion, never the session's history.
-- **Its own prompt tells it to report and modify nothing.**
+- **A subagent receives the pre-built diff, pinned range, and explicit constraint.** Never your conclusion, never pre-judged bias, and never session history.
+- **Mandate anti-suppression:** its prompt instructs reporting all observations and modifying nothing.
 - **What returns is evidence to re-check against the code**, never a verdict.
 - **It opens no further seat.** Re-running an unchanged artifact past a fresh reviewer is stalling, not diligence.
 

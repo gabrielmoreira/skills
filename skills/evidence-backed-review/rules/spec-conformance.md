@@ -36,15 +36,13 @@ Do:
    - Behaviour present that was never asked for. That is scope creep.
    - Behaviour that looks implemented but is implemented wrongly.
 5. **Quote the requirement line beside every finding.**
-6. **Name the proof offered for each delivered behaviour, and what that proof establishes.**
-   Weigh proof against the risk the change carries. Never count it. Each of these is itself the finding.
-   - A test asserting only that nothing threw.
-   - A test exercising a mock where the risk is the real path.
-   - No test at all.
-7. **Keep convention and specification as two verdicts.** Never merge them and never rerank
-   them. Merging lets one mask the other.
-8. **Approve a full mode once no Critical or Important finding remains.** Open Optional and Nit
-   findings do not hold it.
+6. **Evaluate test-adequacy as a dedicated axis.** Weigh proof against risk; each weak shape is a finding:
+   - *Assertion proof:* a test asserting only that nothing threw, or asserting mocks instead of the real path.
+   - *Boundary coverage:* missing boundary-value, empty-state, or error-condition tests.
+   - *Mutation resilience:* tests that stay green even when the changed logic is inverted.
+   - *Absence:* delivered behaviour with no automated test at all.
+7. **Keep convention and specification as two verdicts.** Never merge or rerank them.
+8. **Approve a full mode once no Critical or Important finding remains.** Open Optional and Nit findings do not hold it.
 
 Avoid:
 
