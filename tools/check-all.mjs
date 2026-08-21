@@ -217,6 +217,25 @@ const totals = rows.reduce((a, r) => ({
 }), { inv: 0, invFail: 0, mut: 0, mutTotal: 0, shape: 0, files: 0 });
 
 console.log("");
+// The held-out half, reported on every run. A description tuned against the
+// whole set passes its own exam, and the only thing that catches that is
+// knowing which scenarios took no part in the tuning.
+const splitLine = await (async () => {
+  try {
+    const { loadScenarios } = await import("./split-activation.mjs");
+    const s = await loadScenarios();
+    const n = (set, pos) => s.filter((x) => x.set === set && x.positive === pos).length;
+    const pct = (a, b) => (a + b ? Math.round((b / (a + b)) * 100) : 0);
+    const tr = n("train", true) + n("train", false);
+    const va = n("validation", true) + n("validation", false);
+    return s.length + " activation scenarios: " + tr + " train, " + va + " validation ("
+      + pct(n("train", true), n("validation", true)) + "% of positives, "
+      + pct(n("train", false), n("validation", false)) + "% of negatives held out)";
+  } catch (e) {
+    return "not computed: " + e.message;
+  }
+})();
+
 console.log(`  skills            ${rows.length}`);
 console.log(`  invariants        ${totals.inv} passed, ${totals.invFail} failed`);
 console.log(`  mutations         ${fast ? "skipped" : `${totals.mut} of ${totals.mutTotal} caught`}`);
@@ -225,6 +244,7 @@ console.log(`  frontmatter       ${paritySkipped ? "built-in check only, no full
 console.log(`  graders           ${graders.ok ? "passed" : "FAILED"}`);
 console.log(`  local paths       ${paths.ok ? "none committed" : "FOUND"}`);
 console.log(`  scenarios         ${baselineLine}`);
+console.log(`  split             ${splitLine}`);
 console.log(`  behaviour         ${behaviourLine()}`);
 console.log(`  far misses        ${farMissLine()}`);
 

@@ -42,6 +42,7 @@ import { pathToFileURL } from "node:url";
 import { spawn } from "node:child_process";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
+import { setFor } from "./split-activation.mjs";
 
 const ROOT = resolve(process.env.SKILL_COLLECTION_ROOT ?? "skills");
 const BASELINE = resolve("evals/baseline.json");
@@ -69,6 +70,9 @@ function parseArgs(argv) {
     else if (k === "--kind") a.kind = argv[++i];
     else if (k === "--backend") a.backend = argv[++i];
     else if (k === "--concurrency") a.concurrency = Number(argv[++i]);
+    // Which half of the split to run. Tune against train, select on validation,
+    // and a number quoted without saying which one it came from is not a result.
+    else if (k === "--set") a.set = argv[++i];
     else if (k === "--dry-run") a.dryRun = true;
     else if (k === "--check") a.check = true;
     else if (k === "--write-baseline") a.writeBaseline = true;
@@ -477,6 +481,7 @@ function casesFor(skill, args) {
   const out = [];
   for (const s of skill.scenarios) {
     if (typeof s.prompt !== "string") continue;
+    if (args.set && args.set !== "all" && setFor(s) !== args.set) continue;
 
     // The agentic backend sends the developer's message unchanged. Wrapping it
     // in a question about file paths would replace the thing being measured.
