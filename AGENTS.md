@@ -26,6 +26,8 @@ It names no tool, so a host with a question tool uses one and a host without sen
 | code should stay simple, testable, and sustainable: boundaries, cohesion, layering | `maintainable-code` |
 | TypeScript needs focused guidance: standards, boundaries, async, errors, testing | `typescript-skills` |
 | an answer must be easier to start, scan, pause, and resume | `progressive-reading` |
+| ground you cannot name yet: two probes in with no finding, or a script about to be written to find out | `bound-the-unknown` |
+| a decision, a constraint, an approval, or a second request before the first closes | `keep-the-thread-across-boundaries` |
 | a skill itself must be written, split, renamed, or checked | `authoring-verifiable-skills` |
 
 - **Not finding a match is an answer.** Do not stretch one to fit.
@@ -122,10 +124,10 @@ the burden sits entirely on the departure.
   again. Reopening it needs a new fact, not a gap in memory.
 - **So write a decision when it is made.** One that lived only in the conversation did not survive
   it, and the compromise nobody wrote down is never the one proposed later.
-- **Checkpoint before a boundary you can see:** an announced compaction or handoff, or a large
-  ingestion. Objective, decided, in progress, remaining. Stated flat and last in the turn, so a
-  summariser keeps it whole rather than compressing it.
-- **On resuming from a summary, read that record before acting**, and say that you did.
+- **On resuming from a summary, read the record before acting**, and say what you promoted from
+  it and what you left as background.
+- **`keep-the-thread-across-boundaries` owns how that record is written and rendered.** Open it
+  at the moment something settles, rather than afterwards.
 
 ## Sorting
 

@@ -19,6 +19,15 @@ description: >-
 - **The skill that matched still owns its subject.** This resolves what that skill left open, and never overrides it.
 - **You opened this in the middle of something.** This is how to do that work, not a replacement for it. Name what you were doing before you start, and return to it when this is done.
 
+## How the work actually runs here
+
+**Assume a long, interrupted session, because that is what the record says.** Peak context sits near 154k with a p90 of 202k, capped at 200k, so boundaries are frequent rather than exceptional. What fills the context is probing and not conversation: long sessions run 29 percent shell against 6 percent in short ones.
+
+- **Requests arrive before the previous one closes.** That is how I work, not a lapse to apologise for. Classify the new one and carry on.
+- **Two disciplines are therefore not optional here.** Bounding a probe before it runs long, and keeping what settled so a boundary costs less. The skills that own them exist because of the numbers above.
+- **Measure before arguing, and say the age of the number.** A measurement six days old that predates the change under discussion is not evidence about it.
+- **Prefer optimising what exists to adding something new.** A second way to do something already done here is the expensive case.
+
 ## Routing the work
 
 **Match the work to a row and open that skill.** Then come back here only for what the matched skill left open.
@@ -33,6 +42,8 @@ description: >-
 | written material to create, correct, place, or remove, including whether a decision is worth recording | `make-the-docs-trustworthy` |
 | code that should stay simple and testable: boundaries, cohesion, layering, hidden effects, abstraction added too early | `maintainable-code` |
 | TypeScript specifics: standards, boundaries, composition, config, async, errors, observability, security, testing | `typescript-skills` |
+| ground you cannot name yet: two probes in with no finding, or a script about to be written to find out | `bound-the-unknown` |
+| a decision, a constraint, an approval, or a second request arriving before the first closes | `keep-the-thread-across-boundaries` |
 | an answer that is dense, buried, or hard to resume | `progressive-reading` |
 | a skill to write, split, rename, or check, or one that never fires | `authoring-verifiable-skills` |
 
@@ -90,14 +101,10 @@ Long sessions here run 29 percent shell against 6 percent in short ones. What fi
 
 ## What survives a boundary
 
-**A boundary is a compaction, a model change, a resume, or a handoff.** Two things cross it in opposite directions, and collapsing them into one rule is the failure.
+**The mechanism belongs to `keep-the-thread-across-boundaries`.** Only what is mine sits here.
 
-- **Authorization does not survive.** Every prior proposal is pending again unless the approval is still visible in the active context. Acting is irreversible, so re-asking is cheap beside it.
-- **A decision does survive.** A recorded choice, with the alternative it rejected, is not a question again. Reopening it needs a new fact, not a gap in memory.
-- **So write the decision when it is made**, with what it rejected. One that lived only in the conversation did not survive, and the compromise nobody wrote down is never the improvement proposed later.
-- **The record carries four fields:** objective, decided with the alternative rejected, in progress, remaining. It goes where generated plans go.
-- **On handoff it travels whole**, not summarised. The receiver has nothing to reconstruct it from.
-- **When you reopen the record, say what you promoted and what you left.** The fact that still governs moves into the live turn. The rest stays background. A record nobody promotes from becomes archaeology.
+- **The record lives beside the project, not beside the session.** A session-scoped one dies with the thing it exists to outlive, and the host already keeps per-project learnings, so this matches where the rest of the durable material already sits.
+- **Authorization still does not survive a boundary**, which is the one half of it I want present even when no skill opens.
 
 ## What I do not want
 
