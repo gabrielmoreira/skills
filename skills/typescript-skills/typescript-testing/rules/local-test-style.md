@@ -30,8 +30,10 @@ Do:
 - **Name tests for behaviour**, stating the condition and the result.
 - **Use `// Given`, `// When`, `// Then` sections where they help**, and drop them where setup is trivial.
 - **Treat a coverage target as guidance**, never as a reason for a brittle test.
+- **Let a test repeat itself rather than hide its premise.** Extract construction and domain-named assertions; the values that make the case stay in the body.
 
 Avoid:
+- **A shared helper that carries the meaning of the test, or branches inside itself.** That is untested code testing your code.
 - **A vague name.** `works`, `test search`, `handles data`.
 - **Replacing the local test culture in a drive-by change.**
 - **Widening to repo-wide tests** because focused local ones are inconvenient.
@@ -57,6 +59,5 @@ it("returns empty array when no markets match query", async () => {
 
 Verify:
 - **Check the test matches nearby style**, unless there is a stated reason to change seam.
-- **Check the name states both the behaviour and the condition.**
-- **Check the sections improve readability** rather than adding ceremony.
+- **Check the name and the sections earn their place**, rather than adding ceremony.
 - **Check it would fail for a real regression**, not for a harmless refactor.

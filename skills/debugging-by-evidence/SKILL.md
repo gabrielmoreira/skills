@@ -7,7 +7,8 @@ description: >-
   without fixing, putting the regression test where the bug actually occurs, and
   reporting the causal chain at file:line. Use when the user says "this is
   broken", "why is this failing", "tests fail after my change", "it only breaks
-  sometimes", or reports something throwing, hanging, or newly slow. Not for
+  sometimes", when a check just run came back negative and nothing has named the
+  cause yet, or reports something throwing, hanging, or newly slow. Not for
   judging a change that already exists, or for an error whose message already
   names the file, line, and cause.
 ---
@@ -37,6 +38,9 @@ description: >-
   - The command the project already declares for running that surface.
   - Whether the failure is reported as constant or occasional, with a rate where it is occasional.
 - **A symptom you restated in your own words is already a hypothesis.** Keep the original beside it.
+
+- **Say the budget out loud before the first probe.** How far you intend to go, in probes or in minutes, stated where I can see it. A bounded investigation I can interrupt is worth more than an unbounded one that arrives finished.
+- **A verification that came back negative is not an answer, it is the first signal.** Reporting that something does not work, without a cause, hands the diagnosis back to me. Carry it to a cause or say what the budget stopped.
 
 ## Which rules to read
 **One rule per row.** Match the left column against the symptom or the state you are in.

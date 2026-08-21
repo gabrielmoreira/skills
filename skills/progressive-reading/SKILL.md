@@ -1,10 +1,17 @@
 ---
 name: progressive-reading
 description: >-
-  Makes answers easier to start reading, scan, resume, and understand without
-  losing important detail. Use when the user asks for simpler, clearer, less
-  dense, dyslexia-friendly, step-by-step, more scannable, more natural, less
-  robotic, less AI-sounding, or better explained answers.
+  Make an answer easier to start, scan, pause, and resume without making it
+  shallower: a reply that is correct but too dense to enter, a wall of text with
+  the useful part buried, a summary that dropped the caveat that mattered, or
+  prose that reads as machine-generated. Covers useful-answer-first ordering,
+  short paragraphs, literal headings, preserved nuance, and a small diagram where
+  structure is the difficulty. Use when the user says "I do not understand",
+  "explain this more simply", "make this clearer", "too dense", "break it into
+  parts", "step by step", "without losing the details", or "that sounds like
+  AI". Not for shortening at the cost of accuracy, and not for compressing an
+  ordered procedure or a security warning. An answer nobody can get into was not
+  delivered, and one shortened until it is wrong was not either.
 ---
 
 # Progressive Reading

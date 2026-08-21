@@ -1,11 +1,19 @@
 ---
 name: maintainable-code
 description: >-
-  Use when designing, reviewing, refactoring, or implementing code that should
-  stay simple, testable, readable, and sustainable. Covers investigation,
-  architecture, dependency boundaries, cohesive units, naming, and clear plans.
-  Also use when code hides I/O or dependencies, adds unnecessary layers, mixes
-  business and infrastructure concerns, or fragments one flow across tiny helpers.
+  Decide where code goes and which direction it points: where a new module
+  belongs, whether a dependency may flow that way, what stays behind a boundary,
+  whether an abstraction has been earned yet, and when a long flow should stay in
+  one piece. Covers investigating before changing, proving a technical unknown
+  before choosing the placement, keeping effects and dependencies explicit, and
+  recording the compromise when existing architecture forces one. Use when the
+  user says "where should this live", "is this the right structure", "should I
+  split this", "this file is doing too much", or "clean this up", and when code
+  hides I/O, passes a broad context object, hardcodes one caller into a generic
+  mechanism, or grows a second architecture beside the first. Not for judging a
+  change that already exists, and not for language-specific idiom. Structure
+  chosen while a technical unknown is still open is a guess wearing the costume
+  of design.
 ---
 
 # Maintainable Code
@@ -32,6 +40,7 @@ description: >-
   - Local patterns.
 - **Reuse a pattern that fits.**
 - **Do not create a second architecture beside the first.**
+- **Where the existing architecture forces a placement you would not choose, write that down as you make it**, with the placement you would have preferred. Recorded at the compromise it becomes an item; left in the conversation it is never the improvement proposed once the work is green.
 - **Do not abstract every similarity you notice.** Two things looking alike is not evidence they change together.
 
 ## 2. Design from observable proof
@@ -39,6 +48,9 @@ description: >-
 - **Decide how the result will be demonstrated before implementing it.**
 - **Sketch the main path, build the smallest coherent core, then wire the boundaries.**
 - **Treat the plan as provisional.** Revise it when the implementation reveals a better contract, data shape, or user experience.
+- **When the unknown is technical, prove it before choosing where the code lives.** An isolated probe answers the question without paying for placement twice. Placement chosen before the unknown is resolved is a guess wearing the costume of design.
+- **When the unknown is only structural, the target is already known**, so restructure first and then build into it.
+- **A probe may be harvested, but never its status.** Keep the working path through a hostile integration if rederiving it is expensive; the code can survive, the fact that nothing has proven it cannot.
 
 ## 3. Keep the main flow obvious
 
@@ -65,6 +77,8 @@ composition root -> route -> use case -> focused subtask -> connector
 - **Do not inject a stable pure utility or a constant just to satisfy a pattern.**
 - **Avoid globals and broad context objects**, which hide what a unit actually needs.
 - **A shared context is fine where it is the deliberate extension contract.**
+- **Name the direction each module may depend in, and let a tool refuse the rest.** Two files with one responsibility each and one direction between them is already a module; a package is the same boundary when it must be enforced rather than agreed.
+- **Prefer a cycle check the project runs over a rule people remember.** Bidirectional dependency has no legitimate exception, which makes it the cheapest boundary to enforce and the first one worth wiring into the build.
 
 ## 5. Keep mechanisms generic and dependencies deliberate
 

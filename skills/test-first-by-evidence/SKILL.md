@@ -89,11 +89,13 @@ NO PRODUCTION CODE WITHOUT A TEST YOU WATCHED FAIL
 - **The code is too simple to break.** Simple code breaks. The test costs thirty seconds.
 - **You already tested it by hand.** Manual testing leaves no record and does not re-run.
 - **You will add tests after.** Tests written after pass immediately, which proves nothing about whether they can catch anything.
-- **You are only exploring.** Fine. Throw the exploration away and start again with a test.
+- **You are only exploring.** Then say so, and decide what the probe was worth. Discard it when the value was the knowledge, since the question has been answered and rewriting under a test is cheap. Harvest it when the value was a working path through a hostile integration that is expensive to rederive. Either way the code may survive and its unproven status may not: what ships, ships from a red you watched.
 
 ## Routing
 
 - **The table above selects the rule.** Read a selected rule in full, and say which one you opened, in one line.
 - **Judging tests inside a change under review belongs to a review of the diff**, not here.
 - **Choosing a framework is a project decision**, not this skill's.
+- **Green is not finished.** Leave the tree in a state that could be committed without further thought, and say how you would slice it. The slicing is decided while the work happens, since deciding at the end produces one large commit.
+- **Once it is green it is a change, not an intention.** Hand the diff to a review rather than judging your own work here.
 - **A direct instruction from the user outranks anything here.**
