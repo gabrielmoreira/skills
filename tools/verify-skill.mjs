@@ -23,6 +23,27 @@ const OPTIONAL = ["Exceptions:", "Example"];  // "Example:" or "Example (one ins
 // rule owning two decisions, not to stop it being scannable.
 const RULE_MAX_WORDS = 450;
 const RULE_MAX_TOTAL = 600;
+
+// A rule about how to author skills is measured against the wrong budget.
+//
+// A domain rule states a decision and leaves the evidence to the reader, who
+// can check it against the codebase in front of them. A rule about how skills
+// behave has no shared ground to point at: it has to carry the observation that
+// justifies it, because "across five reference collections no other key passes
+// 60 percent" cannot be verified from anything the reader already holds. That
+// evidence is content, not padding, and charging it against a cap sized for
+// decisions alone measures something the file is not doing wrong.
+//
+// Raised here rather than everywhere, because the cap does real work: three of
+// these eight rules sat within ten words of it, and the pressure is what
+// surfaced that prove-it-with-checks carries two decisions. The extra room is
+// for the evidence, not for a second decision.
+//
+// Two locks, matching the portability exemption below. The name says what the
+// skill is about, and only one skill per collection is named for authoring. A
+// domain skill cannot acquire the room by growing into it.
+const META_RULE_MAX_WORDS = 520;
+const META_RULE_MAX_TOTAL = 690;
 // The floor now counts prose lines only, so it had to come down with the change.
 // A rule that teaches mostly through a worked example is not thin: its content
 // sits in the fence. C-02 already rejects a stub by requiring all five blocks.
@@ -433,6 +454,10 @@ async function verify(skillDir) {
   }
 
   const sizes = [];
+  // Which budget this skill is measured against. Named for authoring, so the
+  // evidence its rules carry is not charged as if it were a second decision.
+  const META = /^authoring-/.test(NAME);
+
   { // C-07 sizes
     const bad = [];
     for (const n of ruleNames) {
@@ -449,8 +474,10 @@ async function verify(skillDir) {
       // 520 = the 400 prose cap plus the ~120 words a 20-line example costs.
       const total = stripFrontmatter(t).split(/\s+/).filter(Boolean).length;
       sizes.push({ n, lines, words, total });
-      if (words >= RULE_MAX_WORDS) bad.push(`rules/${n}.md ${words} prose words (limit ${RULE_MAX_WORDS})`);
-      if (total >= RULE_MAX_TOTAL) bad.push(`rules/${n}.md ${total} words read (limit ${RULE_MAX_TOTAL}), the example is carrying the file`);
+      const maxWords = META ? META_RULE_MAX_WORDS : RULE_MAX_WORDS;
+      const maxTotal = META ? META_RULE_MAX_TOTAL : RULE_MAX_TOTAL;
+      if (words >= maxWords) bad.push(`rules/${n}.md ${words} prose words (limit ${maxWords}${META ? ", authoring budget" : ""})`);
+      if (total >= maxTotal) bad.push(`rules/${n}.md ${total} words read (limit ${maxTotal}), the example is carrying the file`);
       if (lines < RULE_MIN_LINES || lines > RULE_MAX_LINES) bad.push(`rules/${n}.md ${lines} lines (allowed ${RULE_MIN_LINES}-${RULE_MAX_LINES})`);
     }
     // Measure the document, not its metadata header. A folded description costs

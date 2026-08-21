@@ -149,10 +149,14 @@ const MUTATIONS = [
       const f = rulesOf(dir)[0];
       const t = readRule(dir, f);
       if (!/^Avoid:/m.test(t)) return false;
-      // Scale the filler to this file, or the mutation silently stops firing
-      // whenever the rule is compressed below the fixed threshold.
+      // Overshoot rather than clear the cap by one word. A filler sized to
+      // threshold + 1 stops firing the moment the threshold moves, which is how
+      // this mutation went stale when the authoring budget was raised: it kept
+      // injecting a defect for a cap that no longer applied to that skill.
+      // Doubling the prose blows any budget the checker holds, so the mutation
+      // stays pinned to the defect rather than to a number.
       const prose = t.replace(/^---[\s\S]*?---/, "").replace(/```[\s\S]*?```/g, "").split(/\s+/).filter(Boolean).length;
-      const need = Math.max(20, 451 - prose);
+      const need = Math.max(200, prose);
       const filler = ("- " + "restating the same consideration at length ".repeat(Math.ceil(need / 6))).trim() + ".";
       writeRule(dir, f, t.replace(/^Avoid:/m, "Avoid:\n" + filler));
       return true;
