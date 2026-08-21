@@ -52,6 +52,19 @@ description: >-
 - **One question decides between the two learnings directories.** Would a colleague cloning this repository hit the same thing? Yes goes inside, no goes outside.
 - **Report the path chosen and whether it is tracked**, every time.
 
+## Scouting, scripts and subagents
+
+**A throwaway analysis is a script, not a subagent.** Node, and `.mjs` so it runs with bare `node` and no toolchain. Use `.ts` only where it has to meet types that already exist.
+
+- **It goes in `.local/` and stays there.** A second question against the same data should cost nothing, and deleting the extract is how the third question pays for the first one twice.
+- **The script writes the artifact; the terminal prints ten lines.** A four-megabyte extract that never enters a context is the cheapest scout available, and it neither forgets nor charges by the turn.
+- **Delegate the repair, keep the reading.** After two rounds of fix-and-rerun on one script, hand over the goal and the error. The longest run of consecutive shell calls I have on record is 47, and none of it was judgement.
+- **Say what you delegated and what it returned**, so the habit can be measured rather than assumed.
+
+**Deliberate change of habit, from 2026-08-21.** I am trying to use subagents more. The baseline is three of ninety-seven sessions in the fortnight before, ten calls in all.
+
+Long sessions here run 29 percent shell against 6 percent in short ones. What fills the context is the script loop, not the conversation.
+
 ## Which skill wins
 
 **Only genuinely ambiguous pairs belong here.** Everything else is settled by the skills themselves.
@@ -73,8 +86,18 @@ description: >-
 ## Discussion is not authorization
 
 - **Analysis, alternatives, proposals and plans do not authorize anything.** Change code, configuration, infrastructure or external state only after I say to implement, apply, change, or select.
-- **After a compaction, a model change, a resume, or a handoff, every prior proposal is pending again** unless the authorization is still visible in the active context.
 - **Where authorization is unclear, ask one specific question** before touching anything.
+
+## What survives a boundary
+
+**A boundary is a compaction, a model change, a resume, or a handoff.** Two things cross it in opposite directions, and collapsing them into one rule is the failure.
+
+- **Authorization does not survive.** Every prior proposal is pending again unless the approval is still visible in the active context. Acting is irreversible, so re-asking is cheap beside it.
+- **A decision does survive.** A recorded choice, with the alternative it rejected, is not a question again. Reopening it needs a new fact, not a gap in memory.
+- **So write the decision when it is made**, with what it rejected. One that lived only in the conversation did not survive, and the compromise nobody wrote down is never the improvement proposed later.
+- **The record carries four fields:** objective, decided with the alternative rejected, in progress, remaining. It goes where generated plans go.
+- **On handoff it travels whole**, not summarised. The receiver has nothing to reconstruct it from.
+- **When you reopen the record, say what you promoted and what you left.** The fact that still governs moves into the live turn. The rest stays background. A record nobody promotes from becomes archaeology.
 
 ## What I do not want
 
@@ -95,7 +118,8 @@ description: >-
 
 - **Nothing here installs itself.** No configuration is written, and no session tool is registered without being asked.
 - **Where the harness offers a way to re-read this between turns, propose it and let me decide.** An instruction that only lives in the system prompt is read once and forgotten by some models.
-- **Until then, name the procedure you are following in your first line of work**, so a lapse is visible to me rather than silent.
+- **Until then, open your first line of work with the procedure you are following and the objective you are on**, so a lapse is visible to me rather than silent.
+- **Checkpoint before a boundary you can see.** An announced compaction, resume or handoff, or a large ingestion, where the checkpoint goes before the read rather than after, since the read may be what pushes the boundary. A compaction cannot be seen arriving, so the record is kept current as decisions land rather than written when one looms.
 
 ## Routing
 

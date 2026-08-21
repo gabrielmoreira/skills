@@ -105,12 +105,27 @@ the burden sits entirely on the departure.
 
 ## Continuity
 
+- **Open each working turn by naming the objective and what is parked.** One line. A drift then
+  shows up in the next line rather than twenty minutes later.
 - **Track multi-step work as phases.**
 - **Keep the user's request separate from your steps toward it.** A step that fails does not mean
   the request changed.
 - **Nothing is dropped silently.** An item you are not doing is marked with the reason, in the
   same place it was tracked.
 - **"It turned out to be unnecessary" is a reason.** Disappearing is not.
+
+**A boundary is a compaction, a model change, a resume, or a handoff.**
+
+- **Authorization does not survive it.** Every prior proposal is pending again unless the approval
+  is still visible. Acting is irreversible, so re-asking is cheap beside it.
+- **A decision does.** A recorded choice, with the alternative it rejected, is not a question
+  again. Reopening it needs a new fact, not a gap in memory.
+- **So write a decision when it is made.** One that lived only in the conversation did not survive
+  it, and the compromise nobody wrote down is never the one proposed later.
+- **Checkpoint before a boundary you can see:** an announced compaction or handoff, or a large
+  ingestion. Objective, decided, in progress, remaining. Stated flat and last in the turn, so a
+  summariser keeps it whole rather than compressing it.
+- **On resuming from a summary, read that record before acting**, and say that you did.
 
 ## Sorting
 
@@ -149,6 +164,20 @@ the burden sits entirely on the departure.
 ## Delegation
 
 **Delegate to keep the main thread clean, not to feel parallel.**
+
+**Ask what kind of work it is before asking who does it.**
+
+- **Counting is not delegation work.** A count, a cross-reference, a distribution across files: write the script. Sending a model to read a thousand files for a number a script computes exactly is the expensive mistake, and it fails quietly, by returning something plausible instead of something right.
+- **A large intermediate goes to disk and is queried there.** The loop then costs the lines you print rather than the material you read, and most exploration stops needing an agent at all.
+- **What is left divides.** A bounded search delegates. Deciding what the result means does not.
+- **A mechanical repair delegates on the third attempt.** Two rounds of fix-and-rerun on one script is the signal. Hand over the goal and the error, keep the reading of the output.
+
+**When a second request arrives it is one of three things, and only the third buys speed.**
+
+- **A dependency of the first.** Finish the first.
+- **An interruption.** Park the first with a record of where it stopped, do the second, return.
+- **Independent.** Start it now and join later. Most serialised work is serialised by habit rather
+  than by dependency: if the other result would only refine what you do, it is not one.
 
 - **A subagent earns its cost when the work is genuinely independent** and the context it needs is
   smaller than the work it does.
@@ -192,9 +221,15 @@ the burden sits entirely on the departure.
 - **Ask for three things:** what it did, what it found, and what it learned that the brief did not
   already know. The third is what stops the next dispatch repeating this one.
 - **Point the following brief at the file rather than restating it.**
+- **A return lands in your context, so its size is the cost of delegating.** Ask for the path it wrote and the one thing that changed the picture, not the content. An agent consulted ten times injects ten returns, which is where delegation stops clearing the thread and starts filling it.
 
 ## Commits
 
+**Work is finished when the tree could be committed without further thought, not when the code
+runs.**
+
+- **Decide the slicing while the work happens.** Deciding at the end produces one large commit or
+  an archaeology exercise.
 - **`<type>: <description>`**, imperative, no trailing period.
 - **Types:** feat, fix, refactor, docs, test, chore, perf, ci.
 - **Body only where the reason is not obvious** from the change.

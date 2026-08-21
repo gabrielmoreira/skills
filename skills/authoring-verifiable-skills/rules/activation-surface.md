@@ -26,12 +26,13 @@ Do:
 - **Write it as a folded block**, `description: >-`, with the text indented beneath.
 - **Carry `name` and `description` and nothing else.** Across five reference collections no other key passes 60 percent.
 
+- **Name what goes wrong without the skill.** A format skill fills a gap the agent can feel. A process skill fights a competence it believes it has, and only the cost of proceeding without it interrupts that.
+
 Avoid:
 - **A single-line description containing `: `.** YAML reads that as a nested mapping and rejects the file.
-- **Too broad.** "Use when writing code" matches everything, so selection becomes a coin flip.
+- **Too broad, or pushed too hard.** "Use when writing code" matches everything, so selection becomes a coin flip, and stacked synonyms raise false activation faster than recall.
 - **Ceremony naming.** "Use when following the review protocol" only matches people who already know the skill exists.
 - **Summarising the workflow.** A description that restates the body becomes a shortcut the agent follows instead of reading the body.
-- **Stacked synonyms and "make sure to use this whenever".** Push raises false activation faster than recall.
 - **Rewriting a description to win an activation it never lost.** Where the agent never opens the catalogue, no wording reaches it.
 - **A company, repository, or path.** Restate it as an observable condition.
 
@@ -51,7 +52,6 @@ description: >-
 
 Verify:
 - **Parse the frontmatter with a strict parser**, not one that skips what it cannot read.
-- **Check the description names an observable condition**, not the skill's own vocabulary.
-- **Check the exclusion clause names an installed neighbour.**
+- **Check the condition is observable and the exclusion names an installed neighbour.**
 - **Confirm a must-not-activate scenario exists** for each neighbour named.
 - **Under-triggering and over-triggering are both defects.** Tune with scenarios, never adjectives.

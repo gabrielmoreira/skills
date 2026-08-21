@@ -27,7 +27,10 @@ Do:
 - **Keep mutations structural rather than anchored to strings**, so they survive a rewrite of the skill.
 - **Cross-check the built-in parser against a full implementation** where one is available, and skip cleanly where it is not.
 
+- **Select a description on scenarios it was not tuned against.** Keep the version scoring best on the held-out half, not the last one written.
+
 Avoid:
+- **Tuning against every scenario you measure on.** It passes because it was fitted to those prompts.
 - **Trusting a green run.** Green means the checks did not fire, which is also what a check that cannot fire looks like.
 - **A check with no mutation.** It is an opinion with a pass label.
 - **Loosening a check because one instance is defensible.** Reword the instance, or the check stops holding everywhere else.
@@ -49,7 +52,5 @@ node tools/check-yaml-parity.mjs    # optional cross-check, skips when absent
 
 Verify:
 - **Run the mutations and read which check caught each one.**
-- **Confirm no mutation is reported stale.**
 - **Confirm every scenario suite covers every rule** with at least one positive case.
-- **Confirm the frontmatter check runs without installing anything.**
 - **Say plainly what has not been run.** Scenarios that exist but have never executed make routing declared, not proved.

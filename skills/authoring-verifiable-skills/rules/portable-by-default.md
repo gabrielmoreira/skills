@@ -28,6 +28,7 @@ Do:
 - **Keep concrete detail in the example**, where being specific is the point.
 - **Keep citations in `references:`**, which exists to name outside sources.
 - **Let a skill whose subject is one ecosystem name that ecosystem**, and say so in its scope.
+- **Write a trigger, never register one.** A hook is a trigger the harness fires. Until hook formats converge, the same trigger travels as text the skill owns.
 - **Where a skill writes a file, resolve the location rather than declare it.** What the request named, then what the instruction file declares, then a directory that already exists. Report the path chosen.
 
 Avoid:
@@ -36,6 +37,7 @@ Avoid:
 - **A company or product name in an instruction.** In an example it illustrates. In an instruction it is a dependency.
 - **A personal handle**, which dates the file and may not stay reachable.
 - **Assuming a package manager.** The repository declares which one it uses.
+- **A hook declared in frontmatter or a host config.** The format has no field for one, so it belongs to a single client.
 
 Exceptions:
 - **An example MAY name a real provider**, where the rule is about containing it.
@@ -51,5 +53,4 @@ Example (one instance, not the set):
 
 Verify:
 - **Read the instruction prose with frontmatter and fences removed.** Coupling matters there.
-- **Search for a drive letter, a home path, and an embedded URL across the whole file**, examples included.
-- **Ask whether the rule works on a machine you have never seen.** Where the answer needs a name, that name is a dependency.
+- **Ask whether the rule works on a machine you have never seen**, searching examples too. Where the answer needs a name, that name is a dependency.
