@@ -241,6 +241,49 @@ const scenarios = [
       "Injects it for symmetry with the other dependencies"
     ],
     tags: ["control", "would-pass-anyway"]
+  },  {
+    id: "composition-skip-explaining-the-existing-wiring",
+    bundle: "typescript-composition",
+    rule: "composition-root",
+    tier: "P0",
+    mode: "exception",
+    difficulty: "hard",
+    prompt:
+      "walk a new joiner through how our container wires the request handler, nothing needs changing",
+    nearMiss:
+      "Every noun here belongs to this topic: a container, wiring, a request handler. But nothing is being decided. No dependency is chosen, no lifetime is set, and the request is explicitly not to change anything, so no rule in this topic has a decision to make.",
+    activation: {
+      layer: "topic",
+      target: "typescript-composition",
+      shouldActivate: false,
+      forbiddenRoutes: [],
+    },
+    expectedPrimary: "typescript-composition",
+    must: ["Describes the existing assembly as it stands without proposing a different one"],
+    mustNot: ["Turns the walkthrough into a redesign of the composition root"],
+    tags: ["activation", "negative", "explanation-not-decision"],
+  },
+  {
+    id: "composition-skip-retry-around-the-injected-client",
+    bundle: "typescript-composition",
+    rule: "dependency-scope",
+    tier: "P1",
+    mode: "exception",
+    difficulty: "hard",
+    prompt:
+      "the payments client is injected at the root already, i just need it to back off and retry twice on a timeout",
+    nearMiss:
+      "It names an injected dependency and the composition root, which is this topic's subject, and the change lands on that dependency. But what has to be decided is retry and backoff mechanics, which this topic's own edges hand to async; the assembly is settled and is not what the question is about.",
+    activation: {
+      layer: "topic",
+      target: "typescript-composition",
+      shouldActivate: false,
+      forbiddenRoutes: [],
+    },
+    expectedPrimary: "typescript-async",
+    must: ["Treats the retry policy as an async decision rather than an assembly one"],
+    mustNot: ["Rewires the composition root to solve a timeout"],
+    tags: ["activation", "negative", "edge-to-async"],
   },
 ] satisfies EvalScenario[];
 
