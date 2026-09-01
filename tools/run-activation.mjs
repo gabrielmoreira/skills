@@ -37,6 +37,7 @@
  *   node tools/run-activation.mjs --write-baseline
  */
 import { readdir, readFile, writeFile, mkdir, rm, cp, stat } from "node:fs/promises";
+import { readFileSync, existsSync } from "node:fs";
 import { join, resolve, basename, dirname } from "node:path";
 import { pathToFileURL } from "node:url";
 import { spawn } from "node:child_process";
@@ -49,14 +50,54 @@ const BASELINE = resolve("evals/baseline.json");
 
 // ---------------------------------------------------------------- arguments
 
+const HELP = `Run the activation scenarios against a model.
+
+  node tools/run-activation.mjs [selectors] [options]
+
+SELECTORS  narrow before you spend; each one composes with the others
+  --skill <name>      one bundle, repeatable       (e.g. typescript-skills)
+  --rule <name>       one rule inside it           (e.g. promise-ownership)
+  --id <scenario>     one named scenario           (e.g. sequential-independent-fetches)
+  --kind <k>          all | routing | activation | far-miss
+  --set <s>           train | validation | all     tune on train, report on validation
+  --limit <n>         stop after n cases
+
+OPTIONS
+  --model <sel>       provider/model, fuzzy        (default github-copilot/gpt-5.6-terra)
+  --thinking <lvl>    off..max                     (default high)
+  --samples <n>       samples per case             (default 3)
+  --backend <b>       omp | api                    (default omp unless ANTHROPIC_API_KEY)
+  --concurrency <n>   parallel cases               (default 10, hard max 10)
+  --stagger <s>       seconds between launches     (default 5)
+  --dry-run           print what would be sent, spend nothing
+  --check             compare against the committed baseline
+  --write-baseline    replace evals/baseline.json with this run
+  --verbose           per-case output
+  "  --record <dir>      save each raw stream, so it can be replayed later",
+  "  --replay <dir>      score recorded streams instead of calling the model",
+
+RECIPES
+  # is this one new rule reachable at all, cheaply
+  node tools/run-activation.mjs --rule promise-ownership --samples 1
+
+  # did a description change move activation, on the half held out from tuning
+  node tools/run-activation.mjs --skill typescript-skills --set validation
+
+  # the number that goes in the report
+  node tools/run-activation.mjs --write-baseline
+
+Every executable model role is pinned to the model under test, so a scenario
+that delegates cannot silently measure a second model.`;
+
 function parseArgs(argv) {
   const a = {
     samples: 3, model: null, skills: [], limit: Infinity,
-    kind: "all", backend: null, dryRun: false, check: false, writeBaseline: false,
-    concurrency: 4, verbose: false,
+    kind: "all", backend: null, rules_: [], ids: [], record: null, replay: null, profile: null, dryRun: false, check: false, writeBaseline: false,
+    concurrency: 10, verbose: false,
     // omp only
-    thinking: "high", maxTime: 90, rules: false, fixture: null,
+    thinking: "xhigh", maxTime: 90, rules: false, fixture: null,
   };
+  if (argv.includes("--help") || argv.includes("-h")) { console.log(HELP); process.exit(0); }
   for (let i = 0; i < argv.length; i++) {
     const k = argv[i];
     if (k === "--samples") a.samples = Number(argv[++i]);
@@ -66,10 +107,18 @@ function parseArgs(argv) {
     else if (k === "--with-rules") a.rules = true;
     else if (k === "--model") a.model = argv[++i];
     else if (k === "--skill") a.skills.push(argv[++i]);
+    else if (k === "--rule") a.rules_.push(argv[++i]);
+    else if (k === "--id") a.ids.push(argv[++i]);
+    else if (k === "--record") a.record = argv[++i];
+    else if (k === "--replay") a.replay = argv[++i];
+    else if (k === "--profile") a.profile = argv[++i];
     else if (k === "--limit") a.limit = Number(argv[++i]);
     else if (k === "--kind") a.kind = argv[++i];
     else if (k === "--backend") a.backend = argv[++i];
-    else if (k === "--concurrency") a.concurrency = Number(argv[++i]);
+    // A ceiling, not a suggestion: above this the provider rate-limits
+    // whatever the stagger does.
+    else if (k === "--concurrency") a.concurrency = Math.min(10, Number(argv[++i]));
+    else if (k === "--stagger") STAGGER.ms = Number(argv[++i]) * 1000;
     // Which half of the split to run. Tune against train, select on validation,
     // and a number quoted without saying which one it came from is not a result.
     else if (k === "--set") a.set = argv[++i];
@@ -81,7 +130,20 @@ function parseArgs(argv) {
   }
   if (!["all", "routing", "activation", "far-miss"].includes(a.kind)) throw new Error(`--kind must be all, routing, activation or far-miss`);
   a.backend ??= process.env.ANTHROPIC_API_KEY ? "api" : "omp";
-  a.model ??= a.backend === "omp" ? "github-copilot/gpt-5.6-terra" : "claude-haiku-4-5-20251001";
+  // Tried in order, a whole run each. Not a retry inside a run: omp already
+  // does that and it is what `degraded` exists to refuse, because a run that
+  // changes model halfway reports a number no model produced.
+  // The retry chain, in order. The two terra providers share one quota wall in
+  // practice, so they are separated rather than adjacent: a wall on the first
+  // would otherwise take the second with it and end the chain two steps early.
+  a.model ??= a.backend === "omp"
+    ? [
+        "openai-codex/gpt-5.6-terra",
+        "opencode-go/gpt-5.6-luna",
+        "github-copilot/gpt-5.6-terra",
+        "opencode-zen/muse-spark-1.2-contributor-free",
+      ].join(",")
+    : "claude-haiku-4-5-20251001";
   return a;
 }
 
@@ -115,6 +177,10 @@ const QUIET = [
   "marketplace:\n  autoUpdate: off\n",
   "temperature: 0\n",
   "extensions: []\n",
+  // omp retries onto another provider when one stops serving. That is right
+  // for work and wrong for measurement: the run would report a model it did
+  // not use. Off here, so `degraded` sees the stop and the runner decides.
+  "retry:\n  modelFallback: false\n",
 ].join("");
 
 const OFF_SOURCES = [
@@ -122,10 +188,29 @@ const OFF_SOURCES = [
   "enablePiUser", "enablePiProject", "enableAgentsUser", "enableAgentsProject",
 ].map((k) => `  ${k}: false\n`).join("");
 
+/**
+ * Every executable role pinned to the model under test.
+ *
+ * The runner pinned the main model and nothing else. A scenario that
+ * delegates would run its subagent on whatever the user's `task` role names,
+ * and the number would silently mix two models. Role resolution happens
+ * inside the agent, so `degraded` never sees it: that watches for quota
+ * fallback, not for a role resolving elsewhere.
+ *
+ * Both arms get the identical block, so the arms still differ only in whether
+ * the collection is loaded.
+ */
+const EXECUTABLE_ROLES = [
+  "default", "task", "smol", "slow", "plan", "deep", "economical-deep", "review", "advisor",
+];
+
+const pinnedRoles = (model, thinking) =>
+  `modelRoles:\n${EXECUTABLE_ROLES.map((r) => `  ${r}: ${model}:${thinking}\n`).join("")}`;
+
 const OVERLAYS = {
-  with: (skillsDir) =>
-    `${QUIET}skills:\n  enabled: true\n${OFF_SOURCES}  customDirectories:\n    - ${skillsDir.replace(/\\/g, "/")}\n`,
-  without: () => `${QUIET}skills:\n  enabled: false\n`,
+  with: (skillsDir, roles) =>
+    `${QUIET}${roles}skills:\n  enabled: true\n${OFF_SOURCES}  customDirectories:\n    - ${skillsDir.replace(/\\/g, "/")}\n`,
+  without: (_skillsDir, roles) => `${QUIET}${roles}skills:\n  enabled: false\n`,
 };
 
 /**
@@ -177,8 +262,46 @@ export function degraded(stream) {
     } catch {
       continue;
     }
-    if (j.type === "retry_fallback_applied") return `fell back from ${j.from} to ${j.to}`;
-    if (j.type === "auto_retry_start") return String(j.errorMessage ?? "retried").split("\n")[0].slice(0, 120);
+    if (j.type === "retry_fallback_applied") return { fatal: true, why: `fell back from ${j.from} to ${j.to}` };
+    // A retry that recovered is the mechanism working. Only a retry that
+    // changed the model is fatal, and that arrives as retry_fallback_applied
+    // above; the rest is judged by whether the sample produced anything.
+  }
+  // A spent subscription is not one bad sample. Measured: once the limit was
+  // reached, the last 18 recordings of 84 were empty and contiguous — nothing
+  // after it can succeed, so carrying on spends wall-clock to manufacture
+  // scenarios that look failed and were never asked.
+  // Killed on our deadline. One is a lost sample; several in a row mean the
+  // provider is not answering at all, which the caller escalates.
+  if (/"type":"harness_timeout"/.test(stream)) {
+    return { fatal: false, timeout: true, why: "the model did not answer before the deadline" };
+  }
+
+  // A fourth disguise for the same thing. OpenRouter reserves credit for the
+  // maximum output a request could produce, so an account with a little money
+  // left refuses every agentic call while still answering a one-line probe:
+  // "You requested up to 131072 tokens, but can only afford 40605." Answering
+  // is not the same as being able to work, and treating the first as evidence
+  // of the second cost 138 empty recordings before anyone looked.
+  // Matched as an error, not as a number. An earlier version tested /\b402\b/
+  // against the whole stream, which matches any standalone 402 in anything the
+  // agent read — and the arm carrying 12,000 extra tokens of skill text hit one
+  // and was aborted at sample eight while its twin ran all 120. A detector that
+  // fires on something other than what it names is worse than none: it produced
+  // a credit diagnosis for a run with no credit problem.
+  if (/"errorStatus":\s*402|requires more credits|can only afford/i.test(stream)) {
+    return { fatal: true, why: "the account cannot reserve credit for a request this size" };
+  }
+
+  const spent = stream.match(/usage[_ ]limit[_ ]reached|quota[_ ]exceeded|insufficient[_ ]quota/i);
+  if (spent) return { fatal: true, why: `provider is out of quota (${spent[0]}), so nothing after this can run` };
+
+  // Nothing named it, so judge it by what it did. An agentic sample that
+  // executed no tool and produced a few kilobytes did not run: an upstream
+  // refusal, or a transport that gave up. Scoring it as a failure is how a
+  // provider going quiet becomes evidence against a skill.
+  if (!/"type":"tool_execution_start"/.test(stream) && stream.length < 8000) {
+    return { fatal: false, why: `no tool ran in ${stream.length} bytes, so this sample measured nothing` };
   }
   return null;
 }
@@ -348,7 +471,10 @@ async function freshWorkspace(base, skillDir, id) {
   return dir;
 }
 
-function ompRun(a, arm, prompt, paths, cwd) {
+async function ompRun(a, arm, prompt, paths, cwd) {
+  // Before the process exists, not inside the executor: the wait is the point,
+  // and a Promise executor cannot await.
+  await stagger();
   return new Promise((ok, bad) => {
     const args = [
       "-p", prompt,
@@ -362,14 +488,56 @@ function ompRun(a, arm, prompt, paths, cwd) {
     ];
     // Without this the user's own AGENTS.md is loaded, and its routing table
     // already names these skills. That measures the instructions, not the skill.
+    // The isolated profile carries our config and a copy of the credentials,
+    // so a run reads what we wrote and not the user's global settings.
+    if (a.profile) args.push("--profile", a.profile);
     if (!a.rules) args.push("--no-rules");
+    // The child's own --max-time is a request, not a guarantee. Measured: ten
+    // workers sat on a model that accepted the connection and never answered,
+    // and because this waited only on `close`, the promise never settled and
+    // the run hung for fourteen hours holding every worker. A deadline here
+    // turns an unbounded stall into one lost sample.
     const child = spawn("omp", args, { stdio: ["ignore", "pipe", "pipe"] });
     let out = "";
+    let settled = false;
+    const deadline = (a.maxTime * 2 + 30) * 1000;
+    const done = (v) => { if (settled) return; settled = true; clearTimeout(timer); ok(v); };
+    const timer = setTimeout(() => {
+      child.kill("SIGKILL");
+      done(`${out}
+{"type":"harness_timeout","afterMs":${deadline}}
+`);
+    }, deadline);
     child.stdout.on("data", (d) => (out += d));
     child.stderr.on("data", (d) => (out += d));
-    child.on("error", bad);
-    child.on("close", () => ok(out));
+    child.on("error", (e) => { if (settled) return; settled = true; clearTimeout(timer); bad(e); });
+    child.on("close", () => done(out));
   });
+}
+
+/**
+ * Starts are spaced, not just capped.
+ *
+ * Concurrency limits how many runs are in flight; it does nothing about when
+ * they begin. Eight workers with a limit of eight all launch in the same
+ * instant, and the provider sees eight requests at once — a burst, and a rate
+ * limit. So the gate is on launches: each one waits until the configured
+ * interval has passed since the previous launch, whichever worker owns it.
+ *
+ * The queue is a promise chain rather than a timestamp check, because two
+ * workers reading the same timestamp before either writes it would both decide
+ * they may go, which is the burst the gate exists to prevent.
+ */
+export const STAGGER = { ms: 5_000 };
+let lastLaunch = 0;
+let launchQueue = Promise.resolve();
+function stagger() {
+  launchQueue = launchQueue.then(async () => {
+    const wait = lastLaunch + STAGGER.ms - Date.now();
+    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+    lastLaunch = Date.now();
+  });
+  return launchQueue;
 }
 
 async function pickBackend(forced) {
@@ -409,6 +577,13 @@ export function saidYes(answer) {
   return first === "YES" ? true : first === "NO" ? false : null;
 }
 
+/**
+ * A target the observed arm can decide: a file on disk the agent either opened
+ * or did not. A bare bundle name names a routing answer instead, and no amount
+ * of watching the filesystem settles it.
+ */
+export const gradableTarget = (t) => typeof t === "string" && /\.md$/.test(t);
+
 export function gradeRouting(answer, scenario) {
   const got = pathsIn(answer);
   const want = (scenario.expectedAll?.length ? scenario.expectedAll : [scenario.expectedPrimary]).map(normalise);
@@ -419,18 +594,69 @@ export function gradeRouting(answer, scenario) {
 }
 
 /**
- * Grading by observation. The agent either opened the skill or it did not, and
- * either opened the expected rule or it did not. Neither is an opinion.
+ * Did the guidance reach the agent, by whatever path it travelled?
+ *
+ * Scoring "opened the expected file" is exact and answers a narrower question
+ * than the one being asked. It makes the harness structurally unable to judge
+ * the change this collection is heading towards: fold a rule into the index it
+ * sits under and the file stops existing, so the check fails on every run and
+ * reports a compression as a regression. An instrument that scores an
+ * improvement as damage cannot be used to decide whether to make it.
+ *
+ * So delivery is what counts. A rule arrived if the agent opened its file, or
+ * if it opened a file that carries that rule's text inline. The second case is
+ * resolved against the collection on disk rather than guessed: the absorbing
+ * file has to actually contain the rule's own heading.
+ *
+ * The check stays deterministic. It reads files, not intentions, and says which
+ * path delivered so a pass is never mysterious.
  */
+const deliveryCache = new Map();
+function deliveredBy(openedPath, wantPath) {
+  const key = `${openedPath}|${wantPath}`;
+  if (deliveryCache.has(key)) return deliveryCache.get(key);
+  let ok = false;
+  try {
+    // The rule's own heading is the anchor: a file that absorbed it carries the
+    // heading, a file that merely routes to it carries only the path.
+    const ruleFile = wantPath.split("/").pop().replace(/\.md$/, "");
+    // A bundle name is a directory. What was read is its entry file, and that is
+    // exactly where a folded rule would live, so resolving it is the whole point
+    // rather than a detail.
+    let rel = openedPath.replace(/^skill:\/\//, "");
+    if (!rel.endsWith(".md")) {
+      rel = ["SKILL.md", "INDEX.md"].map((f) => join(rel, f)).find((p) => existsSync(join(ROOT, p))) ?? rel;
+    }
+    const body = readFileSync(join(ROOT, rel), "utf8");
+    const heading = ruleFile.replace(/-/g, "[ -]");
+    ok = new RegExp(`^#{1,3}\\s.*${heading}`, "im").test(body);
+  } catch {
+    ok = false;
+  }
+  deliveryCache.set(key, ok);
+  return ok;
+}
+
 export function gradeObserved(seen, scenario, skillName) {
   const want = (scenario.expectedAll?.length ? scenario.expectedAll : [scenario.expectedPrimary])
     .filter(Boolean)
     .map(normalise);
   const forbidden = (scenario.activation?.forbiddenRoutes ?? []).map(normalise);
   const opened = seen.skills.includes(skillName);
-  const hit = want.every((w) => seen.rules.some((g) => samePath(g, w)));
+  // Every file this run actually read from the collection, index included: the
+  // index is where an inlined rule would be carried, so leaving it out would
+  // reintroduce the blindness this is fixing.
+  const read = [...seen.rules.map((r) => `${skillName}/${r}`), ...seen.skills];
+  const how = new Map();
+  const reached = (w) => {
+    if (seen.rules.some((g) => samePath(g, w))) { how.set(w, "opened"); return true; }
+    const via = read.find((p) => deliveredBy(p, w));
+    if (via) { how.set(w, `inline in ${via}`); return true; }
+    return false;
+  };
+  const hit = want.every(reached);
   const violated = forbidden.filter((f) => seen.rules.some((g) => samePath(g, f)));
-  return { opened, pass: opened && hit && !violated.length, got: seen.rules, want, violated };
+  return { opened, pass: opened && hit && !violated.length, got: seen.rules, want, violated, how: Object.fromEntries(how) };
 }
 
 /** Nothing written to disk may carry the path of the machine that wrote it. */
@@ -467,27 +693,62 @@ async function loadSkill(dir) {
     } catch {}
   }
   const scenarios = [];
-  try {
-    for (const f of (await readdir(join(dir, "evals"))).filter((f) => /\.scenarios\.(mjs|ts)$/.test(f))) {
-      const mod = await import(pathToFileURL(join(dir, "evals", f)).href);
-      for (const s of mod.default ?? mod.scenarios ?? []) scenarios.push(s);
+  // Scenarios live beside the unit they cover, so a multi-topic skill keeps
+  // them under each topic rather than in one pile at the root. Reading only
+  // the root evals made every topic scenario invisible to this runner, which
+  // is why a --rule selector matched nothing.
+  const scenarioFiles = async (from) => {
+    const found = [];
+    let entries = [];
+    try { entries = await readdir(from, { withFileTypes: true }); } catch { return found; }
+    for (const e of entries) {
+      const p = join(from, e.name);
+      if (e.isDirectory()) found.push(...await scenarioFiles(p));
+      else if (/\.scenarios\.(mjs|ts)$/.test(e.name) && /(^|[\\/])evals[\\/]/.test(p)) found.push(p);
     }
-  } catch {}
+    return found;
+  };
+  for (const p of (await scenarioFiles(dir)).sort()) {
+    try {
+      const mod = await import(pathToFileURL(p).href);
+      for (const s of mod.default ?? mod.scenarios ?? []) scenarios.push(s);
+    } catch {}
+  }
   return { name: basename(dir), dir, entry, entryName, description, paths, scenarios };
 }
 
 /** One unit of work: a scenario, an arm, and the exact prompt it will send. */
+casesFor.skipped = [];
 function casesFor(skill, args) {
   const out = [];
+  const ungradeable = [];
   for (const s of skill.scenarios) {
     if (typeof s.prompt !== "string") continue;
     if (args.set && args.set !== "all" && setFor(s) !== args.set) continue;
+    // Narrower than --skill: one rule, or one named scenario. A conclusion
+    // drawn from forty scenarios when the question was about one is not a
+    // sharper conclusion, only a slower one.
+    if (args.rules_.length && !args.rules_.includes(s.rule)) continue;
+    if (args.ids.length && !args.ids.includes(s.id)) continue;
 
     // The agentic backend sends the developer's message unchanged. Wrapping it
     // in a question about file paths would replace the thing being measured.
     if (args.backend === "omp") {
-      const wants = s.expectedPrimary || s.activation?.layer === "public-skill";
-      if (!wants) continue;
+      // The observed arm grades on paths the agent opened, so it needs paths.
+      // A scenario carrying only a bundle name belongs to the tree's own
+      // suite, which asks a different question, and failing it here would be
+      // a finding this runner invented.
+      // Gradeable is a question about the shape of the expectation, not about
+      // which field carries it. `rules/foo.md` is a file the agent either
+      // opened or did not, whether it arrived as expectedAll or as
+      // expectedPrimary; a bare bundle name is a routing answer that watching
+      // the filesystem cannot settle. Asking for the field rather than the
+      // shape excluded sixty positives that were decidable all along, and two
+      // skills never had a positive measured at all.
+      const want = (s.expectedAll?.length ? s.expectedAll : [s.expectedPrimary]).filter(Boolean);
+      const decidable = want.length ? want.every(gradableTarget) : s.activation?.layer === "public-skill";
+      if (s.expectedPrimary && !decidable) { ungradeable.push(`${skill.name}/${s.id}`); continue; }
+      if (!decidable) continue;
       for (const arm of ["with", "without"]) {
         out.push({ kind: "observed", arm, skill: skill.name, id: s.id, scenario: s, user: s.prompt });
       }
@@ -502,6 +763,7 @@ function casesFor(skill, args) {
       out.push({ kind: "activation", arm: "gated", skill: skill.name, id: s.id, scenario: s, system: ACTIVATION_SYSTEM, user: activationPrompt(skill.name, skill.description, s.prompt) });
     }
   }
+  if (ungradeable.length) casesFor.skipped.push(...ungradeable);
   return out;
 }
 
@@ -525,26 +787,66 @@ async function pool(items, limit, fn) {
  * A Wilson 95% interval. A rate printed without one invites reading noise as
  * movement, which is exactly what happened to the first three baselines.
  */
-export function interval(p, n) {
-  if (!n) return "";
+export function bounds(p, n) {
+  if (!n) return { lo: 0, hi: 100 };
   const z = 1.96;
   const rate = p / n;
   const d = 1 + (z * z) / n;
   const centre = (rate + (z * z) / (2 * n)) / d;
   const half = (z * Math.sqrt((rate * (1 - rate)) / n + (z * z) / (4 * n * n))) / d;
-  const lo = Math.max(0, Math.round(100 * (centre - half)));
-  const hi = Math.min(100, Math.round(100 * (centre + half)));
-  return `[${lo}-${hi}%]`;
+  return { lo: Math.max(0, 100 * (centre - half)), hi: Math.min(100, 100 * (centre + half)) };
+}
+
+export function interval(p, n) {
+  if (!n) return "";
+  const { lo, hi } = bounds(p, n);
+  return `[${Math.round(lo)}-${Math.round(hi)}%]`;
+}
+
+/**
+ * Whether a rule earned its place, pooled across its scenarios.
+ *
+ * A single scenario at three samples decides almost nothing: three passes and
+ * zero passes are both inside the noise of a coin. The rule is the smallest
+ * unit worth a verdict, because its scenarios pool.
+ *
+ * The test is the gap, not the rate. A rule the agent satisfies anyway bought
+ * nothing however high its with-arm sits, so acceptance is the with-arm's lower
+ * bound clearing the without-arm's upper bound. No invented percentage, and it
+ * tightens on its own as samples are added.
+ */
+export function acceptance(withP, withN, withoutP, withoutN) {
+  if (!withN) return { verdict: "NO DATA", note: "nothing ran" };
+  const w = bounds(withP, withN);
+  const o = bounds(withoutP, withoutN);
+  if (!withoutN) return { verdict: "UNCONTROLLED", note: "no without arm, so the gap is unknown" };
+  if (w.lo > o.hi) return { verdict: "ACCEPT", note: `${Math.round(w.lo)}% floor clears the ${Math.round(o.hi)}% ceiling without it` };
+  if (o.lo > w.hi) return { verdict: "HARMFUL", note: "it does better without the rule" };
+  // Both arms at zero is not the same finding as both arms succeeding, and one
+  // label for them asserts the opposite of the truth. "The agent does this
+  // anyway" requires the arm without the rule to have done it; when neither arm
+  // passed, the rule was never reached even with the skill loaded, which points
+  // at routing rather than at a rule that earns nothing.
+  if (!withP && !withoutP) {
+    return { verdict: "NEVER REACHED", note: "no run opened it, with the skill or without: routing, not worth" };
+  }
+  const same = withP / withN <= withoutP / withoutN;
+  if (same) return { verdict: "NO EFFECT", note: "the agent does this anyway" };
+  return { verdict: "UNSTABLE", note: `bounds overlap: ${Math.round(w.lo)}-${Math.round(w.hi)} against ${Math.round(o.lo)}-${Math.round(o.hi)}, needs more samples` };
 }
 
 function verdictOf(passes, samples) {
+  // No samples is not zero passes. Absence reported as failure is how a
+  // provider going quiet becomes evidence against a skill.
+  if (!samples) return "NO DATA";
   if (passes === samples) return "PASS";
   if (passes === 0) return "FAIL";
   return "UNSTABLE";
 }
 
-async function main() {
+async function main(modelOverride) {
   const args = parseArgs(process.argv.slice(2));
+  if (modelOverride) args.model = modelOverride;
   const dirs = (await readdir(ROOT, { withFileTypes: true }))
     .filter((d) => d.isDirectory() && (!args.skills.length || args.skills.includes(d.name)))
     .map((d) => join(ROOT, d.name));
@@ -563,6 +865,13 @@ async function main() {
       if (skill) cases.push(...casesFor(skill, args));
     }
   }
+  // Only a positive can show the gap; a negative passes for free in the arm
+  // without the skill. Whatever truncates a run — a quota, a --limit, an
+  // interrupt — takes it from the end, so the half that carries the evidence
+  // goes first. The sort is stable, which keeps each scenario's two arms
+  // adjacent: a positive with no control arm would measure nothing.
+  const isNegative = (c) => c.scenario?.activation?.shouldActivate === false || c.scenario?.mode === "bypass";
+  cases.sort((a, b) => Number(isNegative(a)) - Number(isNegative(b)));
   const selected = cases.slice(0, args.limit === Infinity ? cases.length : args.limit);
 
   if (args.dryRun) {
@@ -611,9 +920,11 @@ async function main() {
     (await readdir(ROOT, { withFileTypes: true })).filter((d) => d.isDirectory()).map((d) => d.name),
   );
 
+  let timeouts = 0;
   const results = await pool(selected, args.concurrency, async (c) => {
     if (stop) return { skill: c.skill, id: c.id, kind: c.kind, arm: c.arm, passes: 0, samples: 0, verdict: "SKIPPED" };
     let passes = 0;
+    let lost = 0;
     const answers = [];
     const opened = [];
     let seq = null;
@@ -622,20 +933,55 @@ async function main() {
       let workspace = null;
       try {
         if (backend.agentic) {
-          workspace = await freshWorkspace(paths.base, join(ROOT, c.skill), c.id);
-          answer = await ompRun(args, c.arm, c.user, paths, workspace);
+          // A recorded stream is the whole run: what the agent opened, what it
+          // answered, and the events `degraded` reads. Replaying it exercises
+          // every scoring path for nothing, which is what makes it safe to
+          // change the scoring without paying for the model again.
+          const tag = `${c.skill}__${c.id}__${c.arm}__${i}`;
+          if (args.replay) {
+            answer = await readFile(join(args.replay, `${tag}.txt`), "utf8").catch(() => {
+              throw new Error(`no recording for ${tag} in ${args.replay}`);
+            });
+          } else {
+            workspace = await freshWorkspace(paths.base, join(ROOT, c.skill), c.id);
+            answer = await ompRun(args, c.arm, c.user, paths, workspace);
+            if (args.record) {
+              await mkdir(args.record, { recursive: true });
+              await writeFile(join(args.record, `${tag}.txt`), answer);
+            }
+          }
         } else {
           answer = await backend.call(args.model, c.system, c.user);
         }
       } catch (e) {
+        // A sample that threw produced nothing, and nothing is not zero passes.
+        // Without this the denominator kept counting it: a scenario with no
+        // recording at all reported 0/3 FAIL, which is how twelve negatives
+        // that were never run read as a skill firing on every one of them.
         answers.push(`ERROR ${e.message}`);
+        lost++;
         continue;
       } finally {
         if (workspace) await rm(workspace, { recursive: true, force: true }).catch(() => {});
       }
-      const bad = backend.agentic ? degraded(answer) : null;
+      let bad = backend.agentic ? degraded(answer) : null;
+      // On replay every one of these is history. A quota wall recorded last
+      // night says nothing about now, and reading one as a live condition
+      // aborted a replay of 81 recordings on the first bad one — throwing away
+      // 80 good samples to re-report a failure that was already known. Nothing
+      // a recording contains can end a run that is not calling anyone.
+      if (bad && args.replay) bad = { ...bad, fatal: false };
+      // A lost sample is lost. A model substitution makes every later sample
+      // suspect, so only that one ends the run.
+      if (bad?.timeout) {
+        // A provider that answers nothing would otherwise burn the deadline on
+        // every remaining sample: 192 launches at three and a half minutes each
+        // is eleven hours to learn what three launches already showed.
+        if (++timeouts >= 3) { stop ??= "three launches in a row hit the deadline, so the model is not answering"; break; }
+      } else if (!bad) timeouts = 0;
+      if (bad && !bad.fatal) { lost++; continue; }
       if (bad) {
-        stop ??= bad;
+        stop ??= bad.why;
         break;
       }
       if (c.kind === "far-miss") {
@@ -667,7 +1013,7 @@ async function main() {
         if (yes !== null && yes === c.scenario.activation.shouldActivate) passes++;
       }
     }
-    return { skill: c.skill, id: c.id, kind: c.kind, arm: c.arm, opened: [...new Set(opened)], negative: c.scenario.activation?.shouldActivate === false, passes, samples: args.samples, verdict: verdictOf(passes, args.samples), seq, answers: args.verbose ? answers : undefined };
+    return { skill: c.skill, id: c.id, rule: c.scenario?.rule ?? null, kind: c.kind, arm: c.arm, opened: [...new Set(opened)], negative: c.scenario.activation?.shouldActivate === false, passes, samples: args.samples - lost, lost, verdict: verdictOf(passes, args.samples - lost), seq, answers: args.verbose ? answers : undefined };
   });
 
   if (stop) {
@@ -676,11 +1022,11 @@ ABORTED  ${stop}`);
     console.log("The provider stopped serving the model this run asked for, so the");
     console.log("remaining calls were skipped and nothing was written. Check quota,");
     console.log("then re-run once the intended model is being served again.");
-    process.exit(3);
+    return { aborted: stop };
   }
 
   report(results, args, flags);
-  const record = { ranAt: new Date().toISOString(), model: args.model, backend: backend.name, clean: backend.clean, rules: args.rules, samples: args.samples, thinking: args.thinking, selfChecks: { delegated: flags.delegated, sawHarness: flags.sawHarness, foreign: [...flags.foreign] }, results: results.map(({ answers, ...r }) => r) };
+  const record = { ranAt: new Date().toISOString(), model: args.model, backend: backend.name, replayed: Boolean(args.replay), clean: backend.clean, rules: args.rules, samples: args.samples, thinking: args.thinking, provider: String(args.model).split("/")[0], roles: EXECUTABLE_ROLES, selfChecks: { delegated: flags.delegated, sawHarness: flags.sawHarness, foreign: [...flags.foreign] }, results: results.map(({ answers, ...r }) => r) };
   await mkdir(resolve("evals"), { recursive: true });
   await writeFile(resolve("evals/last-run.json"), `${JSON.stringify(record, null, 2)}\n`);
   if (args.writeBaseline) {
@@ -707,10 +1053,11 @@ async function prepareOmp(args) {
   const conf = join(tmpdir(), `.omp-cfg-${process.pid}`);
   await mkdir(fixture, { recursive: true });
   await mkdir(conf, { recursive: true });
+  const roles = pinnedRoles(args.model, args.thinking);
   const overlay = {};
   for (const arm of ["with", "without"]) {
     const p = join(conf, `${arm}.yml`);
-    await writeFile(p, arm === "with" ? OVERLAYS.with(ROOT) : OVERLAYS.without());
+    await writeFile(p, arm === "with" ? OVERLAYS.with(ROOT, roles) : OVERLAYS.without(ROOT, roles));
     overlay[arm] = p;
   }
   return { base, conf, fixture, overlay };
@@ -752,17 +1099,45 @@ function reportObserved(results, flags) {
   console.log(`  without them       ${rate(withoutPool)}`);
   console.log(`  by scenario        ${pass}/${pos.length} pass, ${controlPass}/${pos.length} without`);
   console.log(`  passed both ways   ${both}   the agent did this anyway`);
-  if (neg.length) {
-    console.log(`  stayed shut        ${neg.filter((r) => r.w.verdict === "PASS").length}/${neg.length}   near misses, control not applicable`);
+  const negRan = neg.filter((r) => r.w.samples > 0);
+  if (negRan.length) {
+    console.log(`  stayed shut        ${negRan.filter((r) => r.w.verdict === "PASS").length}/${negRan.length}   near misses, control not applicable`);
+  } else if (neg.length) {
+    console.log(`  stayed shut        no data   ${neg.length} negatives produced nothing`);
   }
   console.log(`  unstable           ${results.filter((r) => r.verdict === "UNSTABLE").length}`);
+  const lost = results.reduce((a, r) => a + (r.lost ?? 0), 0);
+  const norun = all.filter((r) => !r.w.samples).length;
+  if (lost || norun) {
+    console.log(`  lost samples       ${lost}   ${norun} scenarios produced nothing and carry no verdict`);
+  }
+  console.log("  (per-scenario outcomes are a screen; three samples cannot carry a verdict)");
+
+  // Pooled per rule, which is the unit the acceptance bar is calibrated for.
+  const rules = new Map();
+  for (const r of results) {
+    if (!r.rule || r.negative) continue;
+    if (!rules.has(r.rule)) rules.set(r.rule, { w: { p: 0, n: 0 }, o: { p: 0, n: 0 }, ids: new Set() });
+    const e = rules.get(r.rule);
+    const arm = r.arm === "with" || r.arm === "gated" ? e.w : e.o;
+    arm.p += r.passes; arm.n += r.samples; e.ids.add(r.id);
+  }
+  if (rules.size) {
+    console.log("\nby rule, pooled");
+    for (const [rule, e] of [...rules].sort()) {
+      const a = acceptance(e.w.p, e.w.n, e.o.p, e.o.n);
+      const line = `${e.w.p}/${e.w.n} with, ${e.o.p}/${e.o.n} without, ${e.ids.size} scenarios`;
+      console.log(`  ${a.verdict.padEnd(13)} ${rule.padEnd(34)} ${line}`);
+      if (a.verdict !== "ACCEPT") console.log(`  ${"".padEnd(13)} ${"".padEnd(34)} ${a.note}`);
+    }
+  }
 
   // A run can be worth less than it looks. Each of these says how.
   if (flags?.delegated) console.log(`  delegated          ${flags.delegated}   a child's reads may not appear in the transcript`);
   if (flags?.sawHarness) console.log(`  read the harness   ${flags.sawHarness}   the agent found the eval's own config`);
   if (flags?.foreign?.size) console.log(`  foreign skills     ${[...flags.foreign].join(", ")}   a source the overlay did not silence`);
 
-  const bad = all.filter((r) => r.w.verdict !== "PASS");
+  const bad = all.filter((r) => r.w.verdict !== "PASS" && r.w.samples > 0);
   if (bad.length) {
     console.log("\nnot passing with the skills loaded");
     for (const r of bad) {
@@ -843,7 +1218,16 @@ async function checkAgainstBaseline(results) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch((e) => {
+  (async () => {
+    const models = (parseArgs(process.argv.slice(2)).model ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+    for (const [i, m] of models.entries()) {
+      const r = await main(m);
+      if (!r?.aborted) return;
+      const next = models[i + 1];
+      if (!next) { console.log("no provider left to try"); process.exit(3); }
+      console.log(`\nretrying the whole run on ${next}`);
+    }
+  })().catch((e) => {
     console.error(e.message);
     process.exit(2);
   });
