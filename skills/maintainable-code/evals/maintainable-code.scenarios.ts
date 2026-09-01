@@ -108,6 +108,28 @@ const scenarios = [
       "Produces a dense wall-of-detail plan with no prioritized main path"
     ],
     tags: ["process", "structure", "planning", "p2"]
+  },
+  {
+    id: "maintainable-code-premature-layering-scaffold",
+    bundle: "maintainable-code",
+    rule: "layer-before-dividing",
+    tier: "P1",
+    mode: "exception",
+    difficulty: "hard",
+    prompt:
+      "Ok to scaffold `ImportController`, `ImportService`, `ImportRepository`, `ImportMapper`, `ImportValidator` and a `ports/` interface for each before I write any of it? I still do not know how the vendor paginates or how partial failures come back.",
+    expectedPrimary: "maintainable-code",
+    must: [
+      "Says no, and recommends one working version first while the vendor's behaviour is still unknown",
+      "Gives the iteration cost as the reason: the experiments needed to learn the vendor's behaviour will cross those boundaries, and straightening them back is never the current task, so the bends accumulate",
+      "Notes that a bent layer still looks like architecture, while the same mess in one file is visible and cheap to undo",
+      "Says what to do once the shape is known: name the responsibilities actually present, then cut between them"
+    ],
+    mustNot: [
+      "Endorses scaffolding all the layers up front because it is standard or clean architecture",
+      "Rejects all structure and recommends leaving everything in one file permanently"
+    ],
+    tags: ["structure", "premature-abstraction", "iteration", "p1"]
   }
 ] as const satisfies readonly EvalScenario[];
 

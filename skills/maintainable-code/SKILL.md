@@ -46,7 +46,7 @@ description: >-
 | one caller's name hardcoded into a shared mechanism; a dependency added for a single call site | §5 Keep mechanisms generic |
 | files grouped by kind rather than by what changes together; one feature edit touching six folders | §6 Organize around the axis of change |
 | a file whose name no longer describes half of it; a module doing two jobs that change for different reasons | §7 Keep units cohesive |
-| a long file about to be split; a split proposed before the shape is known | §8 Layer a file before you divide it |
+| a long file about to be split; a tree of layers drawn before the first version runs | §8 Layer a file before you divide it |
 | two names for the same thing; a framework's word used where the domain has its own | §9 Use stable domain language |
 | a change nobody can review without a walkthrough | §10 Communicate progressively |
 
@@ -127,6 +127,8 @@ composition root -> route -> use case -> focused subtask -> connector
 - **Follow the repository's local order.**
 - **Newspaper Metaphor.** Without a convention the main path goes at the top and what supports it follows in the order it is needed, so whoever stops after the first screen has read the most important thing.
 - **A region is a split not yet made.** The modular monolith argument at file scale: the boundary is logical before it is physical. A sub-use-case, a port, the thing implementing it can each be a named layer while the shape settles.
+- **A boundary you cannot yet defend is one you will breach.** The experiments that would prove the shape are the same ones that bend it: a layer is crossed to get something running, the repair is deferred because straightening it is never the current task, and the next experiment bends somewhere else. The bends compound, and each one still looks like architecture. A single file bends too, visibly, as ordinary mess, and straightens in one edit.
+- **When the shape does arrive, name what is there before cutting.** List what the file actually does: decisions, state, transitions, effects, transport, mapping. Cut between those, not at whatever line the file grew to. Reaching for a split without that list divides one responsibility and leaves two halves that only make sense together.
 - **Preparatory refactoring, never speculative.** Cut once the flow and its pieces are clear. The Rule of Three exists because the third occurrence is where the shape becomes visible, and choosing a layout before that is a guess wearing the costume of design.
 - **Locality of Behaviour.** A split is a bet the reader finds both halves. With an editor and years in the codebase it usually pays; for a reader assembling context by retrieval it pays less often, and losing it is silent.
 - **Classitis.** Ousterhout's name for decomposition that yields many shallow units: each one is simple and the system is harder, because the interfaces come to cost more than the implementations they hide.
