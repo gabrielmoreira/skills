@@ -27,6 +27,7 @@ whether the skills change behaviour; that is what the next group is for.
 | `run-activation.mjs` | with the skill against without it, on recorded runs |
 | `omp-eval-profile.mjs` | an isolated profile, so a run measures the skill and not the machine |
 | `judge.mjs` | did the answer meet the scenario's criteria — calibrated first, always |
+| `outcome-check.mjs` | did the artifact get better, judged by a program rather than a model |
 | `explain-run.mjs` | which failures in a run are worth reading, by confidence band |
 | `fold-variant.mjs` | builds the other arm when an architecture is being compared |
 

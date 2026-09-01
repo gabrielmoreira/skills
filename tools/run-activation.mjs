@@ -209,10 +209,10 @@ const EXECUTABLE_ROLES = [
   "default", "task", "smol", "slow", "plan", "deep", "economical-deep", "review", "advisor",
 ];
 
-const pinnedRoles = (model, thinking) =>
+export const pinnedRoles = (model, thinking) =>
   `modelRoles:\n${EXECUTABLE_ROLES.map((r) => `  ${r}: ${model}:${thinking}\n`).join("")}`;
 
-const OVERLAYS = {
+export const OVERLAYS = {
   with: (skillsDir, roles) =>
     `${QUIET}${roles}skills:\n  enabled: true\n${OFF_SOURCES}  customDirectories:\n    - ${skillsDir.replace(/\\/g, "/")}\n`,
   without: (_skillsDir, roles) => `${QUIET}${roles}skills:\n  enabled: false\n`,
