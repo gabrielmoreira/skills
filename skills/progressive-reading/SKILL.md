@@ -25,6 +25,8 @@ description: >-
 
 - **Lead with the useful answer.** Context comes after it, caveats after that.
 - **One main idea per short paragraph.** Split a dense explanation into chunks the reader can stop between.
+- **Staccato is the failure on the other side of that rule.** A short paragraph is a place to stop, not a target to hit. Two ideas that depend on each other belong in one sentence, where the dependency is visible; split apart they become two facts and no argument. A page where every paragraph runs a single line and every line opens in bold has traded its connective tissue for scannability, and can be entered anywhere but followed nowhere.
+- **The check is whether the joins survive.** Read three consecutive paragraphs and ask what carries one to the next. If the answer is only that they sit in order, they were cut, not structured.
 - **Use a heading only where it helps navigation.** Open each section with its point.
 - **Keep related information together.** A short summary goes before any dense detail it introduces.
 - **Reach for a bullet, a checklist, or an example only when it scans better than a sentence.** Never build a wall of bullets.
@@ -75,5 +77,5 @@ description: >-
 - **The useful answer comes first.**
 - **It can be scanned.**
 - **It is technically complete.**
-- **It reads naturally.**
+- **It reads as continuous prose where the reasoning is continuous.** Not "it reads naturally" — that is unfalsifiable, and next to a scannability check that is concrete it always loses. Point at the sentences that carry the argument between paragraphs.
 - **Nothing in it is unsupported.**

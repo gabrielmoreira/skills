@@ -30,6 +30,26 @@ description: >-
 - **Keep persistent repository content in the project's established language.**
 - **Default to clear international English** where no convention exists.
 
+## Which section applies
+
+**Read every row, then act on the matches, hardest to undo first.** Ten sections follow and a task rarely wants more than two. The sections are already loaded, so reaching one costs nothing — skimming all ten and landing nowhere is what costs.
+
+- **Sections 1 and 2 come before the rest.** Investigate, then prove the unknown; structure chosen with a question still open is a guess in the costume of design.
+- **Sections 3 to 10 are concerns, not steps.** Their numbers order the page, not the work.
+
+| If you see... | Read |
+| --- | --- |
+| a change about to be made to code nobody has read end to end; behaviour assumed from a name | §1 Investigate before changing |
+| a structure picked while a technical unknown is still open; a library chosen from its docs rather than from a run | §2 Design from observable proof |
+| the happy path buried under guards; a function you read twice to find what it does | §3 Keep the main flow obvious |
+| I/O, a clock, `Math.random`, or a global reached from inside something whose signature does not say so; a broad context object passed down | §4 Make effects and dependencies explicit |
+| one caller's name hardcoded into a shared mechanism; a dependency added for a single call site | §5 Keep mechanisms generic |
+| files grouped by kind rather than by what changes together; one feature edit touching six folders | §6 Organize around the axis of change |
+| a file whose name no longer describes half of it; a module doing two jobs that change for different reasons | §7 Keep units cohesive |
+| a long file about to be split; a split proposed before the shape is known | §8 Layer a file before you divide it |
+| two names for the same thing; a framework's word used where the domain has its own | §9 Use stable domain language |
+| a change nobody can review without a walkthrough | §10 Communicate progressively |
+
 ## 1. Investigate before changing
 
 - **Trace what is already there** before touching it.
@@ -101,10 +121,16 @@ composition root -> route -> use case -> focused subtask -> connector
 - **Keep small deterministic support functions pure by default.**
 - **Isolate mini engines from business values and hidden I/O.** State machines, schedulers, retry controllers.
 
-## 8. Optimize file layout for re-entry
+## 8. Layer a file before you divide it
 
+- **Auxiliary tooling is the exception.** A script that supports the work rather than being it earns nothing from layers: one file that can be read, moved, copied or deleted whole is what keeps it cheap. Everything below is for the system being built.
 - **Follow the repository's local order.**
-- **Without a convention, put the public or main path before secondary detail**, and arrange helpers in the order they are needed.
+- **Newspaper Metaphor.** Without a convention the main path goes at the top and what supports it follows in the order it is needed, so whoever stops after the first screen has read the most important thing.
+- **A region is a split not yet made.** The modular monolith argument at file scale: the boundary is logical before it is physical. A sub-use-case, a port, the thing implementing it can each be a named layer while the shape settles.
+- **Preparatory refactoring, never speculative.** Cut once the flow and its pieces are clear. The Rule of Three exists because the third occurrence is where the shape becomes visible, and choosing a layout before that is a guess wearing the costume of design.
+- **Locality of Behaviour.** A split is a bet the reader finds both halves. With an editor and years in the codebase it usually pays; for a reader assembling context by retrieval it pays less often, and losing it is silent.
+- **Classitis.** Ousterhout's name for decomposition that yields many shallow units: each one is simple and the system is harder, because the interfaces come to cost more than the implementations they hide.
+- **Information hiding, not flowchart steps.** Parnas's criterion: divide by what each part conceals from the rest, never by the order in which things happen. A subsystem someone can describe is a unit; a fragment rarely is.
 - **Treat a blank-line group as a prompt to inspect cohesion**, never as an automatic extraction rule.
 
 ## 9. Use stable domain language

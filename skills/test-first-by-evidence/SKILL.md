@@ -45,6 +45,7 @@ NO PRODUCTION CODE WITHOUT A TEST YOU WATCHED FAIL
 - **One rule per row.** Enter at the matched row, then follow the cycle in order.
 - **A small change reads two rows.** A new subsystem reads most of them. That difference is the point.
 - **Where two rows match, read both.** Under-reading costs a wrong test. Over-reading costs one file.
+- **Read every row, then act on the matches, hardest to undo first.** Reading a row costs nothing; the row you skipped is where the coverage went.
 
 | If you see... | Read |
 | --- | --- |
@@ -74,14 +75,14 @@ NO PRODUCTION CODE WITHOUT A TEST YOU WATCHED FAIL
 
 | Phase | Means | Licenses |
 | --- | --- | --- |
-| `NO-TEST` | nothing written yet | writing one test, nothing else |
-| `RED` | the test ran and failed for the stated reason | implementation |
-| `GREEN` | the test passes and so does everything else | refactoring |
-| `REFACTORED` | duplication and names cleaned, still green | the next test |
+| `tdd/NO-TEST` | nothing written yet | writing one test, nothing else |
+| `tdd/RED` | the test ran and failed for the stated reason | implementation |
+| `tdd/GREEN` | the test passes and so does everything else | refactoring |
+| `tdd/REFACTORED` | duplication and names cleaned, still green | the next test |
 
 - **Skipping a phase is the failure this skill exists to prevent.**
-- **`RED` requires a run you performed.** Not a prediction that it would fail.
-- **`GREEN` includes the rest of the suite.** One new green and three new reds is not green.
+- **`tdd/RED` requires a run you performed.** Not a prediction that it would fail.
+- **`tdd/GREEN` includes the rest of the suite.** One new green and three new reds is not green.
 
 ## Do not skip this when
 

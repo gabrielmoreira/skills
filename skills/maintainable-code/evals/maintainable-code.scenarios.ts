@@ -9,7 +9,7 @@ const scenarios = [
     mode: "apply",
     difficulty: "mixed",
     prompt:
-      "Our services all receive a single `ctx` object that carries the db pool, logger, feature flags, current user, request id, an event bus, and a grab-bag `ctx.extras`. A teammate says it's convenient because you never have to change signatures. We're adding a new `invoiceReminder` service now, should it take `ctx` too?",
+      "Should the new `invoiceReminder` service take `ctx` too? All our services receive one `ctx` object carrying the db pool, logger, feature flags, current user, request id, an event bus and a grab-bag `ctx.extras`. A teammate says it is convenient because you never have to change signatures.",
     expectedPrimary: "maintainable-code",
     must: [
       "Recommends explicit dependencies (constructor/factory/parameters) for the new service instead of the god context",
@@ -31,7 +31,7 @@ const scenarios = [
     mode: "bypass",
     difficulty: "mixed",
     prompt:
-      "We have a generic `WorkflowRunner` that executes steps from config. One customer (ACME) needs a 90-second delay before their export step. The fastest fix is `if (tenantId === 'acme') await sleep(90_000)` inside the runner, it ships today and it's just three lines. Deadline is Friday. OK to merge?",
+      "OK to merge? One customer needs a 90-second delay before their export step, and the fastest fix is `if (tenantId === 'acme') await sleep(90_000)` inside our generic `WorkflowRunner`. Three lines, ships today, deadline is Friday.",
     expectedPrimary: "maintainable-code",
     must: [
       "Rejects hardcoding the tenant-specific case inside the generic runner",

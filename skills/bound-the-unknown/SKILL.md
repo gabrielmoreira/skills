@@ -30,6 +30,20 @@ description: >-
 - **A read came back different from what was expected.**
 - **A script is about to be written to find something out.**
 
+## Where you are
+
+**Say the state before each probe.** The phases already exist in the sections below; naming the one you are in is what stops a budget sliding, because the slide is silent and the announcement is not.
+
+| State | Means | Licenses |
+| --- | --- | --- |
+| `probe/NO BUDGET YET` | two probes have run and no finding is named | asking, and saying how far you will go — no third probe |
+| `probe/WITHIN BUDGET` | how far you will go is stated out loud, in probes or minutes | read-only probing until it runs out |
+| `probe/ENOUGH TO DECIDE` | the next decision needs no further probe | closing with an explicit decision |
+| `probe/BUDGET SPENT` | the budget ran out and you still cannot decide | reporting where you stopped and what was ruled out — not a silent fourth cycle |
+
+- **`probe/BUDGET SPENT` is a result, not a failure.** A search that stopped somewhere you can name beats one still running with no end in sight.
+- **Extending is allowed, announcing it is not.** Say the new number out loud and go back to `probe/WITHIN BUDGET`.
+
 ## Say the budget first
 
 **State how far you intend to go before the first probe, where I can see it.** A bounded search I can interrupt is worth more than an unbounded one that arrives finished.

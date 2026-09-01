@@ -114,6 +114,111 @@ const scenarios = [
     mustNot: ["Introduces reusable layers or framework structure"],
     tags: ["activation", "negative", "disposable"],
   },
+  {
+    id: "this-file-is-long-split-it",
+    bundle: "maintainable-code",
+    rule: "core-rules",
+    tier: "P0",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "this file is about 700 lines, split it up",
+    activation: { layer: "public-skill", target: "maintainable-code", shouldActivate: true, forbiddenRoutes: [] },
+    expectedPrimary: "maintainable-code",
+    must: [
+      "Asks what the pieces would be before agreeing to divide",
+      "Decides from whether each piece can be understood on its own, not from the length",
+      "Says what would be harder to follow after the split"
+    ],
+    mustNot: [
+      "Splits because the file is long",
+      "Proposes a file per function or per type"
+    ],
+    tags: ["real-world", "granularity", "length-is-not-a-reason"]
+  },
+  {
+    id: "our-standard-says-four-hundred-lines",
+    bundle: "maintainable-code",
+    rule: "core-rules",
+    tier: "P1",
+    mode: "exception",
+    difficulty: "hard",
+    prompt:
+      "our standard says 400 lines max and this one is 700. what do i split out?",
+    activation: { layer: "public-skill", target: "maintainable-code", shouldActivate: true, forbiddenRoutes: [] },
+    expectedPrimary: "maintainable-code",
+    must: [
+      "Treats the number as a prompt to look rather than as the decision",
+      "Names what would be separately comprehensible, or says nothing here is",
+      "Offers what to do when the standard and the reading disagree"
+    ],
+    mustNot: [
+      "Splits to satisfy the number regardless of what the pieces become",
+      "Dismisses the standard without addressing it"
+    ],
+    tags: ["adversarial", "standard-versus-reading", "measured-conflict"]
+  },
+  {
+    id: "changed-one-file-and-something-else-broke",
+    bundle: "maintainable-code",
+    rule: "core-rules",
+    tier: "P0",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "i changed one small file and a completely different caller broke. how do i stop this happening",
+    activation: { layer: "public-skill", target: "maintainable-code", shouldActivate: true, forbiddenRoutes: [] },
+    expectedPrimary: "maintainable-code",
+    must: [
+      "Looks at how far the decision is spread before proposing a guard",
+      "Treats pieces that must be understood together but live apart as the cause"
+    ],
+    mustNot: [
+      "Adds a test as the whole answer without asking why the connection was invisible",
+      "Assumes the caller was at fault"
+    ],
+    tags: ["real-world", "silent-partial-view", "consequence"]
+  },
+  {
+    id: "two-small-files-or-one",
+    bundle: "maintainable-code",
+    rule: "core-rules",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "obvious",
+    prompt:
+      "should these two functions live in the same file? one calls the other and nothing else does",
+    activation: { layer: "public-skill", target: "maintainable-code", shouldActivate: true, forbiddenRoutes: [] },
+    expectedPrimary: "maintainable-code",
+    must: [
+      "Keeps them together while one is the only caller"
+    ],
+    mustNot: [
+      "Separates them on principle"
+    ],
+    tags: ["control", "would-pass-anyway"]
+  },
+  {
+    id: "package-boundary-not-file-count",
+    nearMiss:
+      "It arrives as a question about how code is divided, which is what this skill decides; but the split being asked about is an ownership boundary between teams that deploy apart, so what settles it is who depends on whom and in which direction, not how much the unit holds.",
+    bundle: "maintainable-code",
+    rule: "core-rules",
+    tier: "P1",
+    mode: "bypass",
+    difficulty: "hard",
+    prompt:
+      "should this be its own package? two teams deploy it separately and both depend on it",
+    activation: { layer: "public-skill", target: "maintainable-code", shouldActivate: false, forbiddenRoutes: [] },
+    expectedPrimary: "maintainable-code",
+    must: [
+      "Answers from ownership and the direction dependencies point"
+    ],
+    mustNot: [
+      "Answers from how many files or lines it holds"
+    ],
+    tags: ["near-miss", "boundary-not-granularity"]
+  },
 ] satisfies EvalScenario[];
 
 export default scenarios;

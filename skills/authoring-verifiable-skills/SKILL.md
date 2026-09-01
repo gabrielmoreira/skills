@@ -29,6 +29,7 @@ description: >-
 - **An axis whose signal is absent is reported as not-applicable**, naming the signal that would have triggered it.
 - **Read both rows where the work matches two.** Reading is the cheap half.
 - **An index whose default is "read them all" is a table of contents with extra steps.**
+- **Read every row, then act on the matches, hardest to undo first.** Reading a row costs nothing; the row you skipped is where the coverage went.
 
 | If you see... | Read |
 | --- | --- |
@@ -39,6 +40,7 @@ description: >-
 | a check suite that has never been watched fail, or a skill with no scenarios | `rules/prove-it-with-checks.md` |
 | a file ordered by the sequence the author thought of things, or every line marked MUST | `rules/order-and-strength.md` |
 | a name that will not come, or one colliding with skills already installed | `rules/name-and-scope.md` |
+| a skill whose work has phases and no way to say which one it is in; a rule saying `not yet` to something a reader would otherwise do now | `rules/states-carry-licenses.md` |
 | a path, a URL, a vendor, or a package manager written into instruction prose | `rules/portable-by-default.md` |
 
 **Discriminators.**

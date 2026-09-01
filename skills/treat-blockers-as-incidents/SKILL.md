@@ -44,14 +44,14 @@ description: >-
 
 | State | Means | Licenses |
 | --- | --- | --- |
-| `BLOCKED` | a command failed for a reason that is not the task | one reproduction, and reading |
-| `CHARACTERISED` | the failure reproduces and its trigger is named | probes, documentation, source |
-| `EXPLAINED` | the mechanism is observed, not inferred | proposing a fix |
-| `CLEARED` | the fix is applied and the original command runs | returning to the task |
-| `HANDED BACK` | the ceiling was reached, or the fix is not trivial | nothing further without a decision |
+| `blocker/BLOCKED` | a command failed for a reason that is not the task | one reproduction, and reading |
+| `blocker/REPRODUCED` | the failure reproduces and its trigger is named | probes, documentation, source |
+| `blocker/EXPLAINED` | the mechanism is observed, not inferred | proposing a fix |
+| `blocker/CLEARED` | the fix is applied and the original command runs | returning to the task |
+| `blocker/HANDED BACK` | the ceiling was reached, or the fix is not trivial | nothing further without a decision |
 
 - **No state is reached by assumption.** Each names an observation you made.
-- **`CLEARED` requires the original command to run**, not a substitute you found instead.
+- **`blocker/CLEARED` requires the original command to run**, not a substitute you found instead.
 
 ## Which rules to read
 
@@ -59,6 +59,7 @@ description: >-
 
 - **Read every row whose signal is present.** Report an absent one as not-applicable, naming the signal.
 - **A blocker that hides a second blocker matches two rows.** Read both.
+- **Read every row, then act on the matches, hardest to undo first.** Reading a row costs nothing; the row you skipped is where the coverage went.
 
 | If you see... | Read |
 | --- | --- |
@@ -66,7 +67,7 @@ description: >-
 | **the same command failing again**, or a fix that made the error move rather than go | `rules/stop-conditions.md` |
 | **a non-zero exit from a command that does several things**, or an unrelated tool named in the output | `rules/whose-failure-is-it.md` |
 | **the first blocker cleared** and something new failing right behind it | `rules/the-second-blocker.md` |
-| **anything about to be deleted, reset, reinstalled, or rotated** to make a command pass | `rules/never-destroy-to-proceed.md` |
+| **a `rm -rf`, `git reset --hard`, a reinstall or a rotated credential** about to be run to make a command pass | `rules/never-destroy-to-proceed.md` |
 | **enough understood to be worth keeping**, or a ceiling reached | `rules/record-the-learning.md` |
 
 **Default stance.**

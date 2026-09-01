@@ -17,6 +17,50 @@
 const scenarios = [
   // ---------------------------------------------------------------- positive
   {
+    id: "agent-charges-past-the-step-it-should-not-have-reached",
+    bundle: "authoring-verifiable-skills",
+    rule: "states-carry-licenses",
+    tier: "P0",
+    mode: "router",
+    difficulty: "obvious",
+    prompt: "my debugging skill keeps proposing a fix before it has even reproduced the thing. the steps are all written down in order and it just skips ahead",
+    expectedPrimary: "rules/states-carry-licenses.md",
+    expectedSecondary: ["rules/order-and-strength.md"],
+    activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: true, forbiddenRoutes: [] },
+    must: [
+      "Treats written order as something a reader can skip, and a licence as something they cannot",
+      "Gives each phase a Licenses column naming what it permits that the one before it did not",
+      "Names states as the past participle of what plainly happened, readable without their gloss",
+      "Requires the state to be announced before each step, since sliding past a boundary is silent",
+    ],
+    mustNot: [
+      "Adds a state table to a skill whose phases do not license different actions",
+      "Accepts a state whose licence forbids nothing the previous state allowed",
+    ],
+    tags: ["activation", "positive", "states"],
+  },
+  {
+    id: "wants-states-on-a-rule-skill",
+    bundle: "authoring-verifiable-skills",
+    rule: "states-carry-licenses",
+    tier: "P1",
+    mode: "exception",
+    difficulty: "hard",
+    prompt: "i want to add a state machine to my naming-conventions skill so the agent announces where it is, like the debugging one does",
+    expectedPrimary: "rules/states-carry-licenses.md",
+    activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: true, forbiddenRoutes: [] },
+    must: [
+      "Asks what a state would forbid that the state before it allowed",
+      "Says a skill that recognises and decides in one move has no phases to name",
+      "Declines to add the table rather than inventing phases to justify it",
+    ],
+    mustNot: [
+      "Adds the table because a sibling skill has one",
+      "Treats announcing a state as useful when it restrains nothing",
+    ],
+    tags: ["activation", "positive", "states", "restraint"],
+  },
+  {
     id: "wrote-a-skill-and-it-never-loads",
     bundle: "authoring-verifiable-skills",
     rule: "activation-surface",

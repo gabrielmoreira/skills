@@ -26,7 +26,7 @@ Do:
 1. **Name the candidate and its prediction before writing the probe.** A probe with no prediction prints output nobody can score.
 2. **Tag every inserted line with one token unique to this run.** One search then returns all of them at removal time.
 3. **Print the value, its type, and object identity where sharing is in question.** A bare value hides aliasing.
-4. **Keep the probe read-only until the cause is `EXPLAINED`.** A probe is the only write on the table, and one that alters behaviour has spent the signal it was placed to read.
+4. **Keep the probe read-only until the cause is `debug/EXPLAINED`.** A probe is the only write on the table, and one that alters behaviour has spent the signal it was placed to read.
    - No changed return.
    - No reordered call.
    - No swallowed error.

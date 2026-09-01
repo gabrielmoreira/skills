@@ -41,11 +41,18 @@ description: >-
 | a git operation that refused, a state you cannot name, or work about to be deleted or cleaned up | `keep-git-work-recoverable` |
 | written material to create, correct, place, or remove, including whether a decision is worth recording | `make-the-docs-trustworthy` |
 | code that should stay simple and testable: boundaries, cohesion, layering, hidden effects, abstraction added too early | `maintainable-code` |
-| TypeScript specifics: standards, boundaries, composition, config, async, errors, observability, security, testing | `typescript-skills` |
+| a decision inside TypeScript or JavaScript code: what a value may be, what a failure means, what crosses a boundary, what runs concurrently, what a test proves | `typescript-skills` |
 | ground you cannot name yet: two probes in with no finding, or a script about to be written to find out | `bound-the-unknown` |
 | a decision, a constraint, an approval, or a second request arriving before the first closes | `keep-the-thread-across-boundaries` |
 | an answer that is dense, buried, or hard to resume | `progressive-reading` |
 | a skill to write, split, rename, or check, or one that never fires | `authoring-verifiable-skills` |
+
+- **Know what you are in before matching a row.** The project's own instruction file, its README,
+  and what the files actually are. Usually one read, and it is what makes a row land on the right
+  skill rather than the nearest-sounding one.
+- **Where no row matches, the domain is in the material and not in the request.** File extensions,
+  a diagnostic code, the failing command, a dependency in a stack trace. A question that never
+  names a language, asked over a tree of `.ts` files, is still about that language.
 
 - **Boundaries, so they do not fight.** Review judges a change that already exists; debugging establishes a cause when there is no change yet; once a fix exists it becomes a change again. `maintainable-code` owns language-neutral structure and only material architecture work; `typescript-skills` owns the ecosystem and is the primary one when both apply. Docs inside a diff belong to review; docs on their own belong to `make-the-docs-trustworthy`.
 - **Other skills may fire alongside these.** On a procedure conflict, follow the one more adequate to the situation and say which one lost.

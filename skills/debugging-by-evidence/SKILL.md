@@ -28,7 +28,7 @@ description: >-
 - **The loop is that command plus the state it needs.** Record both.
 
 ## What you may write, and when
-- **Until `EXPLAINED` the only write you MAY make is instrumentation.** Every inserted line carries a unique tag, so removal is one search. A fix written earlier destroys the red signal that was going to explain it.
+- **Until `debug/EXPLAINED` the only write you MAY make is instrumentation.** Every inserted line carries a unique tag, so removal is one search. A fix written earlier destroys the red signal that was going to explain it.
 - **Reverting your own change to re-observe the original failure is allowed here.** It is often the point. This skill runs experiments.
 - **The licence stops at the workspace boundary.** No commit. No branch move. No remote or deployment action. Every tag comes out before you close.
 
@@ -48,6 +48,7 @@ description: >-
 - **The match sets where to start.** The loop state sets what you are allowed to do next. Enter at the matched row, then follow the loop states in order.
 - **A rule belonging to a state you have not reached is read when you reach it.** Not now. Stopping applies from any state and outranks continuing.
 - **Where two rows both look like the symptom, read both.** Under-reading costs a whole loop. Over-reading costs one file.
+- **Read every row, then act on the matches, hardest to undo first.** Reading a row costs nothing; the row you skipped is where the coverage went.
 
 | If you see... | Read |
 | --- | --- |
@@ -63,7 +64,7 @@ description: >-
 
 - **Signal against minimising.** Signal owns a loop that does not reproduce or cannot be trusted. Minimising owns a loop that reproduces but proves too much.
 - **Hypotheses against probing.** Ranking comes before any run. A probe tests exactly one ranked prediction.
-- **Source against seam.** Source decides where the fix belongs. Seam decides where its test belongs. Both wait for `EXPLAINED`.
+- **Source against seam.** Source decides where the fix belongs. Seam decides where its test belongs. Both wait for `debug/EXPLAINED`.
 
 **Default stance.**
 
@@ -76,21 +77,21 @@ description: >-
 
 | State | Means | Licenses |
 | --- | --- | --- |
-| `NO-SIGNAL` | nothing run yet reproduces it | more attempts at a loop, nothing else |
-| `RED` | a command reproduces the symptom, deterministically or at a stated rate | hypotheses, probes |
-| `MINIMISED` | removing any remaining element makes it pass | naming a cause |
-| `EXPLAINED` | one surviving hypothesis, each link observed | a fix |
-| `RESOLVED` | the original loop passes unmodified, and the nearest path the fix also touches was run | closing |
+| `debug/NO-SIGNAL` | nothing run yet reproduces it | more attempts at a loop, nothing else |
+| `debug/RED` | a command reproduces the symptom, deterministically or at a stated rate | hypotheses, probes |
+| `debug/MINIMISED` | removing any remaining element makes it pass | naming a cause |
+| `debug/EXPLAINED` | one surviving hypothesis, each link observed | a fix |
+| `debug/RESOLVED` | the original loop passes unmodified, and the nearest path the fix also touches was run | closing |
 
 - **Skipping a state is the failure this skill exists to prevent.** You MAY spend as long as you need inside one state.
-- **You SHOULD stop building a loop after five attempts** and report `NO-SIGNAL` instead. Keep going only where you can name what the sixth attempt does differently.
-- **`NO-SIGNAL` for long enough is itself the report.** Say what you tried and what would produce a signal. Never proceed on theory.
+- **You SHOULD stop building a loop after five attempts** and report `debug/NO-SIGNAL` instead. Keep going only where you can name what the sixth attempt does differently.
+- **`debug/NO-SIGNAL` for long enough is itself the report.** Say what you tried and what would produce a signal. Never proceed on theory.
 - **Know what an empty result means before you trust it.** A zero is evidence of absence only from a path that records this event. A path that records nothing, or records only failures, produces the same zero and proves nothing.
 
 ## What makes a cause a cause
 **All four hold, or it is a hypothesis and is labelled one.**
 
-- **A run at `RED` or better produced it.** Not a reading of the code.
+- **A run at `debug/RED` or better produced it.** Not a reading of the code.
 - **Each link from trigger to symptom cites an exact `file:line`.**
 - **One prediction it made was tested and could have failed.**
 - **It explains the whole symptom.** That includes the part that seems incidental.
