@@ -86,7 +86,12 @@ function lineCount(text) {
 }
 
 function stripFrontmatter(text) {
-  const match = text.match(/^---\n[\s\S]*?\n---\n?/);
+  // \r?\n, not \n: these files carry CRLF on a Windows checkout, and an
+  // LF-only anchor reported every rule as having no frontmatter at all.
+  // The check could then never pass and never discriminate, which is worse
+  // than not having it: it was red for a reason that had nothing to do with
+  // what it claims to measure.
+  const match = text.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/);
   return match ? text.slice(match[0].length) : text;
 }
 
@@ -95,10 +100,15 @@ function stripFences(text) {
 }
 
 function parseFrontmatter(text) {
-  const match = text.match(/^---\n([\s\S]*?)\n---/);
+  const match = text.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!match) return null;
   const fields = {};
-  for (const line of match[1].split("\n")) {
+  // Split on the line ending, not on the newline alone. In JavaScript `.`
+  // does not match a carriage return, so `(.*)$` fails on every CRLF line
+  // and only the last field parsed: the one whose CR the block boundary had
+  // already eaten. The check then reported every rule as missing its
+  // frontmatter, which is red for a reason unrelated to what it measures.
+  for (const line of match[1].split(/\r?\n/)) {
     const kv = line.match(/^([A-Za-z_][A-Za-z0-9_-]*):\s*(.*)$/);
     if (kv) fields[kv[1]] = kv[2].trim();
   }
