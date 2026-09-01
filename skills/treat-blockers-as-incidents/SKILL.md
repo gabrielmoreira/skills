@@ -63,9 +63,9 @@ description: >-
 
 | If you see... | Read |
 | --- | --- |
-| **a workaround forming**: a flag nobody documents, a copied file, a pinned version chosen to make an error go away | `rules/workarounds-are-findings.md` |
+| **a workaround forming**: a `--force` or a version pin nobody documents, a file copied by hand into a place a tool should have filled | `rules/workarounds-are-findings.md` |
 | **the same command failing again**, or a fix that made the error move rather than go | `rules/stop-conditions.md` |
-| **a non-zero exit from a command that does several things**, or an unrelated tool named in the output | `rules/whose-failure-is-it.md` |
+| **a non-zero exit (`exit code 1`) from a command that does several things**, or a tool named in the output that you were not running | `rules/whose-failure-is-it.md` |
 | **the first blocker cleared** and something new failing right behind it | `rules/the-second-blocker.md` |
 | **a `rm -rf`, `git reset --hard`, a reinstall or a rotated credential** about to be run to make a command pass | `rules/never-destroy-to-proceed.md` |
 | **enough understood to be worth keeping**, or a ceiling reached | `rules/record-the-learning.md` |
