@@ -130,6 +130,27 @@ const scenarios = [
       "Rejects all structure and recommends leaving everything in one file permanently"
     ],
     tags: ["structure", "premature-abstraction", "iteration", "p1"]
+  },
+  {
+    id: "maintainable-code-effects-not-answerable",
+    bundle: "maintainable-code",
+    rule: "effects-answerable-at-runtime",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "mixed",
+    prompt:
+      "Why does logging out leave requests running? Every dependency is injected, each hook aborts its own fetch on unmount, and yet for a while after logout I keep seeing retries and background refreshes come back 401.",
+    expectedPrimary: "maintainable-code",
+    must: [
+      "Separates the two questions: what a unit may do, which the signature answers, and what is actually in flight, which nothing currently answers",
+      "Points at the effects that outlive the call that started them, such as retries, subscriptions and background refresh, as the ones unmount cleanup never reaches",
+      "Recommends one place that can be asked what is active and told to stop, instead of adding another cancel path per call site"
+    ],
+    mustNot: [
+      "Treats it as a single missing abort signal and stops there",
+      "Recommends a mutable global registry reachable from anywhere as the fix"
+    ],
+    tags: ["effects", "lifecycle", "observability", "p1"]
   }
 ] as const satisfies readonly EvalScenario[];
 

@@ -42,7 +42,7 @@ description: >-
 | a change about to be made to code nobody has read end to end; behaviour assumed from a name | §1 Investigate before changing |
 | a structure picked while a technical unknown is still open; a library chosen from its docs rather than from a run | §2 Design from observable proof |
 | the happy path buried under guards; a function you read twice to find what it does | §3 Keep the main flow obvious |
-| I/O, a clock, `Math.random`, or a global reached from inside something whose signature does not say so; a broad context object passed down | §4 Make effects and dependencies explicit |
+| I/O, a clock, `Math.random`, or a global reached from inside something whose signature does not say so; a broad context object passed down; work still running after whatever started it is gone | §4 Make effects and dependencies explicit |
 | one caller's name hardcoded into a shared mechanism; a dependency added for a single call site | §5 Keep mechanisms generic |
 | files grouped by kind rather than by what changes together; one feature edit touching six folders | §6 Organize around the axis of change |
 | a file whose name no longer describes half of it; a module doing two jobs that change for different reasons | §7 Keep units cohesive |
@@ -97,6 +97,7 @@ composition root -> route -> use case -> focused subtask -> connector
 - **Do not inject a stable pure utility or a constant just to satisfy a pattern.**
 - **Avoid globals and broad context objects**, which hide what a unit actually needs.
 - **A shared context is fine where it is the deliberate extension contract.**
+- **Explicit in a signature is not the same as answerable while running.** Every dependency can be injected correctly and the system still have no way to say what is in flight, who started it, or where to stop it. Where effects outlive the call that started them, as retries, subscriptions and background refresh do, give them one place that can be asked and told to stop, rather than a cancel path per call site and none for the whole.
 - **Name the direction each module may depend in, and let a tool refuse the rest.** Two files with one responsibility each and one direction between them is already a module; a package is the same boundary when it must be enforced rather than agreed.
 - **Prefer a cycle check the project runs over a rule people remember.** Bidirectional dependency has no legitimate exception, which makes it the cheapest boundary to enforce and the first one worth wiring into the build.
 
