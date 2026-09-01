@@ -105,7 +105,10 @@ function parseArgs(argv) {
     else if (k === "--max-time") a.maxTime = Number(argv[++i]);
     else if (k === "--fixture") a.fixture = argv[++i];
     else if (k === "--with-rules") a.rules = true;
-    else if (k === "--model") a.model = argv[++i];
+    // A comma-separated list is the retry chain, same shape as the default.
+    // One wall should move to the next provider rather than end the run,
+    // and the chain has to be sayable from the command line to be steerable.
+    else if (k === "--model") { const v = argv[++i]; a.model = v.includes(",") ? v.split(",").map((x) => x.trim()).filter(Boolean) : v; }
     else if (k === "--skill") a.skills.push(argv[++i]);
     else if (k === "--rule") a.rules_.push(argv[++i]);
     else if (k === "--id") a.ids.push(argv[++i]);
@@ -1230,7 +1233,8 @@ async function checkAgainstBaseline(results) {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   (async () => {
-    const models = (parseArgs(process.argv.slice(2)).model ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+    const m = parseArgs(process.argv.slice(2)).model ?? "";
+    const models = (Array.isArray(m) ? m : m.split(",")).map((s) => s.trim()).filter(Boolean);
     for (const [i, m] of models.entries()) {
       const r = await main(m);
       if (!r?.aborted) return;
