@@ -122,6 +122,10 @@ function parseArgs(argv) {
     // Which half of the split to run. Tune against train, select on validation,
     // and a number quoted without saying which one it came from is not a result.
     else if (k === "--set") a.set = argv[++i];
+    // Which polarity to run. A false positive costs tokens on every turn it
+    // fires wrongly, and unlike a miss it needs no control arm to be visible,
+    // so it is the half worth measuring when the budget will not carry both.
+    else if (k === "--only") a.only = argv[++i];
     else if (k === "--dry-run") a.dryRun = true;
     else if (k === "--check") a.check = true;
     else if (k === "--write-baseline") a.writeBaseline = true;
@@ -129,6 +133,7 @@ function parseArgs(argv) {
     else throw new Error(`unknown argument: ${k}`);
   }
   if (!["all", "routing", "activation", "far-miss"].includes(a.kind)) throw new Error(`--kind must be all, routing, activation or far-miss`);
+  if (a.only && !["positive", "negative"].includes(a.only)) throw new Error(`--only must be positive or negative`);
   a.backend ??= process.env.ANTHROPIC_API_KEY ? "api" : "omp";
   // Tried in order, a whole run each. Not a retry inside a run: omp already
   // does that and it is what `degraded` exists to refuse, because a run that
@@ -872,7 +877,13 @@ async function main(modelOverride) {
   // adjacent: a positive with no control arm would measure nothing.
   const isNegative = (c) => c.scenario?.activation?.shouldActivate === false || c.scenario?.mode === "bypass";
   cases.sort((a, b) => Number(isNegative(a)) - Number(isNegative(b)));
-  const selected = cases.slice(0, args.limit === Infinity ? cases.length : args.limit);
+  // A negative run needs only the arm that has the skills to open: the other
+  // arm has nothing to fire and would pass for free, at full price.
+  const keep = args.only === "negative" ? (c) => isNegative(c) && c.arm === "with"
+    : args.only === "positive" ? (c) => !isNegative(c)
+    : () => true;
+  const kept = cases.filter(keep);
+  const selected = kept.slice(0, args.limit === Infinity ? kept.length : args.limit);
 
   if (args.dryRun) {
     console.log(`${selected.length} calls would be made, ${args.samples} samples each = ${selected.length * args.samples} requests\n`);
