@@ -28,6 +28,22 @@ Avoid:
 - **Assuming the second failure is a consequence of the first fix.** It is usually older than the fix.
 - **Folding several blockers into one finding.** The next person hits them one at a time.
 
+Each run gets further, and only the third answers what the subject is:
+
+```
+$ ./run-tests
+  Error: cannot find module 'sharp'
+$ ./run-tests                      # after installing it
+  Error: EACCES  permission denied, open 'cache/fontconfig'
+$ ./run-tests                      # after fixing the permission
+  Error: connect ECONNREFUSED 127.0.0.1:5432
+```
+
+Reporting the first as the fix would have been true and useless. Three
+unrelated causes in one command is the environment saying so, and the
+right move at the third is to hand back with all three named, not to
+clear it and look for a fourth.
+
 Verify:
 - **Quote the original command's output after each fix**, showing how far it reached.
 - **Name every blocker found, numbered**, each with its own state.

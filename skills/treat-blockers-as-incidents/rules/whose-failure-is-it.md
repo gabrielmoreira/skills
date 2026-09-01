@@ -11,9 +11,9 @@ references: [incident postmortem practice]
 Decision: **A non-zero exit names the command that ran, not the thing you asked for.** Verify the piece you wanted before treating it as broken. What to do once the ground keeps moving belongs to `rules/stop-conditions.md`.
 
 Use when:
-- **One command does several things**: an install with a postinstall hook, a script that shells out, a task that resolves plugins first.
-- **The output names a tool you were not using.**
-- **A runtime manager, package manager, or wrapper sits between you and the thing that failed.**
+- **One command does several things**: a dependency install running a postinstall build, a task runner resolving plugins first, a script that shells out to another.
+- **The output names a tool you were not using**: a native-addon compiler, an interpreter, a linter, in a command that was about none of them.
+- **A runtime manager, package manager, or wrapper sits between you and the thing that failed**: a version shim, a container entrypoint, a pipeline step.
 - **You are about to reinstall, delete, or downgrade** something on the strength of an exit code alone.
 
 Do:
@@ -25,9 +25,24 @@ Do:
 
 Avoid:
 - **Deleting or reinstalling a working tool** because something else in the same command failed.
-- **Reading a cached, skipped, or deprecated warning as an error.**
+- **Reading a cached, skipped, or deprecated warning as an error.** Deprecation notices and skipped optional dependencies print loudly and exit zero.
 - **Attributing the failure to the last thing you changed** without running the narrow command.
 - **Treating a non-zero exit as one fact.** It summarises several, and the interesting one is further up.
+
+The exit code is the last line and the least informative one:
+
+```
+$ pnpm run build
+> node-gyp rebuild
+gyp ERR! find Python: Python is not set from command line
+gyp ERR! stack Error: Could not find any Python installation
+npm ERR! code 1
+ELIFECYCLE  Command failed with exit code 1.
+```
+
+Four lines name four different components. The build tool did not fail; a
+native addon's toolchain could not find an interpreter. Reinstalling the
+package manager here removes a working tool and leaves the cause in place.
 
 Verify:
 - **Quote the narrow command and its output.**
