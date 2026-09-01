@@ -942,6 +942,7 @@ async function main(modelOverride) {
     const answers = [];
     const opened = [];
     let seq = null;
+    let entered = false;
     for (let i = 0; i < args.samples; i++) {
       let answer;
       let workspace = null;
@@ -1008,6 +1009,13 @@ async function main(modelOverride) {
       }
       if (c.kind === "observed") {
         const seen = observe(answer, paths.conf);
+        // Reading the entry file and opening a rule underneath it are different
+        // acts, and a negative currently fails on the first. The only way to
+        // establish that a skill does not apply is to read enough of it, and
+        // several scenarios say so in their own words ("without opening a
+        // rule"). The verdict is left alone here; what was missing is being
+        // able to see which of the two happened.
+        if (seen.skills.includes(c.skill)) entered ||= seen.rules.length > 0;
         if (seen.delegated) flags.delegated++;
         if (seen.sawHarness) flags.sawHarness++;
         for (const s of seen.skills) if (!ours.has(s)) flags.foreign.add(s);
@@ -1027,7 +1035,7 @@ async function main(modelOverride) {
         if (yes !== null && yes === c.scenario.activation.shouldActivate) passes++;
       }
     }
-    return { skill: c.skill, id: c.id, rule: c.scenario?.rule ?? null, kind: c.kind, arm: c.arm, opened: [...new Set(opened)], negative: c.scenario.activation?.shouldActivate === false, passes, samples: args.samples - lost, lost, verdict: verdictOf(passes, args.samples - lost), seq, answers: args.verbose ? answers : undefined };
+    return { skill: c.skill, id: c.id, rule: c.scenario?.rule ?? null, kind: c.kind, arm: c.arm, opened: [...new Set(opened)], negative: c.scenario.activation?.shouldActivate === false, entered, passes, samples: args.samples - lost, lost, verdict: verdictOf(passes, args.samples - lost), seq, answers: args.verbose ? answers : undefined };
   });
 
   if (stop) {
