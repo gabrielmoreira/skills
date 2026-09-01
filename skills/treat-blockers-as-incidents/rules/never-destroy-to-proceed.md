@@ -33,6 +33,16 @@ Exceptions:
 - **A file this session created MAY be removed** by this session.
 - **A documented reset step MAY be run.** Name the document. The thing reset must be reproducible.
 
+The destructive route and the additive one, on the same blocker:
+
+```
+  proposed   delete the cache, the lock file, and the installed tree, reinstall
+  additive   install into a scoped prefix beside it, run the command from there
+```
+
+The first is faster when it works and unrecoverable when it does not. The
+second leaves both in place, and the developer decides which one to keep.
+
 Verify:
 - **Name everything removed, and where its copy is.**
 - **Confirm the replacement was observed working** before the original went.

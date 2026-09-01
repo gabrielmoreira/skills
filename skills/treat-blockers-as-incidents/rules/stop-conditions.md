@@ -35,6 +35,15 @@ Avoid:
 Exceptions:
 - **A transient network failure MAY be retried once**, and the retry is recorded.
 
+A fix that moved the error rather than removing it:
+
+```
+  before   Error: cannot find module 'imaging'
+  after    Error: 'imaging' loaded, but its native binding targets another ABI
+```
+
+The module is found now, and the command still does not run.
+
 Verify:
 - **Name the condition that stopped you**, quoting the observation behind it.
 - **State the one thing that would unblock it**, concretely enough for someone else to do.

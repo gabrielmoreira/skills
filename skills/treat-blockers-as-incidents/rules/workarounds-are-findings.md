@@ -34,6 +34,15 @@ Exceptions:
 - **A documented, supported alternative is not a workaround.** Say where it is documented.
 - **A one-line detour MAY be taken without a handback**, provided the mechanism is Confirmed and the note is written.
 
+Each of these stopped an error without anyone reading it:
+
+```
+  --force                          the tool was refusing for a reason
+  --ignore-engines                 a version constraint someone wrote on purpose
+  TLS_REJECT_UNAUTHORIZED=0        a certificate problem, disabled everywhere
+  copying the artifact by hand     the step that should produce it still fails
+```
+
 Verify:
 - **Quote the command that failed and the one that succeeded.**
 - **Name the mechanism, or record a Gap saying it was not established.**

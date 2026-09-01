@@ -31,6 +31,17 @@ Avoid:
 - **Placeholders left in.** An unfinished marker in a record is worse than a shorter record.
 - **Claiming a resolution the evidence does not support.** Half of these honestly end unresolved.
 
+What usually gets written, and what saves the next afternoon:
+
+```
+  usual    "fixed the build"
+  useful   "build failed in a native addon that needs an interpreter the base
+            image does not carry. The fix is a build dependency, not a
+            reinstall. Second time this month."
+```
+
+The second names the component, the cause, the fix, and the repeat.
+
 Verify:
 - **Name the file and its path**, and say whether it is tracked.
 - **Confirm the symptom, the cause or the limitation, and the evidence are all present.**
