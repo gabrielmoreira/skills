@@ -147,7 +147,7 @@ const baselineLine = baseline.out.trim().split("\n").find((l) => l.includes("rou
  * run on every save. Reporting the baseline's age is what stops a stale one
  * from passing for a current one.
  */
-function behaviourLine() {
+function behaviourLine(collectionSize) {
   let base;
   try {
     base = JSON.parse(readFileSync(join(ROOT, "evals/baseline.json"), "utf8"));
@@ -170,7 +170,19 @@ function behaviourLine() {
   const days = Math.floor((Date.now() - Date.parse(base.ranAt)) / 86400000);
   const age = days === 0 ? "today" : `${days}d old`;
   const shutPart = neg.n ? `, ${pct(neg)} stayed shut` : "";
-  return `${pct(withS)} with the skills, ${pct(without)} without${shutPart}, ${base.model}, ${age}`;
+
+  // Age was reported and coverage was not, so a baseline built from one skill
+  // read as a statement about fourteen. Both are ways a baseline stops standing
+  // for the collection, and the narrower one is the harder to notice: the
+  // interval widens with small samples, but nothing in the line says which
+  // scenarios were never in it.
+  const ids = new Set(base.results.map((r) => r.id));
+  const skills = [...new Set(base.results.map((r) => r.skill))];
+  const scope = collectionSize
+    ? `${ids.size}/${collectionSize} scenarios`
+    : `${ids.size} scenarios`;
+  const reach = skills.length === 1 ? `${skills[0]} only` : `${skills.length} skills`;
+  return `${pct(withS)} with the skills, ${pct(without)} without${shutPart}, ${base.model}, ${age}, ${scope} across ${reach}`;
 }
 
 /**
@@ -220,10 +232,12 @@ console.log("");
 // The held-out half, reported on every run. A description tuned against the
 // whole set passes its own exam, and the only thing that catches that is
 // knowing which scenarios took no part in the tuning.
+let collectionSize = 0;
 const splitLine = await (async () => {
   try {
     const { loadScenarios } = await import("./split-activation.mjs");
     const s = await loadScenarios();
+    collectionSize = s.length;
     const n = (set, pos) => s.filter((x) => x.set === set && x.positive === pos).length;
     const pct = (a, b) => (a + b ? Math.round((b / (a + b)) * 100) : 0);
     const tr = n("train", true) + n("train", false);
@@ -245,7 +259,7 @@ console.log(`  graders           ${graders.ok ? "passed" : "FAILED"}`);
 console.log(`  local paths       ${paths.ok ? "none committed" : "FOUND"}`);
 console.log(`  scenarios         ${baselineLine}`);
 console.log(`  split             ${splitLine}`);
-console.log(`  behaviour         ${behaviourLine()}`);
+console.log(`  behaviour         ${behaviourLine(collectionSize)}`);
 console.log(`  far misses        ${farMissLine()}`);
 
 if (!reportOnly) {
@@ -256,7 +270,14 @@ if (!reportOnly) {
       for (const line of r.detail.m.out.split("\n")) if (/PROBLEM|baseline/.test(line)) console.log(line);
     }
     if (r.sIn < r.sAll) {
-      for (const line of r.detail.s.out.split("\n")) if (line.includes("!")) console.log(`  shape  ${line.trim()}`);
+      const lines = r.detail.s.out.split("\n");
+      for (const line of lines) if (line.includes("!")) console.log(`  shape  ${line.trim()}`);
+      // The flagged row says which dimension; the why block says by how much.
+      const w = lines.findIndex((l) => l.startsWith("why:"));
+      if (w >= 0) for (const line of lines.slice(w + 1)) {
+        if (/files inside/.test(line)) break;
+        if (line.trim()) console.log(`  shape  ${line.trim()}`);
+      }
     }
   }
   if (!parity.ok && !paritySkipped) console.log(`\n=== frontmatter parity ===\n${parity.out}`);

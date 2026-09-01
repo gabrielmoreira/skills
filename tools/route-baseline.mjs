@@ -115,7 +115,11 @@ export async function measure(skillDir) {
   const all = await scenariosIn(skillDir);
   const routed = all.filter((s) => s.expectedPrimary && typeof s.prompt === "string");
   const results = routed.map((s) => {
-    const expected = atEntryGranularity(s.expectedPrimary, rows);
+    // A topic scenario names its bundle in expectedPrimary and its rule in
+    // expectedAll. The gate rows point at rules, so the second is the one
+    // that can match; taking the first made every topic report zero.
+    const claim = Array.isArray(s.expectedAll) && s.expectedAll.length ? s.expectedAll[0] : s.expectedPrimary;
+    const expected = atEntryGranularity(claim, rows);
     const got = naiveRoute(rows, s.prompt);
     const verdict = !got.target
       ? "missed"
@@ -149,6 +153,21 @@ async function main() {
     : (await readdir(root, { withFileTypes: true }))
         .filter((d) => d.isDirectory())
         .map((d) => join(root, d.name));
+
+  // A multi-topic skill keeps its scenarios beside each topic, and each topic
+  // carries its own gate. Measuring only the root left the larger half of the
+  // collection unmeasured by the one instrument that says a prompt is a
+  // giveaway.
+  if (!given.length) {
+    for (const dir of [...dirs]) {
+      let subs = [];
+      try { subs = await readdir(dir, { withFileTypes: true }); } catch { continue; }
+      for (const s of subs) {
+        if (!s.isDirectory()) continue;
+        if (await exists(join(dir, s.name, "evals"))) dirs.push(join(dir, s.name));
+      }
+    }
+  }
 
   let solved = 0;
   let tie = 0;

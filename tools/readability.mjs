@@ -146,10 +146,20 @@ const routedCount = (f) => {
 // the target it was written to hit.
 const flag = (v, limit, over) => (over ? v >= limit : v < limit) ? "  " : " !";
 
-console.log("\nfile".padEnd(34) + "words bull bold  avgP maxP  cl/s prose%");
+// Nine topic indexes all end in INDEX.md, so a bare basename names a failure
+// without locating it. The parent segment is what makes the row addressable.
+const label = (f) => {
+  const parts = f.split(/[\/]/);
+  const base = parts.pop().replace(/\.md$/, "");
+  const parent = parts.pop();
+  return parent ? `${parent}/${base}` : base;
+};
+
+console.log("\nfile".padEnd(42) + "words  b+r bold  avgP maxP  cl/s prose%");
 let bad = 0;
+const why = [];
 for (const f of files) {
-  const perUnit = /[\\/]rules[\\/]/.test(f) || isFlatEntry(f);
+  const perUnit = /[\/]rules[\/]/.test(f) || isFlatEntry(f);
   const s = shape(fs.readFileSync(f, "utf8").split("\r\n").join("\n"));
   const n = perUnit ? 0 : routedCount(f);
   // A topic index is a gate only; a skill router frames the whole skill.
@@ -157,17 +167,28 @@ for (const f of files) {
   const per = isTopicIndex ? 3 : 4;
   const wantBul = perUnit ? 12 : Math.max(8, Math.min(40, n * per));
   const wantBold = perUnit ? 4 : Math.max(4, Math.min(20, n * 2));
-  const marks =
-    flag(s.bullets + s.rows, wantBul, true) + flag(s.bold, wantBold, true) +
-    flag(s.maxPara, TARGET.maxPara, false) + flag(s.clauses, TARGET.clauses, false) +
-    flag(s.prose, TARGET.prose, false);
+  // Each dimension carries its target and how the target was derived, so a
+  // flagged file says what it needed instead of leaving that to be rederived.
+  const checks = [
+    ["bullets+rows", s.bullets + s.rows, wantBul, true, perUnit ? "per rule" : `${n} rules x ${per}, capped at 40`],
+    ["bold spans", s.bold, wantBold, true, perUnit ? "per rule" : `${n} rules x 2, capped at 20`],
+    ["longest paragraph", s.maxPara, TARGET.maxPara, false, "words"],
+    ["clauses/sentence", s.clauses, TARGET.clauses, false, ""],
+    ["prose share", s.prose, TARGET.prose, false, "percent"],
+  ];
+  const marks = checks.map(([, v, limit, over]) => flag(v, limit, over)).join("");
   if (marks.includes("!")) bad++;
+  for (const [dim, v, limit, over, note] of checks) {
+    if (over ? v >= limit : v < limit) continue;
+    why.push(`  ${label(f)}: ${dim} is ${v}, needs ${over ? "at least" : "under"} ${limit}${note ? ` (${note})` : ""}`);
+  }
   console.log(
-    f.split(/[\\/]/).pop().replace(/\.md$/, "").padEnd(34) +
-      String(s.words).padStart(5) + String(s.bullets).padStart(5) + String(s.bold).padStart(5) +
+    label(f).padEnd(42) +
+      String(s.words).padStart(5) + String(s.bullets + s.rows).padStart(5) + String(s.bold).padStart(5) +
       String(s.avgPara).padStart(6) + String(s.maxPara).padStart(5) +
       String(s.clauses).padStart(6) + String(s.prose).padStart(7) + "  " + marks,
   );
 }
+if (why.length) console.log("\nwhy:\n" + why.join("\n"));
 console.log(`\n${files.length - bad}/${files.length} files inside every target\n`);
 process.exit(bad === 0 ? 0 : 1);

@@ -62,6 +62,7 @@ const shown = (p) => relative(ROOT, p).split(sep).join("/");
 
 let compared = 0, agreed = 0;
 const disagreements = [];
+const valueDisagreements = [];
 
 for (const p of files) {
   const text = (await readFile(p, "utf8")).split("\r\n").join("\n");
@@ -76,7 +77,27 @@ for (const p of files) {
   }
 
   const r = parseYamlFrontmatter(text);
-  if (r.ok === realOk) { agreed++; continue; }
+  if (r.ok === realOk) {
+    // Both accepted. Now the harder question: did they read the same thing?
+    // Every check downstream uses the values, so agreeing on the verdict and
+    // differing on a field would be a bug this test was blind to.
+    if (realOk) {
+      const real = YAML.parse(m[1]) ?? {};
+      const ours = r.data ?? {};
+      const flat = (v) => (v == null ? "" : Array.isArray(v) ? v.map(String).join("|") : String(v)).replace(/\s+/g, " ").trim();
+      const keys = [...new Set([...Object.keys(real), ...Object.keys(ours)])];
+      const differing = keys.filter((k) => flat(real[k]) !== flat(ours[k]));
+      if (differing.length) {
+        valueDisagreements.push({
+          file: shown(p),
+          fields: differing.map((k) => `${k}: ours ${JSON.stringify(flat(ours[k]).slice(0, 40))} vs yaml ${JSON.stringify(flat(real[k]).slice(0, 40))}`),
+        });
+        continue;
+      }
+    }
+    agreed++;
+    continue;
+  }
   disagreements.push({
     file: shown(p),
     ours: r.ok ? "accepted" : `rejected at line ${r.line}: ${r.error}`,
@@ -88,6 +109,10 @@ for (const d of disagreements) {
   console.log(`DISAGREE  ${d.file}`);
   console.log(`   ours:  ${d.ours}`);
   console.log(`   yaml:  ${d.real}`);
+}
+for (const d of valueDisagreements) {
+  console.log(`VALUES    ${d.file}`);
+  for (const f of d.fields) console.log(`   ${f}`);
 }
 console.log(`\n${compared} frontmatter blocks compared, ${agreed} agreed, ${disagreements.length} disagreed`);
 process.exit(disagreements.length ? 1 : 0);

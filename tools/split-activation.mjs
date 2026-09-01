@@ -79,20 +79,31 @@ export function setFor(scenario) {
 /** Every activation scenario in the collection, with its side attached. */
 export async function loadScenarios(root = ROOT) {
   const out = [];
+
+  // A skill's own evals, and a multi-topic skill's, which live beside each
+  // topic rather than in one pile at the root.
+  const dirs = [];
   for (const d of await readdir(root, { withFileTypes: true })) {
     if (!d.isDirectory()) continue;
-    const evals = join(root, d.name, "evals");
+    const skill = join(root, d.name);
+    dirs.push([d.name, skill]);
+    let subs = [];
+    try { subs = await readdir(skill, { withFileTypes: true }); } catch { continue; }
+    for (const s of subs) if (s.isDirectory()) dirs.push([d.name, join(skill, s.name)]);
+  }
+
+  for (const [skill, dir] of dirs) {
     let files;
     try {
-      files = (await readdir(evals)).filter((f) => /\.scenarios\.(mjs|ts)$/.test(f));
+      files = (await readdir(join(dir, "evals"))).filter((f) => /\.scenarios\.(mjs|ts)$/.test(f));
     } catch {
       continue;
     }
     for (const f of files) {
-      const mod = await import(pathToFileURL(join(evals, f)).href);
+      const mod = await import(pathToFileURL(join(dir, "evals", f)).href);
       for (const s of mod.default ?? mod.scenarios ?? []) {
         if (typeof s.id !== "string") continue;
-        out.push({ ...s, skill: basename(join(root, d.name)), set: setFor(s), positive: isPositive(s) });
+        out.push({ ...s, skill, set: setFor(s), positive: isPositive(s) });
       }
     }
   }

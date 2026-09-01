@@ -191,7 +191,11 @@ function flowItems(inner) {
   let depth = 0, quote = null, cur = "";
   for (const ch of inner) {
     if (quote) { cur += ch; if (ch === quote) quote = null; continue; }
-    if (ch === '"' || ch === "'") { quote = ch; cur += ch; continue; }
+    // A quote only opens a quoted scalar at the start of an item. Treating one
+    // mid-token as an opener left the parser inside a string it never closed,
+    // so every comma after an apostrophe was swallowed and the tail of the
+    // sequence disappeared without an error.
+    if ((ch === '"' || ch === "'") && !cur.trim()) { quote = ch; cur += ch; continue; }
     if (ch === "[" || ch === "{") depth++;
     if (ch === "]" || ch === "}") depth--;
     if (ch === "," && depth === 0) { out.push(cur.trim()); cur = ""; continue; }
@@ -377,8 +381,33 @@ async function verify(skillDir) {
     const counts = new Map();
     for (const n of pointed) counts.set(n, (counts.get(n) ?? 0) + 1);
     for (const [n, c] of soleTarget) if (c > 1) bad.push(`${ENTRY} makes rules/${n}.md the sole target of ${c} separate rows`);
-    for (const n of ruleNames) if (!counts.has(n)) bad.push(`rules/${n}.md has no row in ${ENTRY}`);
-    bad.length ? fail(`C-03 ${ENTRY} routes every rule exactly once`, bad.join("\n        ")) : pass(`C-03 ${ENTRY} routes every rule exactly once`, `${counts.size} rows`);
+    // A rule is reachable two ways, and this used to know only one.
+    //
+    // A gate row fires on something the reader can see. Some rules answer to an
+    // absence instead — whether the pipeline covers this change, whether the
+    // written standard says what you assume — and nothing appears in a diff to
+    // announce those. No wording of a left column reaches them, which is why
+    // seven such rows in this collection were opened zero times in ninety runs.
+    // They belong in a coverage obligation that names each as checked or not.
+    //
+    // So the requirement is reachability, not table membership. A rule outside
+    // the table must be named in a prose obligation that points at it; a rule
+    // named in neither is unreachable and still fails.
+    const obligation = new Set();
+    for (const line of skillText.split("\n")) {
+      if (line.trimStart().startsWith("|")) continue;
+      for (const m of line.matchAll(/(?:([a-z0-9-]+)\/)?rules\/([a-z0-9-]+)\.md/g)) {
+        if (!m[1] || m[1] === NAME) obligation.add(m[2]);
+      }
+    }
+    for (const n of ruleNames) {
+      if (counts.has(n) || obligation.has(n)) continue;
+      bad.push(`rules/${n}.md is in no gate row and no coverage obligation`);
+    }
+    const viaProse = ruleNames.filter((n) => !counts.has(n) && obligation.has(n)).length;
+    bad.length
+      ? fail(`C-03 ${ENTRY} routes every rule exactly once`, bad.join("\n        "))
+      : pass(`C-03 ${ENTRY} routes every rule exactly once`, `${counts.size} rows${viaProse ? `, ${viaProse} reached by coverage obligation` : ""}`);
   }
 
   { // C-04 references resolve, local and cross-skill
@@ -612,7 +641,19 @@ async function verify(skillDir) {
         const p = terms(s.prompt);
         for (const ref of all) {
           const rule = ref.replace(/^.*rules\//, "").replace(/\.md$/, "");
-          if (!(await exists(join(rulesDir, `${rule}.md`)))) { bad.push(`${s.id}: expectedAll names rules/${rule}.md, which does not exist`); continue; }
+          // A path naming a sibling topic resolves under that topic. Forbidding
+          // it made a real cross-boundary scenario impossible to express, and
+          // the scenario is the thing being protected, not the checker.
+          const owner = ref.includes("/rules/") ? ref.slice(0, ref.indexOf("/rules/")).split("/").pop() : null;
+          const here = SKILL_DIR.split(/[\\/]/).pop();
+          const sibling = owner && owner !== here ? join(SKILL_DIR, "..", owner) : null;
+          // The mutation harness copies one unit into a temp tree, so a sibling
+          // topic is absent there by construction. Absent sibling means this
+          // run cannot judge the reference, which is different from the
+          // reference being wrong.
+          if (sibling && !(await exists(sibling))) continue;
+          const dirFor = sibling ? join(sibling, "rules") : rulesDir;
+          if (!(await exists(join(dirFor, `${rule}.md`)))) { bad.push(`${s.id}: expectedAll names ${owner ?? here}/rules/${rule}.md, which does not exist`); continue; }
           const row = terms(rowFor.get(rule) ?? "");
           // A row with one distinctive term cannot be measured. Two can: most
           // rows land there, and skipping them made this check silent.
@@ -639,6 +680,120 @@ async function verify(skillDir) {
     else if (!/\*\*Default stance[^*]{0,60}\*\*/.test(skillText)) {
       fail("C-15 a gate states its default stance", `${ENTRY} routes rules but never says what to do in the common case`);
     } else pass("C-15 a gate states its default stance", "stated under the table");
+  }
+
+  { // C-18 a gate row carries evidence, not vocabulary
+    //
+    // gate-not-checklist already requires the literal tokens that will be on
+    // screen in the left column, and nothing checked it. Measured on one skill:
+    // eleven of twelve rows carried none, and the rows an agent never reached
+    // were the ones packing the most alternatives — eleven and twelve competing
+    // clauses each, against a mean of four in the rows it did reach. A row is
+    // matched by recognition, and recognition divides across whatever the row
+    // offers, so a row offering a dozen concepts gives each of them a twelfth
+    // of the attention.
+    const gateRows = skillText.split("\n")
+      // The target is whatever the row points at, named as the row names it. An
+      // earlier pattern let the bundle prefix bleed into the capture and reported
+      // "s/INDEX.md", which identifies nothing and sends the reader looking for a
+      // file that does not exist.
+      // A gate routes to a file or to a section of this one. The second kind is
+      // what a single-file skill uses, and it is a real gate: it selects, and it
+      // costs no hop because the target is already loaded. Matching only file
+      // targets left those rows unchecked, which is how an unverified gate gets
+      // added by someone who has spent the day adding verification.
+      .map((l) => l.match(/^\|\s*(.+?)\s*\|\s*(?:`(?:skill:\/\/)?([a-z0-9/-]*(?:rules\/[a-z0-9-]+\.md|INDEX\.md))`|(§\s*\d+[^|]*))\s*\|$/))
+      .map((m) => (m ? { 0: m[0], 1: m[1], 2: (m[2] ?? m[3] ?? "").trim() } : m))
+      .filter(Boolean)
+      .map((m) => ({ left: m[1], target: m[2] }));
+    if (!gateRows.length) na("C-18 gate rows carry evidence", "this skill has no gate table");
+    else {
+      const bare = gateRows.filter((r) => !/`[^`]+`|"[^"]+"/.test(r.left));
+      // Distinct things to check, not words. Counting every comma treats
+      // "provider, SDK, API, request, response" — five names for one signal —
+      // the same as "naming, abstractions, classes, cutovers", which are four
+      // separate matches. Attention divides across the second kind and barely
+      // across the first, so a comma-separated cluster counts once and a clause
+      // boundary starts a new one. Undercounting a genuine list is the safer
+      // error: it costs a warning, while overcounting drives an author to strip
+      // the concrete words a request is actually phrased in.
+      const alts = (r) => r.left.split(/;|—/).filter((x) => x.trim()).length;
+      const packed = gateRows.filter((r) => alts(r) > 8);
+      // Density is a fault whatever the row is for: recognition divides across
+      // the alternatives offered, so a dozen in one row starves each of them.
+      const notes = packed.map((p) => `${p.target} packs ${alts(p)} alternatives into one row`);
+
+      // A missing literal token is not, and demanding one everywhere would make
+      // the collection worse. A row fires on one of four bases, and only two of
+      // them leave something on screen:
+      //
+      //   what the situation shows       a signal, and a token can name it
+      //   what we do not want to happen  usually a signal too
+      //   what we want to achieve        a stance, not a match
+      //   what must not go unexamined    an absence, which has no token at all
+      //
+      // The fourth kind is why a row can be unreachable no matter how it is
+      // worded: nothing appears on screen to recognise. Such a rule belongs in
+      // the coverage obligation under the table, reported as inspected or not,
+      // rather than in a gate that only fires on what it can see. So bare rows
+      // are reported for a human to sort, never failed.
+      if (bare.length > gateRows.length / 2) {
+        note("C-18 gate rows without a literal token", `${bare.length} of ${gateRows.length}; check whether each is a signal that wants one, or an absence that belongs in the coverage obligation instead`);
+      }
+      notes.length
+        ? fail("C-18 gate rows carry evidence", notes.join("\n        "))
+        : pass("C-18 gate rows carry evidence", `${gateRows.length} rows, none packing nine or more alternatives`);
+    }
+  }
+
+  { // C-17 a scenario prompt asks the way a developer asks
+    //
+    // Measured across this collection: prompts that open by describing the
+    // situation run long, and a long description is a diagnosis. Whoever wrote
+    // it did the analysis, so the scenario measures whether the agent agrees
+    // rather than whether it can find anything.
+    //
+    // What people type is short and points at code: fix this, add that, review
+    // before I raise it, what would you improve, where is the problem. A short
+    // prompt needs a fixture to have any content at all, which is why the two
+    // halves of this check are one check.
+    //
+    // Written as a gate rather than as advice because the collection is used by
+    // people who want the discipline to happen without remembering it.
+    const evalsDir = join(SKILL_DIR, "evals");
+    const files = (await exists(evalsDir))
+      ? (await readdir(evalsDir)).filter((f) => /\.scenarios\.(mjs|ts)$/.test(f))
+      : [];
+    if (!files.length) na("C-17 prompts ask rather than describe", "no scenario files to read");
+    else {
+      const ASKS = /^(re)?(add|fix|implement|write|view|review|factor|refactor|improve|make|check|delete|remove|move|rename|split|simplify|explain|clean|tidy|extract|harden|cover|document|test|name|update|migrate|port|why|what|where|which|when|how|should|can |could |would |is this|does this|do we|i need|i want|help|ok to|any )/i;
+      const LONG = 45;
+      const bad = [];
+      let checked = 0, asks = 0, narrated = 0;
+      for (const f of files) {
+        const mod = await import(pathToFileURL(join(evalsDir, f)).href);
+        for (const s of mod.default ?? []) {
+          if (typeof s.prompt !== "string") continue;
+          checked++;
+          const words = s.prompt.trim().split(/\s+/).length;
+          const asked = ASKS.test(s.prompt.trim());
+          if (asked) asks++; else narrated++;
+          const hasFixture = await exists(join(evalsDir, "fixtures", s.id));
+          // The failing shape is the compound one: describing at length, with
+          // no code present, so every fact the agent has was handed to it.
+          if (!asked && words > LONG && !hasFixture) {
+            bad.push(`${s.id}: ${words} words, describes rather than asks, and no fixture`);
+          }
+        }
+      }
+      const shape = `${asks} ask, ${narrated} describe, of ${checked}`;
+      if (bad.length) fail("C-17 prompts ask rather than describe", [...bad, shape].join("\n        "));
+      // The count rides in the pass detail rather than a judgement. An opening
+      // verb is a poor proxy: "cart total comes out short on some orders" hands
+      // over nothing and opens with a noun. The compound failure above is the
+      // part worth gating.
+      else pass("C-17 prompts ask rather than describe", shape);
+    }
   }
 
   { // C-14 a scenario prompt must not name what it is testing for

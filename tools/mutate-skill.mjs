@@ -222,14 +222,32 @@ const MUTATIONS = [
       const p = path.join(evals, file);
       const t = fs.readFileSync(p, "utf8").split("\r\n").join("\n");
       // Find a scenario that claims two or more rules, and the first rule it claims.
-      const m = t.match(/expectedAll:\s*\[\s*"[^"]*rules\/([a-z0-9-]+)\.md"/);
+      // Two entries, not one: C-16 only fails a scenario claiming two or more
+      // rules, so a single-rule match makes a mutation the check cannot catch.
+      const m = t.match(/expectedAll:\s*\[([^\]]*)\]/);
       if (!m) return NA;
-      const rule = m[1];
-      // Its gate row, which is exactly what an honest prompt must not repeat.
+      const named = [...m[1].matchAll(/rules\/([a-z0-9-]+)\.md/g)].map((x) => x[1]);
+      if (named.length < 2) return NA;
+      // C-16 is about the gate, so the mutation has to borrow from a gate row.
+      // Taking whichever rule came first stopped working once some rules moved
+      // to the coverage obligation: that prose names its rule almost outright,
+      // so the mutated prompt tripped C-14 for giving the answer away and C-16
+      // was never reached. The mutation was applying and still not exercising
+      // the check it exists for.
+      const entry0 = fs.readFileSync(entryOf(dir), "utf8").split("\r\n").join("\n").split("\n");
+      const rule = named.find((n) => entry0.some((l) => l.trimStart().startsWith("|") && l.includes(`rules/${n}.md`)));
+      if (!rule) return NA;
+      // The entry's own words for this rule, which an honest prompt must not
+      // repeat. That used to mean a gate row, and a rule reached by a coverage
+      // obligation instead has none — so the mutation quietly stopped applying
+      // and C-16 went unexercised while still reporting as present. A check
+      // nobody has watched fail is not a check.
       const entry = fs.readFileSync(entryOf(dir), "utf8").split("\r\n").join("\n");
-      const row = entry.split("\n").find((l) => l.trimStart().startsWith("|") && l.includes(`rules/${rule}.md`));
-      if (!row) return false;
-      const signal = (row.split("|")[1] ?? "").replace(/\*\*/g, "").trim();
+      const line = entry.split("\n").find((l) => l.includes(`rules/${rule}.md`) && /^\s*[|-]/.test(l));
+      if (!line) return false;
+      const signal = line.trimStart().startsWith("|")
+        ? (line.split("|")[1] ?? "").replace(/\*\*/g, "").trim()
+        : line.replace(/^\s*-\s*/, "").replace(/\*\*/g, "").replace(/→.*$/s, "").split("—")[0].trim();
       // Put the row's own words into the prompt above that expectedAll.
       const before = t.slice(0, m.index);
       const at = before.lastIndexOf("prompt:");
@@ -319,6 +337,27 @@ const copy = (from, to) => {
 
 // `collection` is the real parent of the skill under test. The copy under /tmp has
 // no siblings, so cross-skill pointers would otherwise all read as broken.
+/**
+ * A check that fires is not the same as a check that says what to fix. Two
+ * questions cost the most time when a run goes red: which file, and what was
+ * expected. Under --diagnose each mutation reports whether its own message
+ * answers them, so an unhelpful message is a finding rather than a surprise
+ * discovered later by whoever hits it.
+ */
+const diagnose = (check, out) => {
+  const all = out.split("\n");
+  const i = all.findIndex((l) => l.includes(`FAIL  ${check}`));
+  const body = all.slice(i, i + 4).map((l) => l.trim()).filter(Boolean);
+  const text = body.join(" ");
+  // A scenario check names a scenario id, not a file. Both locate the unit;
+  // demanding a filename reported a false weakness in C-14 and C-16.
+  const named = text.includes(".md") || text.includes("rules/") || /[a-z0-9]+(-[a-z0-9]+){2,}/.test(text);
+  const quantified = /[0-9]/.test(text) || text.includes(String.fromCharCode(34));
+  const verdict = (named ? "names a file" : "NO FILE NAMED") + ", " + (quantified ? "gives a value" : "NO VALUE GIVEN");
+  console.log(`          ${verdict}`);
+  for (const l of body.slice(1, 3)) console.log(`          | ${l}`);
+};
+
 const verify = (dir, collection) => {
   try {
     execFileSync("node", [VERIFY, dir], {
@@ -343,7 +382,9 @@ const expand = (dir) => {
 };
 
 let failures = 0;
-for (const target of process.argv.slice(2).flatMap((t) => expand(path.resolve(t)))) {
+const DIAGNOSE = process.argv.includes("--diagnose");
+const targets = process.argv.slice(2).filter((t) => !t.startsWith("--"));
+for (const target of targets.flatMap((t) => expand(path.resolve(t)))) {
   const src = path.resolve(target);
   const name = path.basename(src);
   const collection = path.dirname(src);
@@ -351,8 +392,11 @@ for (const target of process.argv.slice(2).flatMap((t) => expand(path.resolve(t)
   const dir = path.join(work, name);
 
   copy(src, dir);
-  if (!verify(dir, collection).ok) {
+  const baseline = verify(dir, collection);
+  if (!baseline.ok) {
+    // Naming the failing checks here saves rerunning verify by hand to find them.
     console.error(`\n=== ${name} ===\n  baseline already failing, fix the skill before trusting this test`);
+    for (const l of baseline.out.split("\n")) if (l.trim().startsWith("FAIL")) console.error(`    ${l.trim()}`);
     fs.rmSync(work, { recursive: true, force: true });
     failures++;
     continue;
@@ -374,7 +418,10 @@ for (const target of process.argv.slice(2).flatMap((t) => expand(path.resolve(t)
       continue;
     }
     const r = verify(dir, collection);
-    if (r.out.includes(`FAIL  ${m.check}`)) console.log(`  CAUGHT  ${m.check}  ${m.what}`);
+    if (r.out.includes(`FAIL  ${m.check}`)) {
+      console.log(`  CAUGHT  ${m.check}  ${m.what}`);
+      if (DIAGNOSE) diagnose(m.check, r.out);
+    }
     else if (!r.ok) problems.push(`${m.check}: caught by ${(r.out.match(/FAIL {2}C-\d+/g) ?? []).join(", ")} instead of itself`);
     else problems.push(`${m.check}: NOT CAUGHT, ${m.what}`);
   }

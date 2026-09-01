@@ -162,3 +162,6 @@ docs/how-i-use-ai.md
 # Behaviour runs write a per-run artifact; only the baseline is committed.
 evals/last-run.json
 evals/read-all-rules.json
+
+# Session transcripts exported into the repository root.
+omp-session-*.html
