@@ -27,12 +27,13 @@
  * The baseline is printed with every run and is the reason the number means
  * anything: without it, "killed 5 of 8" could be the fixture's own doing.
  */
-import { readFileSync, writeFileSync, existsSync, mkdirSync, cpSync, rmSync, readdirSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync, cpSync, rmSync, readdirSync, statSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { execSync, spawn } from "node:child_process";
 import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
-import { OVERLAYS, pinnedRoles } from "./run-activation.mjs";
+import { OVERLAYS, pinnedRoles, degraded } from "./run-activation.mjs";
 
 const CASES = resolve("evals/outcomes");
 const SKILLS = resolve(process.env.SKILL_COLLECTION_ROOT ?? "skills");
@@ -90,6 +91,29 @@ function score(workspace, spec) {
 function suiteIsGreen(workspace, spec) {
   try { execSync(spec.test ?? "node --test", { cwd: workspace, stdio: "pipe", timeout: 120_000 }); return true; }
   catch { return false; }
+}
+
+/**
+ * Whether the agent touched the workspace at all.
+ *
+ * The first run of this tool reported 0/8 for both arms and the number was
+ * uninterpretable: a suite nobody edited scores exactly the same as a rewrite
+ * that did not help, and those two say opposite things about the skill. The
+ * task is phrased the way a developer asks, which invites an answer rather than
+ * an edit, so "did anything change" has to be reported beside the score.
+ */
+function fingerprint(dir) {
+  const h = createHash("sha1");
+  const walk = (d, rel = "") => {
+    for (const e of readdirSync(d, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+      if (e.name === "node_modules" || e.name.startsWith(".")) continue;
+      const p = join(d, e.name);
+      if (e.isDirectory()) walk(p, `${rel}${e.name}/`);
+      else h.update(`${rel}${e.name}:${readFileSync(p, "utf8")}`);
+    }
+  };
+  walk(dir);
+  return h.digest("hex");
 }
 
 // ----------------------------------------------------------------- the runs
@@ -165,15 +189,32 @@ mkdirSync(conf, { recursive: true });
 const overlays = { with: overlayFor("with", conf), without: overlayFor("without", conf) };
 
 const results = { with: [], without: [] };
+// A fatal degradation ends the whole run, not one arm: a number averaged over
+// samples the provider refused to serve is a number no model produced.
+let stop = false;
 console.log("");
 for (const arm of ["with", "without"]) {
+  if (stop) break;
   for (let i = 0; i < args.samples; i++) {
     const ws = fresh(arm);
+    const before = fingerprint(ws);
     const r = await runAgent(spec.task, ws, overlays[arm]);
+    const touched = fingerprint(ws) !== before;
     if (r.killed || r.failed) { console.log(`  ${arm} #${i + 1}  lost (${r.killed ? "deadline" : "spawn failed"})`); continue; }
+    // A quota wall answers nothing and edits nothing, which is indistinguishable
+    // from a model that chose not to edit. Reported as its own outcome and fatal
+    // to the run, because averaging over samples the provider refused to serve
+    // produces a number no model produced.
+    const bad = degraded(r.out);
+    if (bad) {
+      console.log(`  ${arm} #${i + 1}  ${bad.fatal ? "DEGRADED" : "lost"}: ${bad.why}`);
+      if (bad.fatal) { stop = true; break; }
+      continue;
+    }
     // A rewrite that leaves the suite red is not an improvement, however good
     // its assertions look. Recorded as its own outcome rather than as a zero,
     // because the two say different things about the skill.
+    if (!touched) { console.log(`  ${arm} #${i + 1}  answered without editing anything`); results[arm].push(null); continue; }
     if (!suiteIsGreen(ws, spec)) { console.log(`  ${arm} #${i + 1}  left the suite RED`); results[arm].push(null); continue; }
     const s = score(ws, spec);
     results[arm].push(s.died);
