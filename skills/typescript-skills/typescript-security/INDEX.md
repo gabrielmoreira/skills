@@ -4,7 +4,7 @@
 
 **This table is a gate, not a checklist.** Match the left column against what you can see in the code.
 
-- **One rule per row.** Enter at the matched row.
+- **Enter at the matched row, and read a second where the code matches two.** Say which of them owns the decision and why the other applies. What costs is reading every row, not reading two.
 - **Read all three where a change touches secret loading**, since they run in sequence: keep the value out, name the algorithm, redact what is left.
 
 | If you see... | Read |

@@ -4,7 +4,7 @@
 
 **This table is a gate, not a checklist.** Match the left column against what you can see in the code.
 
-- **One rule per row.** Enter at the matched row.
+- **Enter at the matched row, and read a second where the code matches two.** Say which of them owns the decision and why the other applies. What costs is reading every row, not reading two.
 - **Logging against tracing.** Logging answers what happened at one point. Tracing answers how one operation moved across boundaries.
 - **Read redaction before either**, whenever the context might carry something sensitive.
 

@@ -88,7 +88,133 @@ const scenarios = [
       "Rejects the pointer-in-config approach as equally dangerous"
     ],
     tags: ["secrets", "pointer-vs-value", "p1"]
-  }
+  },
+  {
+    id: "token-in-the-repo-since-forever",
+    bundle: "typescript-security",
+    rule: "secrets-lifecycle",
+    tier: "P0",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "What do we do about this? There is an API token in a committed config file, it is in the history, and it still works.",
+    expectedPrimary: "typescript-security",
+    expectedAll: ["typescript-security/rules/secrets-lifecycle.md"],
+    expectedSecondary: [],
+    must: [
+      "Treats the live credential as needing rotation, not only removal",
+      "Separates removing it from the working tree from removing it from history"
+    ],
+    mustNot: [
+      "Deletes the line and considers it handled"
+    ],
+    tags: ["real-world", "committed-secret"]
+  },
+  {
+    id: "reading-the-secret-at-import-time",
+    bundle: "typescript-security",
+    rule: "secrets-lifecycle",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "Why does the test suite need real credentials? The module reads the secret when it loads, so importing it anywhere pulls the value in.",
+    expectedPrimary: "typescript-security",
+    expectedAll: ["typescript-security/rules/secrets-lifecycle.md"],
+    expectedSecondary: ["typescript-configs", "typescript-testing"],
+    must: [
+      "Moves the read to where the value is used rather than to import time",
+      "Connects import-time reads to the testing pain"
+    ],
+    mustNot: [
+      "Adds fake credentials to the test environment and leaves the import-time read"
+    ],
+    tags: ["real-world", "import-time-read"]
+  },
+  {
+    id: "customer-email-in-the-error-we-return",
+    bundle: "typescript-security",
+    rule: "redaction",
+    tier: "P0",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "Review this before it ships. The validation error we return names the field and includes the value the customer sent, which for one path is their email.",
+    expectedPrimary: "typescript-security",
+    expectedAll: ["typescript-security/rules/redaction.md"],
+    expectedSecondary: ["typescript-error-handling"],
+    must: [
+      "Keeps the diagnostic useful without echoing the value",
+      "Distinguishes what the caller needs from what an operator needs"
+    ],
+    mustNot: [
+      "Removes the field name too, leaving an error nobody can act on"
+    ],
+    tags: ["real-world", "pii-echo"]
+  },
+  {
+    id: "which-hash-for-these-tokens",
+    bundle: "typescript-security",
+    rule: "crypto-choices",
+    tier: "P0",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "Which hash should we use here? These are short-lived download tokens, we generate a few thousand a minute, and someone suggested MD5 because it is fast.",
+    expectedPrimary: "typescript-security",
+    expectedAll: ["typescript-security/rules/crypto-choices.md"],
+    expectedSecondary: [],
+    must: [
+      "Chooses from what the value protects rather than from speed",
+      "Names the property the token actually needs"
+    ],
+    mustNot: [
+      "Accepts MD5 because the tokens are short-lived"
+    ],
+    tags: ["real-world", "wrong-primitive"]
+  },
+  {
+    id: "random-for-a-reset-link",
+    bundle: "typescript-security",
+    rule: "crypto-choices",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "Is `Math.random()` fine for this? It is a password reset link, and the value is only valid for fifteen minutes.",
+    expectedPrimary: "typescript-security",
+    expectedAll: ["typescript-security/rules/crypto-choices.md"],
+    expectedSecondary: [],
+    must: [
+      "Requires an unpredictable source for a value that grants access",
+      "Treats the short window as not making prediction acceptable"
+    ],
+    mustNot: [
+      "Accepts it because the token expires quickly"
+    ],
+    tags: ["real-world", "pseudo-random", "measured-shape"]
+  },
+  {
+    id: "redact-everything-and-be-safe",
+    bundle: "typescript-security",
+    rule: "redaction",
+    tier: "P1",
+    mode: "exception",
+    difficulty: "hard",
+    prompt:
+      "Can we just redact every field? After the last incident the security team wants nothing identifiable in logs at all, and on-call says they will not be able to debug anything.",
+    expectedPrimary: "typescript-security",
+    expectedAll: ["typescript-security/rules/redaction.md"],
+    expectedSecondary: ["typescript-observability"],
+    must: [
+      "Distinguishes an identifier that supports debugging from the value that identifies a person",
+      "Offers a shape that satisfies both rather than picking a side"
+    ],
+    mustNot: [
+      "Redacts correlation identifiers along with personal data"
+    ],
+    tags: ["adversarial", "post-incident-pressure"]
+  },
 ] as const satisfies readonly EvalScenario[];
 
 export default scenarios;

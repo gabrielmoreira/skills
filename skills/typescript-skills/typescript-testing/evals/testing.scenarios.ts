@@ -57,7 +57,7 @@ const scenarios = [
     mode: "apply",
     difficulty: "mixed",
     prompt:
-      "A package already uses behavior-first names around handler tests. A new PR adds `test('works')` with full `// Given // When // Then` sections even though setup is one line, and the author wants to introduce a different style guide at the same time. Is that a good change?",
+      "Is this a good change? The package already uses behaviour-first test names around handler tests. A new PR adds `test('works')` with full Given/When/Then sections even though setup is one line, and the author wants to introduce a different style guide at the same time.",
     expectedPrimary: "typescript-testing",
     expectedSecondary: ["typescript-coding-standards"],
     must: [
@@ -96,7 +96,219 @@ const scenarios = [
       "Leaves env state shared across tests or dependent on order"
     ],
     tags: ["config-in-tests", "process-env", "config-boundary", "calibration"]
-  }
+  },
+  {
+    id: "cover-this-before-i-change-it",
+    bundle: "typescript-testing",
+    rule: "contracts-and-characterization",
+    tier: "P0",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "Cover this before I change it. Nobody knows what half of these branches are for, the function has been here six years, and I only need to change one of them.",
+    expectedPrimary: "typescript-testing",
+    expectedAll: ["typescript-testing/rules/contracts-and-characterization.md"],
+    expectedSecondary: ["typescript-coding-standards"],
+    must: [
+      "Pins the behaviour that exists before changing any of it",
+      "Scopes the characterisation to what the change can reach"
+    ],
+    mustNot: [
+      "Writes tests asserting what the code ought to do",
+      "Tries to characterise all six years before touching anything"
+    ],
+    tags: ["real-world", "legacy", "characterisation"]
+  },
+  {
+    id: "business-branches-with-no-test-between-them",
+    bundle: "typescript-testing",
+    rule: "contracts-and-characterization",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "Which of these need tests? The pricing function has nine business branches, three added last quarter, and coverage says the file is at 80%.",
+    expectedPrimary: "typescript-testing",
+    expectedAll: ["typescript-testing/rules/contracts-and-characterization.md"],
+    expectedSecondary: [],
+    must: [
+      "Chooses by what each branch decides rather than by the coverage number",
+      "Names branches whose failure would be silent"
+    ],
+    mustNot: [
+      "Accepts 80% as the answer",
+      "Requires a test for every branch regardless of consequence"
+    ],
+    tags: ["real-world", "business-ifs", "coverage-theatre"]
+  },
+  {
+    id: "test-reads-worse-than-the-code",
+    bundle: "typescript-testing",
+    rule: "local-test-style",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "Improve this test. It builds its fixture through four helpers, and to know what is being asserted you have to open all of them.",
+    expectedPrimary: "typescript-testing",
+    expectedAll: ["typescript-testing/rules/local-test-style.md"],
+    expectedSecondary: [],
+    must: [
+      "Puts the premise in front of the reader even at the cost of repetition",
+      "Distinguishes plumbing that may be extracted from the premise that may not"
+    ],
+    mustNot: [
+      "Extracts more helpers to shorten the test"
+    ],
+    tags: ["real-world", "damp"]
+  },
+  {
+    id: "one-test-fails-only-in-the-full-run",
+    bundle: "typescript-testing",
+    rule: "local-test-style",
+    tier: "P0",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "Why does this only fail in the full run? On its own it passes every time.",
+    expectedPrimary: "typescript-testing",
+    expectedAll: ["typescript-testing/rules/local-test-style.md"],
+    expectedSecondary: ["typescript-composition"],
+    must: [
+      "Looks for state shared between tests rather than for a flaky assertion",
+      "Names what would make each test independent"
+    ],
+    mustNot: [
+      "Reorders the suite to make it pass",
+      "Retries the test"
+    ],
+    tags: ["real-world", "shared-state"]
+  },
+  {
+    id: "everything-needs-a-mock-to-test",
+    bundle: "typescript-testing",
+    rule: "composition-root-tests",
+    tier: "P0",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "Make this testable. To exercise one function I have to stub the database, the clock, the feature flags and two clients, and it constructs all of them itself.",
+    expectedPrimary: "typescript-testing",
+    expectedAll: ["typescript-testing/rules/composition-root-tests.md"],
+    expectedSecondary: ["typescript-composition"],
+    must: [
+      "Moves construction out of the unit rather than mocking more",
+      "Treats the mock count as a signal about the shape"
+    ],
+    mustNot: [
+      "Adds a mocking helper to make the stubbing shorter"
+    ],
+    tags: ["real-world", "construction-inside"]
+  },
+  {
+    id: "should-the-wiring-itself-have-a-test",
+    bundle: "typescript-testing",
+    rule: "composition-root-tests",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "Should the wiring have its own test? Everything it assembles is already covered, but a bad wire has taken us down twice.",
+    expectedPrimary: "typescript-testing",
+    expectedAll: ["typescript-testing/rules/composition-root-tests.md"],
+    expectedSecondary: [],
+    must: [
+      "Distinguishes testing the parts from testing that they were connected",
+      "Keeps the wiring test about assembly rather than behaviour"
+    ],
+    mustNot: [
+      "Says the unit tests already cover it"
+    ],
+    tags: ["real-world", "assembly"]
+  },
+  {
+    id: "tests-need-the-real-env-file",
+    bundle: "typescript-testing",
+    rule: "config-in-tests",
+    tier: "P0",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "Why do the tests need the real env file? They fail on a fresh clone until you copy it, and half of what is in there is unrelated to the tests.",
+    expectedPrimary: "typescript-testing",
+    expectedAll: ["typescript-testing/rules/config-in-tests.md"],
+    expectedSecondary: ["typescript-configs"],
+    must: [
+      "Gives the test the values it needs without the whole environment",
+      "Treats a fresh clone failing as the defect"
+    ],
+    mustNot: [
+      "Commits a filled env file to make the clone work"
+    ],
+    tags: ["real-world", "fresh-clone"]
+  },
+  {
+    id: "is-it-ok-to-set-process-env-in-a-test",
+    bundle: "typescript-testing",
+    rule: "config-in-tests",
+    tier: "P1",
+    mode: "exception",
+    difficulty: "hard",
+    prompt:
+      "OK to set `process.env` in the test? It is one variable, the module reads it at import, and changing that module is a bigger job than this ticket.",
+    expectedPrimary: "typescript-testing",
+    expectedAll: ["typescript-testing/rules/config-in-tests.md"],
+    expectedSecondary: [],
+    must: [
+      "Allows it as a contained measure while naming what it hides",
+      "Says what would remove the need"
+    ],
+    mustNot: [
+      "Blesses it as the pattern",
+      "Demands the module be rewritten inside this ticket"
+    ],
+    tags: ["adversarial", "earned-exception"]
+  },
+  {
+    id: "what-should-this-test-be-called",
+    bundle: "typescript-testing",
+    rule: "local-test-style",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "obvious",
+    prompt:
+      "What should this test be called? It checks that an expired token is rejected.",
+    expectedPrimary: "typescript-testing",
+    expectedAll: ["typescript-testing/rules/local-test-style.md"],
+    expectedSecondary: [],
+    must: [
+      "Names the behaviour rather than the function under test"
+    ],
+    mustNot: [
+      "Suggests a name built from the implementation"
+    ],
+    tags: ["control", "would-pass-anyway"]
+  },
+  {
+    id: "coverage-dropped-so-the-build-is-red",
+    bundle: "typescript-testing",
+    rule: "contracts-and-characterization",
+    tier: "P1",
+    mode: "bypass",
+    difficulty: "hard",
+    prompt:
+      "How do I get the build green? Coverage fell below the gate after I deleted a dead branch nobody could reach.",
+    expectedPrimary: "typescript-testing",
+    expectedAll: ["typescript-testing/rules/contracts-and-characterization.md"],
+    expectedSecondary: [],
+    must: [
+      "Treats the number falling for a good reason as a threshold question"
+    ],
+    mustNot: [
+      "Adds a test for deleted code to lift the number"
+    ],
+    tags: ["near-miss", "metric-not-behaviour"]
+  },
 ] satisfies EvalScenario[];
 
 export default scenarios;

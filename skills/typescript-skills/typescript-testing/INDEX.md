@@ -4,7 +4,7 @@
 
 **This table is a gate, not a checklist.** Match the left column against what you can see in the change.
 
-- **One rule per row.** Enter at the matched row.
+- **Enter at the matched row, and read a second where the code matches two.** Say which of them owns the decision and why the other applies. What costs is reading every row, not reading two.
 - **Style against contracts.** Style decides where the test goes and what it looks like. Contracts decide what it is allowed to assert.
 - **Read both before a risky refactor.** Characterize the behaviour first, then change the structure.
 

@@ -1,12 +1,16 @@
 ---
 name: typescript-skills
 description: >-
-  Use when TypeScript code design, implementation, review, debugging, or testing
-  needs focused guidance on coding standards, boundaries, composition, configs,
-  async control, error handling, observability, security, or testing. Routes to
-  one of nine topic indexes, each owning a set of rules with a decision, the
-  conditions that trigger it, and a check. Do not use for prose-only,
-  formatting-only, or history requests that merely mention TypeScript.
+  Decide something inside TypeScript or JavaScript: what a value may be and what
+  happens when it is absent, what a failure means and who handles it, what crosses
+  a module or service boundary, what runs concurrently and who owns the promise,
+  what a test actually proves, what a compiler or lint setting buys. Use when the
+  user says "is this type right", "should this throw or return", "why is this
+  any", "how do I test this", "this promise is never awaited", "fix these type
+  errors", or hands over TypeScript to write, review or repair. Routes to one of
+  nine topic indexes, each owning rules that carry a decision, the conditions that
+  trigger it, and a check. Not for prose, formatting-only passes, or history
+  questions that merely mention TypeScript.
 ---
 
 # TypeScript Rules Router
@@ -22,20 +26,23 @@ description: >-
 
 **Match the task against the left column, and open that index.**
 
+- **A reported lint or compiler diagnostic enters elsewhere.** Read `skill://typescript-skills/references/diagnostics-to-rules.md` first, then the rule it names.
+
 - **Add a second topic only when the task crosses a real boundary.**
 - **Do not load every topic by default.** That is the waste this router exists to prevent.
+- **Read every row, then act on the matches, hardest to undo first.** Reading a row costs nothing; the row you skipped is where the coverage went.
 
 | If the task involves... | Read this topic index |
 | --- | --- |
-| naming, abstractions, classes, cutovers, local reasoning, forced types, branded types, exhaustive switch, generics | `skill://typescript-skills/typescript-coding-standards/INDEX.md` |
-| provider, SDK, API, request, response, generated types, mapper, mapping, transform, translator, anti-corruption layer | `skill://typescript-skills/typescript-boundaries/INDEX.md` |
-| dependency construction, factory, lifecycle, singletons, runtime selection | `skill://typescript-skills/typescript-composition/INDEX.md` |
-| env, config parsing, defaults, typed config exposure, feature flags, config migration | `skill://typescript-skills/typescript-configs/INDEX.md` |
-| logging, tracing, actionable diagnostics, branch observability | `skill://typescript-skills/typescript-observability/INDEX.md` |
-| secrets, crypto choices, redaction, credentials, secret sources | `skill://typescript-skills/typescript-security/INDEX.md` |
-| tests, characterization, boundary contracts, brittle assertions, config tests | `skill://typescript-skills/typescript-testing/INDEX.md` |
-| throw versus return, result types, retryability, error contract, swallowed fallback | `skill://typescript-skills/typescript-error-handling/INDEX.md` |
-| `Promise.all`, sequential awaits, bounded concurrency, `AbortSignal`, cleanup, retry and backoff, SIGTERM, graceful shutdown | `skill://typescript-skills/typescript-async/INDEX.md` |
+| a value that may be absent, or `any`, `unknown` and casts standing in for a type; a `switch` over a union with no exhaustive check; an abstraction, class or generic added before its second caller; an old shape and its cutover kept side by side | `skill://typescript-skills/typescript-coding-standards/INDEX.md` |
+| an SDK, provider or generated type reaching business logic; an `API` request or response shape used as a domain type; a mapper, transform or translator standing between them | `skill://typescript-skills/typescript-boundaries/INDEX.md` |
+| a dependency constructed where it is used rather than passed in; a factory or singleton picked at runtime; a connect, warm or close step in a lifecycle nobody owns | `skill://typescript-skills/typescript-composition/INDEX.md` |
+| `process.env` read outside startup; a config value parsed, defaulted or exposed with no type; a feature flag or a config migration mid-flight | `skill://typescript-skills/typescript-configs/INDEX.md` |
+| a branch taken with no logging or tracing behind it; a log line naming what happened but not what to do about it | `skill://typescript-skills/typescript-observability/INDEX.md` |
+| a secret, credential or token in a literal, a log or a config default; redaction running after the value was already written; a crypto choice made by habit | `skill://typescript-skills/typescript-security/INDEX.md` |
+| a test asserting on mock calls rather than on behaviour; a boundary contract no test pins; a refactor starting with no characterization test | `skill://typescript-skills/typescript-testing/INDEX.md` |
+| a `throw` where a result type was meant, or the reverse; an error crossing a boundary with its retryability unstated; a `catch` swallowing the cause | `skill://typescript-skills/typescript-error-handling/INDEX.md` |
+| `Promise.all`, sequential awaits, an unawaited promise, bounded concurrency, `AbortSignal` cleanup, retry and backoff, `SIGTERM` shutdown | `skill://typescript-skills/typescript-async/INDEX.md` |
 
 **Default stance.**
 
@@ -66,5 +73,6 @@ description: >-
 
 - **The selected topic index owns routing inside its domain.**
 - **The canonical rule files own the design decisions.**
+- **A named diagnostic routes through `skill://typescript-skills/references/diagnostics-to-rules.md`.**
 - **For authoring conventions, read `skill://typescript-skills/references/authoring-checklist.md`.**
 - **What is still open lives in `docs/typescript-skills/` at the repository root.**

@@ -147,7 +147,199 @@ const scenarios = [
       "transport",
       "collision"
     ]
-  }
+  },
+  {
+    id: "double-cast-to-get-past-the-sdk-type",
+    bundle: "typescript-boundaries",
+    rule: "raw-input-to-internal-model",
+    tier: "P0",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "Fix this properly. The SDK response type does not match what the service actually sends, so we go `as unknown as OrderResponse` and carry on. It has been fine for a year.",
+    expectedPrimary: "typescript-boundaries",
+    expectedAll: ["typescript-boundaries/rules/raw-input-to-internal-model.md"],
+    expectedSecondary: ["typescript-coding-standards"],
+    must: [
+      "Treats the double cast as an unchecked claim about data from outside",
+      "Validates the fields the code actually consumes at the edge",
+      "Keeps the value unknown until something has checked it"
+    ],
+    mustNot: [
+      "Corrects the SDK type and calls the boundary handled",
+      "Accepts a year without incident as evidence the shape holds"
+    ],
+    tags: ["real-world", "double-cast", "measured-shape"]
+  },
+  {
+    id: "provider-field-names-showing-up-in-the-ui",
+    bundle: "typescript-boundaries",
+    rule: "provider-containment",
+    tier: "P0",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "Where should I fix this? The component renders `resp.cust_acct_sts_cd` directly, and the provider is renaming that field next release.",
+    expectedPrimary: "typescript-boundaries",
+    expectedAll: ["typescript-boundaries/rules/provider-containment.md"],
+    expectedSecondary: ["typescript-boundaries/rules/local-naming.md"],
+    must: [
+      "Stops the provider vocabulary at the edge",
+      "Puts the rename cost in one place instead of every consumer"
+    ],
+    mustNot: [
+      "Aliases the field in the component",
+      "Waits for the rename to decide"
+    ],
+    tags: ["real-world", "vocabulary-leak"]
+  },
+  {
+    id: "one-more-field-through-the-mapper",
+    bundle: "typescript-boundaries",
+    rule: "earned-mapping",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "Add the loyalty tier to the checkout response. It comes straight from the provider payload and nothing transforms it.",
+    expectedPrimary: "typescript-boundaries",
+    expectedAll: ["typescript-boundaries/rules/earned-mapping.md"],
+    expectedSecondary: [],
+    must: [
+      "Asks whether this field needs mapping or only passing",
+      "Keeps the mapping layer earning its place rather than growing by default"
+    ],
+    mustNot: [
+      "Adds a pass-through entry because the mapper exists"
+    ],
+    tags: ["real-world", "mapper-growth"]
+  },
+  {
+    id: "our-name-or-theirs-for-this-concept",
+    bundle: "typescript-boundaries",
+    rule: "local-naming",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "What should we call this? The provider says `subscriber`, our domain has always said `member`, and the new module sits between the two.",
+    expectedPrimary: "typescript-boundaries",
+    expectedAll: ["typescript-boundaries/rules/local-naming.md"],
+    expectedSecondary: ["typescript-boundaries/rules/provider-containment.md"],
+    must: [
+      "Uses the domain's word inside and the provider's word only at the edge",
+      "Names where the translation happens"
+    ],
+    mustNot: [
+      "Adopts the provider's word inward for consistency with the payload"
+    ],
+    tags: ["real-world", "ubiquitous-language"]
+  },
+  {
+    id: "internal-module-with-a-mapper-in-front-of-it",
+    bundle: "typescript-boundaries",
+    rule: "earned-mapping",
+    tier: "P1",
+    mode: "bypass",
+    difficulty: "hard",
+    prompt:
+      "Should I add a mapper here? Both sides are ours, the shapes are nearly identical, and someone said we should decouple them.",
+    expectedPrimary: "typescript-boundaries",
+    expectedAll: ["typescript-boundaries/rules/earned-mapping.md"],
+    expectedSecondary: ["typescript-coding-standards"],
+    must: [
+      "Asks what pressure the layer would relieve before adding it",
+      "Treats two owned modules as a different case from an external edge"
+    ],
+    mustNot: [
+      "Adds the layer because decoupling is generally good"
+    ],
+    tags: ["near-miss", "unearned-indirection"]
+  },
+  {
+    id: "where-do-i-validate-a-webhook-body",
+    bundle: "typescript-boundaries",
+    rule: "raw-input-to-internal-model",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "obvious",
+    prompt:
+      "Where should a webhook body be validated?",
+    expectedPrimary: "typescript-boundaries",
+    expectedAll: ["typescript-boundaries/rules/raw-input-to-internal-model.md"],
+    expectedSecondary: [],
+    must: [
+      "Validates at the edge before the value reaches anything owned"
+    ],
+    mustNot: [
+      "Validates deep in the handler after the value has been used"
+    ],
+    tags: ["control", "would-pass-anyway"]
+  },
+  {
+    id: "the-provider-type-is-generated-so-it-must-be-right",
+    bundle: "typescript-boundaries",
+    rule: "raw-input-to-internal-model",
+    tier: "P1",
+    mode: "exception",
+    difficulty: "hard",
+    prompt:
+      "Do we still need to validate? The types are generated from their OpenAPI spec, so they match by construction, and the extra parsing adds latency to a hot path.",
+    expectedPrimary: "typescript-boundaries",
+    expectedAll: ["typescript-boundaries/rules/raw-input-to-internal-model.md"],
+    expectedSecondary: [],
+    must: [
+      "Separates what a spec promises from what a running service sends",
+      "Weighs the hot-path cost against what an unchecked shape can do downstream"
+    ],
+    mustNot: [
+      "Accepts generation from a spec as proof of the runtime shape",
+      "Demands full parsing on a hot path without weighing it"
+    ],
+    tags: ["adversarial", "generated-types", "latency-pressure"]
+  },
+  {
+    id: "their-word-in-our-database-column",
+    bundle: "typescript-boundaries",
+    rule: "local-naming",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "Is this worth changing? A provider's term ended up as a column name three years ago and now it is in the ORM model, the API response and two dashboards.",
+    expectedPrimary: "typescript-boundaries",
+    expectedAll: ["typescript-boundaries/rules/local-naming.md"],
+    expectedSecondary: ["typescript-boundaries/rules/provider-containment.md"],
+    must: [
+      "Weighs the cost of the rename against the cost of the drift continuing",
+      "Names where the translation would go if the column stays"
+    ],
+    mustNot: [
+      "Demands a rename of everything as the only answer"
+    ],
+    tags: ["real-world", "entrenched-drift"]
+  },
+  {
+    id: "sdk-client-passed-into-the-domain",
+    bundle: "typescript-boundaries",
+    rule: "provider-containment",
+    tier: "P0",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "Where should this go? A use case takes the vendor SDK client as an argument so it can call two of its methods.",
+    expectedPrimary: "typescript-boundaries",
+    expectedAll: ["typescript-boundaries/rules/provider-containment.md"],
+    expectedSecondary: ["typescript-composition"],
+    must: [
+      "Keeps the vendor type out of the domain signature",
+      "Gives the use case the capability it needs rather than the client"
+    ],
+    mustNot: [
+      "Wraps the SDK in a class with the same method names and calls it contained"
+    ],
+    tags: ["real-world", "sdk-inward"]
+  },
 ] satisfies EvalScenario[];
 
 export default scenarios;

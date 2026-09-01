@@ -93,7 +93,155 @@ const scenarios = [
       "Recommends AsyncLocalStorage as the first answer instead of a later escalation"
     ],
     tags: ["dependency-scope", "request-scope", "module-state", "legacy-migrated"]
-  }
+  },
+  {
+    id: "where-does-this-client-get-built",
+    bundle: "typescript-composition",
+    rule: "composition-root",
+    tier: "P0",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "Where should this client be built? Right now each handler constructs its own, and they each read the config again.",
+    expectedPrimary: "typescript-composition",
+    expectedAll: ["typescript-composition/rules/composition-root.md"],
+    expectedSecondary: ["typescript-configs"],
+    must: [
+      "Assembles once at the edge and passes the ready thing inward",
+      "Stops each handler re-reading configuration"
+    ],
+    mustNot: [
+      "Introduces a container as the first move",
+      "Leaves construction in the handlers and shares the config object"
+    ],
+    tags: ["real-world", "construction-scattered"]
+  },
+  {
+    id: "singleton-that-remembers-the-last-tenant",
+    bundle: "typescript-composition",
+    rule: "dependency-scope",
+    tier: "P0",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "Why would one tenant see another tenant's data? The client is created once at module load and carries the tenant it was built with.",
+    expectedPrimary: "typescript-composition",
+    expectedAll: ["typescript-composition/rules/dependency-scope.md"],
+    expectedSecondary: ["typescript-security"],
+    must: [
+      "Ties the lifetime of the object to the lifetime of what it holds",
+      "Treats request-scoped state in a process-scoped object as the defect"
+    ],
+    mustNot: [
+      "Adds a reset call between requests",
+      "Blames the caller for reusing the client"
+    ],
+    tags: ["real-world", "scope-mismatch", "cross-tenant"]
+  },
+  {
+    id: "factory-or-just-the-thing",
+    bundle: "typescript-composition",
+    rule: "ready-instance-vs-factory",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "Should this export a factory or the instance? Every caller today builds it with the same arguments.",
+    expectedPrimary: "typescript-composition",
+    expectedAll: ["typescript-composition/rules/ready-instance-vs-factory.md"],
+    expectedSecondary: [],
+    must: [
+      "Chooses from whether callers vary the construction",
+      "Keeps the ready instance while nothing varies"
+    ],
+    mustNot: [
+      "Exports a factory in case someone needs different arguments later"
+    ],
+    tags: ["real-world", "speculative-factory"]
+  },
+  {
+    id: "the-clock-is-hard-coded-everywhere",
+    bundle: "typescript-composition",
+    rule: "dependency-scope",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "Make the scheduling testable. `Date.now()` is called in nine places across the module and the tests use fake timers to cope.",
+    expectedPrimary: "typescript-composition",
+    expectedAll: ["typescript-composition/rules/dependency-scope.md"],
+    expectedSecondary: ["typescript-testing"],
+    must: [
+      "Passes the clock in rather than reaching for it",
+      "Treats nine reaches as one dependency, not nine changes"
+    ],
+    mustNot: [
+      "Keeps the fake timers and calls it handled"
+    ],
+    tags: ["real-world", "ambient-dependency"]
+  },
+  {
+    id: "container-because-the-wiring-got-long",
+    bundle: "typescript-composition",
+    rule: "composition-root",
+    tier: "P1",
+    mode: "exception",
+    difficulty: "hard",
+    prompt:
+      "Should we bring in a DI container? The composition root is 200 lines of wiring and two people said it is getting hard to follow.",
+    expectedPrimary: "typescript-composition",
+    expectedAll: ["typescript-composition/rules/composition-root.md"],
+    expectedSecondary: ["typescript-coding-standards"],
+    must: [
+      "Asks what the container would relieve that ordering and naming would not",
+      "Names the cost of indirection at the assembly point"
+    ],
+    mustNot: [
+      "Adds the container because the file is long"
+    ],
+    tags: ["adversarial", "length-pressure"]
+  },
+  {
+    id: "two-instances-when-there-should-be-one",
+    bundle: "typescript-composition",
+    rule: "ready-instance-vs-factory",
+    tier: "P0",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "Why are there two connection pools? The module exports a factory, two callers call it, and the metrics show double the connections we configured.",
+    expectedPrimary: "typescript-composition",
+    expectedAll: ["typescript-composition/rules/ready-instance-vs-factory.md"],
+    expectedSecondary: ["typescript-composition/rules/dependency-scope.md"],
+    must: [
+      "Connects a factory called twice to two independent resources",
+      "Decides which lifetime the resource should have"
+    ],
+    mustNot: [
+      "Lowers the pool size to make the numbers match"
+    ],
+    tags: ["real-world", "duplicate-resource"]
+  },
+  {
+    id: "does-this-helper-need-injecting",
+    bundle: "typescript-composition",
+    rule: "dependency-scope",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "obvious",
+    prompt:
+      "Does a pure formatting helper need to be injected?",
+    expectedPrimary: "typescript-composition",
+    expectedAll: ["typescript-composition/rules/dependency-scope.md"],
+    expectedSecondary: [],
+    must: [
+      "Keeps a pure function as a direct import"
+    ],
+    mustNot: [
+      "Injects it for symmetry with the other dependencies"
+    ],
+    tags: ["control", "would-pass-anyway"]
+  },
 ] satisfies EvalScenario[];
 
 export default scenarios;

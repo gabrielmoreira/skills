@@ -3,7 +3,7 @@ id: typescript-coding-standards.functions-vs-classes
 owner: typescript-coding-standards
 canonical: true
 severity: default
-references: [Closure Module Pattern, SRP (SOLID)]
+references: [Utility Class, Speculative Generality (Fowler), Refused Bequest (Fowler), Premature Optimization (Knuth), composition over inheritance]
 ---
 
 # Functions vs Classes
@@ -27,12 +27,12 @@ Do:
 - **Return the smallest public object callers need.**
 
 Avoid:
-- **A class used as a namespace.**
-- **`new` where a function or a capability object reads just as well.**
-- **Grouping, OO consistency, or future flexibility as the whole reason** for a class.
-- **Inheritance for reuse**, before composition has actually failed.
-- **Exposing mutable state** that could have stayed closure-private.
-- **Creating very many closure objects on a hot path** without measuring first.
+- **Utility Class.** Every method static, so it is a module wearing ceremony, and each reader has to rule out instance state before they can ignore it.
+- **Speculative Generality.** Grouping, OO consistency or future flexibility as the whole reason, so the class protects no invariant and nothing tells the next author what may go in it.
+- **Refused Bequest.** Inheritance taken for reuse before composition has failed, so a base fixes every subclass at once and the first requirement that does not fit is paid for by all of them.
+- **Premature Optimization.** Closures replaced on a hot path with no measurement, trading a readable shape for a guess about an allocation cost nobody has seen.
+- **Ceremony without a seam.** `new` where a function or a capability object reads as well, so the caller pays construction for a boundary that is not there.
+- **State the object cannot defend.** Public mutable fields that could have stayed closure-private, so any caller can move what it depends on and its invariants stop being local.
 
 Exceptions:
 - **A framework API MAY require a class.** Keep that ceremony at the edge.

@@ -4,8 +4,7 @@
 
 **This table is a gate, not a checklist.** Match the left column against what you can see in the code.
 
-- **One rule per row.** Enter at the matched row.
-- **A row naming two destinations means read both.**
+- **Enter at the matched row, and read a second where the code matches two.** Say which of them owns the decision and why the other applies. What costs is reading every row, not reading two.
 
 | If you see... | Read |
 | --- | --- |

@@ -14,6 +14,7 @@ Use when:
 - **A change replaces an old implementation, name, API, or data path.**
 - **Old and new code would coexist** after the change lands.
 - **A migration aid is being proposed.** A compatibility alias, a dual write, a flag, a shim.
+- **A dependency reports a deprecated symbol**, from the compiler, the linter, or its own release notes.
 
 Do:
 - **Update callers to the new path in the same change**, where ownership allows it.
@@ -24,10 +25,12 @@ Do:
   - Verification.
   - A removal condition.
 - **Make a temporary boundary visible in the name or a comment** where it cannot be removed yet.
+- **Treat a deprecation as a cutover whose clock someone else started.** Replace it now, or give your side an owner and a removal condition.
 
 Avoid:
 - **Leaving an old export because it might be useful.** It will be, to someone who should not use it.
 - **A compatibility layer with no removal trigger.**
+- **Suppressing a deprecation warning** without scheduling the replacement.
 - **Tests that keep the old behaviour alive by accident.**
 - **Staging a migration** when the affected code is fully owned and safe to update now.
 
@@ -46,4 +49,5 @@ export { chargeCard as legacyChargeCard } from "./charge";
 Verify:
 - **Search for every reference to the old name, path, or API.**
 - **Confirm each remaining compatibility piece has an owner and a removal condition.**
+- **Confirm each deprecated dependency still in use** is replaced here, or has a recorded owner and removal condition.
 - **Run the narrowest tests covering both old caller behaviour and the new path.**

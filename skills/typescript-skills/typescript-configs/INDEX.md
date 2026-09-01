@@ -13,7 +13,7 @@
 
 **This table is a gate, not a checklist.** Match the left column against what you can see in the code.
 
-- **One rule per row.** Enter at the matched row.
+- **Enter at the matched row, and read a second where the code matches two.** Say which of them owns the decision and why the other applies. What costs is reading every row, not reading two.
 - **Parse against contextual.** Parse owns turning unknown into typed. Contextual owns who receives which slice.
 - **Defaults against secrets.** A behaviour-tuning value may have a production-safe default. An environment-specific or security-bearing value is required, never defaulted.
 
