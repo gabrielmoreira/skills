@@ -9,8 +9,10 @@ description: >-
   you are working from a summary rather than the conversation that produced it.
   A decision that lived only in the conversation did not survive it, and the one
   nobody wrote down is the one that gets re-argued at the worst moment. Not for
-  facts with evidence, which belong wherever the host already keeps them, and not
-  for durable records a later reader needs, which is a documentation decision.
+  facts with evidence, which belong wherever the host already keeps them, not
+  for durable records a later reader needs, which is a documentation decision,
+  and not for steering that settles nothing: carry on, try the other one, that
+  looks right.
 ---
 
 # Keep the Thread Across Boundaries

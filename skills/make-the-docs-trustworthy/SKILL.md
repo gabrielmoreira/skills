@@ -8,8 +8,9 @@ description: >-
   re-argued. Prose no human has read counts as a hypothesis, not a source. Use
   when the user says "the docs are out of date", "readme still says the old flow",
   "where does this go", "write this down", or "should this be an ADR". Not for
-  judging docs inside a change under review, explaining an existing document, or
-  looking up a third party documentation.
+  judging docs inside a change under review, explaining an existing document,
+  looking up a third party documentation, or writing outbound copy for readers
+  outside the repository, which has no home here and must stand alone.
 ---
 
 # Make the Docs Trustworthy

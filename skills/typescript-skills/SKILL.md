@@ -9,8 +9,9 @@ description: >-
   any", "how do I test this", "this promise is never awaited", "fix these type
   errors", or hands over TypeScript to write, review or repair. Routes to one of
   nine topic indexes, each owning rules that carry a decision, the conditions that
-  trigger it, and a check. Not for prose, formatting-only passes, or history
-  questions that merely mention TypeScript.
+  trigger it, and a check. Not for prose, formatting-only passes, history
+  questions that merely mention TypeScript, or explaining an error when the
+  request forbids changing code.
 ---
 
 # TypeScript Rules Router

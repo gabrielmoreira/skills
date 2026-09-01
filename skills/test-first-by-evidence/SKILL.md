@@ -8,7 +8,9 @@ description: >-
   Use when implementing a feature or a bugfix, when a test was written after the
   code, when a test passes the first time you run it, or when the user says
   "write tests for this", "add coverage", or "TDD this". Not for judging tests
-  inside a change under review, and not for choosing a test framework.
+  inside a change under review, not for choosing a test framework, and not for
+  raising a coverage number, which is the behaviour the honest-test rule exists
+  to refuse.
 ---
 
 # Test First by Evidence

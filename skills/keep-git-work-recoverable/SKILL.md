@@ -8,8 +8,9 @@ description: >-
   Nothing uncommitted is discarded and nothing is removed without positive
   evidence it landed. Use when the user says "can not switch branches", "am I
   detached", "fetch is not picking up the new branch", or pastes a git refusal.
-  Not for merge-conflict content, commit messages, judging a diff, or commands
-  that are already working.
+  Not for merge-conflict content, commit messages, judging a diff, commands
+  that are already working, or a workspace the environment opened and still
+  owns.
 ---
 
 # Keep Git Work Recoverable
