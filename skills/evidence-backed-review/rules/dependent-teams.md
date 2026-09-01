@@ -39,9 +39,9 @@ Do:
 
 Avoid:
 
-- **Naming a plausible-sounding team the repository never records.**
-- **One undifferentiated recipient list.**
-- **Timing given as "soon"** instead of one of the three.
+- **Naming a plausible-sounding team the repository never records**, so the notice goes to nobody and the record shows it was sent.
+- **One undifferentiated recipient list**, which trains every recipient to skim, so the one team that had to act reads it like the ones that did not.
+- **Timing given as "soon"** instead of one of the three, which leaves each reader to guess whether this blocks their next release.
 
 Exceptions:
 

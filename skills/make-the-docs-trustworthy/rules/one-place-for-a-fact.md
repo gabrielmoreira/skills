@@ -38,9 +38,9 @@ Do:
 
 Avoid:
 
-- **Copying a paragraph so that a page "reads standalone".**
-- **Writing a new page to answer a question the search would have answered.**
-- **Keeping both copies under a "see also".** That names no source.
+- **Copying a paragraph so a page reads standalone.** The copies stay identical until the first correction, and then one of them is a lie nobody has found.
+- **Writing a new page to answer a question the search would have answered**, which adds a second answer that will drift from the first.
+- **Keeping both copies under a "see also".** That names no source, so a later reader has to guess which one is canonical.
 
 Exceptions:
 

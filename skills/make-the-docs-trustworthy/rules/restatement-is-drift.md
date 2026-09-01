@@ -38,9 +38,9 @@ Do:
 
 Avoid:
 
-- **A table of configuration keys and defaults mirrored from the configuration file.**
-- **Usage text pasted under a heading called "Usage".**
-- **Hand-editing inside a generated block** because it was faster than editing the generator.
+- **A table of keys and defaults mirrored from the configuration file**, which is correct on the day it is written and wrong from the next change onward.
+- **Usage text pasted under a heading called "Usage"**, so the documented flags and the real ones part company silently.
+- **Hand-editing inside a generated block** because it was faster than editing the generator, which the next generation quietly discards.
 
 Exceptions:
 

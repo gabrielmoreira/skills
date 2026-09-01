@@ -38,9 +38,9 @@ Do:
 
 Avoid:
 
-- **Splitting by length into a part one and a part two.**
-- **A file named for one topic that also carries setup steps, release notes, and a glossary.**
-- **Leaving a stub at the origin that repeats the moved content's opening paragraph.**
+- **Splitting by length into a part one and a part two**, which divides one job across two files and leaves the reader to rejoin them.
+- **A file named for one topic that also carries setup, release notes and a glossary**, so nobody can say what it is for and nobody can say where the next thing goes.
+- **Leaving a stub that repeats the moved content's opening paragraph**, which reads as the article until the reader has wasted the time.
 
 Exceptions:
 

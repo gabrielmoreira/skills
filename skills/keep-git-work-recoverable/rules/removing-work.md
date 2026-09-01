@@ -13,6 +13,8 @@ a false negative. Squashed and rebased work is not an ancestor of the trunk, so 
 landed work unmerged. Owns removal of a workspace or a branch. The claim status a failed sync
 leaves → `rules/stale-refs.md`. Creating one → `rules/isolate-or-work-in-place.md`.
 
+Landing the work it holds first → `rules/returning-work.md`.
+
 Use when:
 
 - **A workspace or branch is to be deleted or pruned or cleaned up.**

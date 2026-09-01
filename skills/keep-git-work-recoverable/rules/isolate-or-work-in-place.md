@@ -11,7 +11,8 @@ references: [linked worktrees, workspace isolation, environment-provided sandbox
 Decision: Take the isolation the environment already provides. Create one yourself only where
 there is none. A second layer over the first doubles the state someone must later account for.
 Owns whether to work here or elsewhere. Naming the checkout you stand in →
-`rules/locate-yourself.md`. Disposing of one → `rules/removing-work.md`.
+`rules/locate-yourself.md`. Disposing of one → `rules/removing-work.md`. What is owed once one is open →
+`rules/returning-work.md`.
 
 Use when:
 

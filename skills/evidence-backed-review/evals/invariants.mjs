@@ -227,9 +227,29 @@ const scannedDocs = [
   const counts = new Map();
   for (const name of pointed) counts.set(name, (counts.get(name) ?? 0) + 1);
   for (const [name, n] of counts) if (n > 1) bad.push(`INDEX.md routes rules/${name}.md ${n} times`);
-  for (const name of ruleNames) if (!counts.has(name)) bad.push(`rules/${name}.md has no row in INDEX.md`);
+  // Reachability, not table membership.
+  //
+  // A gate row fires on something visible in the diff. Some rules answer to an
+  // absence instead — whether the pipeline covers this change, whether the
+  // written standard says what you assume — and nothing in a diff announces
+  // those. No wording of a left column reaches them, which is why rows of that
+  // kind were opened zero times across ninety measured runs. They belong in the
+  // coverage obligation, which names each as checked or not.
+  //
+  // So a rule outside the table must be named in prose that points at it. A
+  // rule named in neither is unreachable and still fails.
+  const obligation = new Set();
+  for (const line of indexText.split("\n")) {
+    if (line.trimStart().startsWith("|")) continue;
+    for (const m of line.matchAll(/rules\/([a-z0-9-]+)\.md/g)) obligation.add(m[1]);
+  }
+  for (const name of ruleNames) {
+    if (counts.has(name) || obligation.has(name)) continue;
+    bad.push(`rules/${name}.md is in no gate row and no coverage obligation`);
+  }
+  const viaProse = ruleNames.filter((n) => !counts.has(n) && obligation.has(n)).length;
   if (bad.length) fail("INV-04 INDEX.md routes every rule exactly once and every pointer resolves", bad.join("\n        "));
-  else pass("INV-04 INDEX.md routes every rule exactly once and every pointer resolves", `${counts.size} rows`);
+  else pass("INV-04 INDEX.md routes every rule exactly once and every pointer resolves", `${counts.size} rows${viaProse ? `, ${viaProse} reached by coverage obligation` : ""}`);
 }
 
 // ---------------------------------------------------------------------------

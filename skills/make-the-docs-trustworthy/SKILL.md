@@ -43,6 +43,7 @@ description: >-
 - **Run the search this gate demands before any rule.** It can make the write unnecessary.
 - **Read both rows where a claim matches two.** Reading is the cheap half. Writing the wrong thing is the expensive half.
 - **Supersede where a rule would delete a decision record.**
+- **Read every row, then act on the matches, hardest to undo first.** Reading a row costs nothing; the row you skipped is where the coverage went.
 
 | If you see... | Read |
 | --- | --- |

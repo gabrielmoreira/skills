@@ -40,7 +40,7 @@ Do:
 
 Avoid:
 
-- **Rewriting a paragraph because it reads as old.**
+- **Rewriting a paragraph because it reads as old**, which spends effort on prose and can as easily introduce the drift it was meant to remove.
 - **Sorting by modification date and editing the top of the list.** A file's age is not evidence
   about its content.
 - **Reporting a page stale while naming nothing that disproves it.**

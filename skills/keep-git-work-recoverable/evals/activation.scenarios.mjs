@@ -427,6 +427,118 @@ const scenarios = [
     ],
     tags: ["activation", "negative", "refusal-pasted", "content-not-state", "pressure"],
   },
+  {
+    id: "picking-up-a-worktree-from-last-week",
+    bundle: "keep-git-work-recoverable",
+    rule: "returning-work",
+    tier: "P0",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "carry on with the export fix. it's in the worktree i made for it last week, before the caching change went in",
+    activation: { layer: "public-skill", target: "keep-git-work-recoverable", shouldActivate: true, forbiddenRoutes: [] },
+    expectedPrimary: "keep-git-work-recoverable",
+    expectedAll: ["rules/returning-work.md"],
+    must: [
+      "Establishes how far behind that workspace is before writing in it",
+      "Brings it up to date rather than building on the older base",
+      "Names what would have been removed by pushing from it as it stands"
+    ],
+    mustNot: [
+      "Starts editing in the stale workspace",
+      "Treats the branch name matching as evidence it is current"
+    ],
+    tags: ["real-world", "stale-workspace", "regression-on-push"]
+  },
+  {
+    id: "cant-switch-so-ill-make-another-one",
+    bundle: "keep-git-work-recoverable",
+    rule: "returning-work",
+    tier: "P0",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "i need to look at the release branch but there are changes here. making a new worktree for it",
+    activation: { layer: "public-skill", target: "keep-git-work-recoverable", shouldActivate: true, forbiddenRoutes: [] },
+    expectedPrimary: "keep-git-work-recoverable",
+    expectedAll: ["rules/returning-work.md"],
+    must: [
+      "Reads what the local changes are before opening a second place",
+      "Offers the cheaper moves that keep one workspace",
+      "Opens a workspace only where nothing cheaper serves"
+    ],
+    mustNot: [
+      "Opens the workspace without establishing what the local changes are",
+      "Discards the local changes to make the switch possible"
+    ],
+    tags: ["real-world", "reflex-isolation"]
+  },
+  {
+    id: "nothing-runs-in-the-new-checkout",
+    bundle: "keep-git-work-recoverable",
+    rule: "returning-work",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "tests won't run in the new worktree, they pass in the main one. same branch",
+    activation: { layer: "public-skill", target: "keep-git-work-recoverable", shouldActivate: true, forbiddenRoutes: [] },
+    expectedPrimary: "keep-git-work-recoverable",
+    expectedAll: ["rules/returning-work.md"],
+    must: [
+      "Treats the difference between the two checkouts as the first thing to establish",
+      "Names dependencies and untracked local configuration as what a checkout does not carry"
+    ],
+    mustNot: [
+      "Debugs the test suite as though the code differed",
+      "Copies untracked files across without saying they were copied"
+    ],
+    tags: ["real-world", "environment-parity", "looks-like-a-broken-tool"]
+  },
+  {
+    id: "how-many-of-these-are-there-now",
+    bundle: "keep-git-work-recoverable",
+    rule: "returning-work",
+    tier: "P1",
+    mode: "apply",
+    difficulty: "hard",
+    prompt:
+      "clean up my worktrees, i've lost track of what's in them",
+    activation: { layer: "public-skill", target: "keep-git-work-recoverable", shouldActivate: true, forbiddenRoutes: [] },
+    expectedPrimary: "keep-git-work-recoverable",
+    expectedAll: ["rules/returning-work.md"],
+    must: [
+      "Establishes what each one holds that has not landed before removing any",
+      "Reports which are safe to remove and which hold work"
+    ],
+    mustNot: [
+      "Removes any before establishing what it holds",
+      "Uses ancestry alone as proof the work landed"
+    ],
+    tags: ["real-world", "accumulation"]
+  },
+  {
+    id: "worktree-the-harness-gave-me",
+    nearMiss:
+      "It is a workspace question at the moment work finishes, which is exactly when this rule applies; but the environment opened it and owns its lifetime, so closing it is not this session's to do.",
+    bundle: "keep-git-work-recoverable",
+    rule: "returning-work",
+    tier: "P1",
+    mode: "bypass",
+    difficulty: "obvious",
+    prompt:
+      "i'm already in a scratch checkout the tool set up. do i need to do anything about it when i'm done?",
+    activation: { layer: "public-skill", target: "keep-git-work-recoverable", shouldActivate: false, forbiddenRoutes: [] },
+    expectedPrimary: "keep-git-work-recoverable",
+    expectedAll: ["rules/returning-work.md"],
+    must: [
+      "Distinguishes a workspace the environment owns from one this session opened"
+    ],
+    mustNot: [
+      "Removes a workspace the environment provided"
+    ],
+    tags: ["control", "not-ours-to-close"]
+  },
 ];
 
 export default scenarios;

@@ -39,9 +39,9 @@ Do:
 
 Avoid:
 
-- **An empty directory holding a placeholder file for a later change.**
-- **A second numbering series started because the first one looked inconsistent.**
-- **One file introducing a new extension or a new frontmatter shape for the set.**
+- **An empty directory holding a placeholder for a later change**, which every reader has to open once to learn it holds nothing.
+- **A second numbering series started because the first looked inconsistent**, so both are now wrong and neither can be trusted to be complete.
+- **One file introducing a new extension or frontmatter shape for the set**, which breaks whatever reads the set as a set.
 
 Exceptions:
 

@@ -7,9 +7,10 @@ description: >-
   tests prove what they claim, broken contracts and callers outside this
   repository, and stale docs. Every finding at file:line, and it never edits. Use
   when the user says "review this", "check this before I commit", "does this hold
-  up", or hands over a branch before opening it. Not for explaining code,
-  formatting-only passes, running the linter or tests, or responding to a review
-  of your own work.
+  up", or hands over a branch before opening it — always about code that
+  changed. Not for prose with no diff behind it, explaining code, formatting-only
+  passes, running the linter or tests, writing the commit message or changelog for
+  a change, or responding to a review of your own work.
 ---
 
 # Evidence-Backed Review
@@ -55,30 +56,30 @@ description: >-
   - A check nobody ran is a Gap.
 
 ## Which rules to read
-**This table is a gate, not a checklist.** Match the left column against the diff and the request.
+**This table is a gate, not a checklist.** Read every row, then act on the matches, hardest to undo first. Reading a row costs nothing; the row you skipped is where the coverage went.
 
-- **Read every rule whose signal is present in this range.**
-- **Report an axis whose signal is absent as not-applicable.** Name the signal that would have triggered it.
-- **Where a signal is ambiguous you SHOULD read the rule.** Under-reading is the expensive mistake, and a range that changed a boundary and produced nothing was scoped wrong.
-- **You MAY read a second row whose signal is weaker** when the change looks larger than it reads.
-- **Escalate coverage mid-run** when something turns up. Never reduce it.
+- **A row names the signal and the belief it undoes, never the remedy.** A row carrying the remedy gets read instead of the rule.
+- **When in doubt, read it, and widen mid-run without ever narrowing.** Under-reading is the expensive mistake: a range that changed a boundary and produced nothing was scoped wrong.
 - **`focused` reads one matched row** whatever the signals say, names the rest as uninspected, and says so.
-- **The unconditional walk is the waste, not the checks it protects.** Reading every rule on every change spends nine reads on a three-line diff.
 
-| If you see... | Read |
-| --- | --- |
-| the request is **"before I commit"** / "check this first"; nothing pushed, tree dirty or staged | `rules/pre-commit-self-review.md` |
-| **authentication**, a permission or role check, user input reaching a query, path, command or template, a file upload, an ownership check, a secret-shaped literal, or a new outbound call | `rules/security-and-abuse-paths.md` |
-| **any hunk** changing a condition, a bound, an assignment, or an error path; lines deleted or replaced | `rules/correctness-in-the-diff.md` |
-| the range is **pushed or open as a change request**, the repository declares a **workflow, build, or deploy**, or the request named **execution, a run, or a pipeline** | `rules/execution-and-pipeline.md` |
-| the diff adds a **capability nobody asked for** in the request, issue, or spec | `rules/motivation-and-necessity.md` |
-| one diff both **restructures and adds behaviour**; unrelated files, or ~1000 changed lines in one change | `rules/scope-and-slicing.md` |
-| new code **deviating from a written convention**, in this repository or one the organisation documents elsewhere | `rules/standards-conformance.md` |
-| a **quoted requirement with no matching code**, code no requirement mentions, or a changed behaviour whose only proof is that a test did not throw | `rules/spec-conformance.md` |
-| a **changed exported signature**, route, schema, event payload, config key, or a removed field | `rules/contracts-and-consumers.md` |
-| a **README, doc page, example, comment**, or repository-local instruction file still describing behaviour this diff changed | `rules/docs-and-skills-freshness.md` |
-| **callers of that changed contract** living outside this package who must act, or feature-specific logic landing in a shared module | `rules/dependent-teams.md` |
-| a **security, network, data-handling, or cost question this repository never answers**; a surface another team documents or consumes elsewhere | `rules/external-sources.md` |
+| If you see... | and the belief that is usually wrong | Read |
+| --- | --- | --- |
+| the request is **"before I commit"** / "check this first"; nothing pushed, tree dirty or staged | that `git diff` shows the change — the staged half is invisible to it | `rules/pre-commit-self-review.md` |
+| **any hunk** changing a condition, a bound, an assignment, or an error path; lines deleted or replaced | that reading the new line tells you what changed — the deleted one carried the case you are about to lose | `rules/correctness-in-the-diff.md` |
+| one diff both **restructures and adds behaviour**; unrelated files, or ~1000 changed lines in one change | that a large diff reviewed carefully is reviewed — the move hides the edit inside it | `rules/scope-and-slicing.md` |
+| a **changed exported signature**, route, schema, event payload, config key, or a removed field | that the caller ships with you — it deploys on its own schedule and to its own version | `rules/contracts-and-consumers.md` |
+| a **`README`, doc page, example, comment**, or instruction file still describing behaviour this diff changed | that documentation drifts harmlessly — the next reader follows it against the new code | `rules/docs-and-skills-freshness.md` |
+| **callers of that changed contract** outside this package, or feature-specific logic landing in a shared module | that the repository shows you the callers — the ones that matter are in another repository | `rules/dependent-teams.md` |
+
+
+## What you have not established
+
+**Nothing in a diff announces an absence**, so no gate fires on these and none is in the table. Each states something about you rather than the code, and only looking discharges it. Report each by name, checked or not.
+
+- **You have not established whether the pipeline runs what this change now needs** — a green check you did not open is not evidence → `rules/execution-and-pipeline.md`
+- **You have not established that the written standard says what you assume** → `rules/standards-conformance.md`, **nor that a quoted requirement has matching code, or this code any requirement** → `rules/spec-conformance.md`
+- **You have not established that this change was asked for** — a capability nobody requested arrives looking like diligence → `rules/motivation-and-necessity.md`
+- **You have not established which security question this repository never answers** → `rules/security-and-abuse-paths.md` — absence of a finding is not absence of a path — **nor what another team documents about this surface** → `rules/external-sources.md`
 
 **Discriminators.**
 
@@ -90,6 +91,7 @@ description: >-
 
 **Default stance.**
 
+- **Where no row matches, review the diff against the request that produced it** and say what you did not inspect. Completeness is reported against the axes below, never against the table.
 - **Report, never edit.** The working tree ends the run exactly as it started.
 - **Every finding lands at `file:line`**, and every axis you did not inspect is named as not inspected.
 - **One status, decided by the weakest axis**, never by the count of clean ones.

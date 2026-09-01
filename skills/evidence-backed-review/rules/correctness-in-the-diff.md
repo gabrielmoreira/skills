@@ -36,10 +36,10 @@ Do:
 
 Avoid:
 
-- **A review that read the shape of the change and never its lines.**
-- **Assuming confirmed-safe without reading the guard that enforces it.**
-- **Reporting a defect with no path from a line this diff changed.**
-- **Reading "the tests pass" as evidence a line is right.** The test may not reach it.
+- **A review that read the shape and never the lines.** Line-by-line hunk reading is the method; shape review finds what the summary would have told you anyway.
+- **Assuming confirmed-safe without reading the guard**, so a removed invariant passes as unchanged behaviour.
+- **Reporting a defect with no path from a line this diff changed**, which spends the author's attention on something they cannot act on here.
+- **Reading "the tests pass" as evidence a line is right.** The test may not reach it, and green over an unreached line says only that nothing exercised it.
 - **Treating a hunk as read because you understood its intent.**
 
 Example (one instance, not the set):

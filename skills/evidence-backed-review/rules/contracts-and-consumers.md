@@ -42,9 +42,9 @@ Do:
 
 Avoid:
 
-- **Promoting a fact one layer up.** Configuration is not deployment. A mirrored caller's source is intent, not what runs.
-- **A Gap reading "presumably deployed"** instead of the next observation.
-- **Reading an empty consumer search as proof there is none.** What cannot be listed is not empty.
+- **Promoting a fact one layer up.** Configuration is not deployment and a mirrored caller's source is intent rather than what runs, so the finding describes a system nobody is operating.
+- **A Gap reading "presumably deployed"** instead of the next observation, which reads as a conclusion and stops anyone making it.
+- **Reading an empty consumer search as proof there is none.** What cannot be listed is not empty, and the consumer you missed breaks on a rollout ordering you never considered.
 
 Exceptions:
 
@@ -61,6 +61,6 @@ RECOVERABILITY GAP: reverting leaves rows in the new shape.
 
 Verify:
 
-- **Search changed paths for boundary artifacts.** Each one carries a layer label.
-- **Read the report.** Every claim states its layer. Every Gap states its next observation.
+- **Search changed paths for boundary artifacts**, each carrying a layer label.
+- **Read the report.** Every claim names its layer, every Gap its next observation.
 - **Confirm the call names its facts**, or that the question was asked.

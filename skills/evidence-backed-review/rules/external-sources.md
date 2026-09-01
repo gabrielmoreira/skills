@@ -44,10 +44,10 @@ Do:
 
 Avoid:
 
-- **Naming a standard, owner, or procedure no declared source produced.**
+- **Naming a standard, owner, or procedure no declared source produced**, so the author cannot check it and has to take the reviewer's memory as authority.
 - **A public page passed off as this organisation's rule.** The web says what a tool does, never what your organisation requires.
-- **Reading an empty search as proof none exists.** An unmirrored page is a Gap, not an absence.
-- **Reaching for a source no axis needs.**
+- **Reading an empty search as proof none exists.** An unmirrored page is a Gap, and reporting absence closes a question nobody opened.
+- **Reaching for a source no axis needs**, which spends the review on reading rather than on judging.
 
 Exceptions:
 

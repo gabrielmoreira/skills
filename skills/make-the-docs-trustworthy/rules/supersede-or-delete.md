@@ -37,9 +37,9 @@ Do:
 
 Avoid:
 
-- **Editing a decision record's conclusion in place and keeping its original date.**
-- **Deleting a record because its answer is no longer the answer.**
-- **A superseding record that names no predecessor**, leaving two answers that both look current.
+- **Editing a decision record's conclusion in place and keeping its date**, so the history says a choice was made that was never made.
+- **Deleting a record because its answer is no longer the answer**, which removes the reasoning that would stop the same path being proposed again.
+- **A superseding record that names no predecessor**, leaving two answers that both look current and no way to tell which won.
 
 Exceptions:
 

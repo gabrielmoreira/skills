@@ -36,9 +36,9 @@ Do:
 
 Avoid:
 
-- **Quoting an unreviewed page as authority and naming no other evidence.**
-- **Counting three pages that descend from one generated original as corroboration.**
-- **Dropping the unreviewed label once the claim has been restated a few times.**
+- **Quoting an unreviewed page as authority and naming no other evidence**, so the reader inherits a claim with no provenance and no way to check it.
+- **Counting three pages descended from one original as corroboration.** They are one source wearing three names, and the agreement is circular.
+- **Dropping the unreviewed label once the claim has been restated a few times**, which is how a guess becomes a fact without anyone deciding it should.
 
 Exceptions:
 

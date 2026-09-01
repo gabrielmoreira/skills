@@ -42,9 +42,9 @@ Do:
 
 Avoid:
 
-- **Accepting "docs in a follow-up"** for a convention file read on every session.
-- **A decision record for an ordinary implementation choice** that is reversible and unsurprising, with no real alternative.
-- **A staleness finding carrying only the document's line**, with no code line proving it stale.
+- **Accepting "docs in a follow-up"** for a convention file read on every session, so everyone follows the wrong instruction until a follow-up that never comes.
+- **A decision record for an ordinary implementation choice**, reversible and unsurprising with no real alternative, which buries the records that did settle something.
+- **A staleness finding carrying only the document's line**, with no code line proving it stale, so the author cannot tell a real drift from a misreading.
 
 Exceptions:
 

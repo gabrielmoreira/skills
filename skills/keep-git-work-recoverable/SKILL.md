@@ -65,13 +65,13 @@ have not established is how work that existed nowhere else stops existing.
 
 | State | Means | Licenses |
 | --- | --- | --- |
-| `UNLOCATED` | the checkout, the head, or the remote is still unnamed | reading, and nothing that writes |
-| `LOCATED` | all four of the above are read from the repository | inspecting refs, proposing a move |
-| `SECURED` | everything uncommitted is recoverable without this command succeeding | the move that was refused |
-| `CONFIRMED` | the work is observed to exist somewhere it survives this checkout | removing the local copy |
+| `git/UNLOCATED` | the checkout, the head, or the remote is still unnamed | reading, and nothing that writes |
+| `git/LOCATED` | all four of the above are read from the repository | inspecting refs, proposing a move |
+| `git/SECURED` | everything uncommitted is recoverable without this command succeeding | the move that was refused |
+| `git/EXISTS ELSEWHERE` | the work is observed to exist somewhere it survives this checkout | removing the local copy |
 
 - **No state is reached by assumption.** Each one names a reading you performed.
-- **Removal is licensed by `CONFIRMED` alone.** The absence of a signal never reaches it.
+- **Removal is licensed by `git/EXISTS ELSEWHERE` alone.** The absence of a signal never reaches it.
 
 ## Which rules to read
 
@@ -84,18 +84,22 @@ against the state you cannot name.
   you are in.
 - **Removing anything requires positive evidence**, never the absence of a signal.
 - **Where the refusal could be either row, read both.** Guessing which one produces the illegal move.
+- **Read every row, then act on the matches, hardest to undo first.** Reading a row costs nothing; the row you skipped is where the coverage went.
 
 | If you see... | Read |
 | --- | --- |
 | you cannot say which checkout you are in, whether a branch is checked out, or whether this is a linked workspace at all | `rules/locate-yourself.md` |
 | the task needs a second place to work, or the environment already handed you one | `rules/isolate-or-work-in-place.md` |
-| a switch refused: local changes would be overwritten, or the branch is already checked out somewhere else | `rules/switch-refused.md` |
-| a name will not resolve: it may be remote-only, a tag, a commit, or a typo, and you are about to try it again | `rules/resolve-the-ref.md` |
-| the sync failed, was denied, or never ran, and a claim about the remote depends on it | `rules/stale-refs.md` |
+| a switch refused: `local changes would be overwritten by checkout`, or `already checked out at` another path | `rules/switch-refused.md` |
+| a name will not resolve: `unknown revision or path not in the working tree`, `pathspec did not match`, and you are about to try it again | `rules/resolve-the-ref.md` |
+| `git fetch` failed, was denied, or never ran, and a claim about the remote depends on it | `rules/stale-refs.md` |
+| work is finishing somewhere other than where it started, or a second workspace already exists | `rules/returning-work.md` |
 | a workspace or branch is to be removed, or is believed already merged | `rules/removing-work.md` |
 
 **Discriminators.**
 
+- **Isolate against return.** Isolate decides whether to open a second place. Return decides what
+  is owed once one is open: that it is current, that it runs, and that it closes.
 - **Locate against isolate.** Locate answers where you are. Isolate decides whether you should be
   somewhere else.
 - **Refused against resolve.** Refused means the name was found and the move was blocked. Resolve

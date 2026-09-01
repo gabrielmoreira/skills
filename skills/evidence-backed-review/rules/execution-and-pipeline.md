@@ -26,19 +26,18 @@ Do:
 - **Name missing commands or permissions when unreachable.** An unreachable check is a named Gap, never silence.
 
 Avoid:
-- **Paraphrasing pipeline or test failures without quoting captured text.**
-- **Claiming local runs prove production correctness without mechanical verification.**
-- **Counting green checks without opening one.**
-- **Reading a skipped or cancelled job as a pass.**
-- **Waiting in silence while runs stay in progress.**
-- **Letting a passing suite substitute for judging change merit.**
+- **Paraphrasing a failure instead of quoting the captured text**, which turns a reproducible fact into a claim the author has to take on trust.
+- **Claiming local runs prove production correctness.** The difference between the two environments is exactly where the failure lives.
+- **Counting green checks without opening one**, so a job that passed by doing nothing counts the same as one that ran.
+- **Reading a skipped or cancelled job as a pass**, which is how a required check silently stops being required.
+- **Waiting in silence while runs stay in progress**, leaving the author unable to tell review from absence.
+- **Letting a passing suite substitute for judging merit.** Continuous Delivery buys confidence that the change works, never that it was worth making.
 
 Exceptions:
 - **A repository with no pipeline MAY close on local evidence**, provided the review says no pipeline exists.
 - **A `focused` pass MAY name the pipeline as uninspected** rather than reach it.
 
 Verify:
-- **Name the pipeline, the run, and its state**, or name the Gap and what blocked reaching it.
-- **Quote the exact failing step, line, and captured log output** behind every pipeline finding.
-- **State which evidence you observed and which was relayed to you.**
-- **Verify mechanical build, lint, and test commands ran when local evidence is claimed.**
+- **Name the run and its state**, or the Gap and what blocked reaching it.
+- **Quote the failing step and its captured output**, so the author can reproduce it without asking.
+- **Say which evidence was observed and which was relayed.**

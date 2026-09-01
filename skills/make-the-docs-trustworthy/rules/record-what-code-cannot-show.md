@@ -36,9 +36,9 @@ Do:
 
 Avoid:
 
-- **A record reconstructed a week later from the diff.** It recovers what changed and none of why.
-- **Leaving the reasoning in the change description**, where no later reader looks.
-- **A record that lists the benefits of the chosen path and names nothing rejected.**
+- **A record reconstructed a week later from the diff.** It recovers what changed and none of why, which is the only part the code could not already show.
+- **Leaving the reasoning in the change description**, where no later reader looks, so the decision is re-argued by people who cannot find that it was settled.
+- **A record listing the benefits of the chosen path and naming nothing rejected**, which reads as advocacy and gives the next reader no way to reopen it responsibly.
 
 Exceptions:
 

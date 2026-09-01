@@ -33,11 +33,11 @@ Do:
 
 Avoid:
 
-- **Applying generic external threat models while ignoring the repository's own security patterns.**
-- **Speculative security findings without a demonstrable path from user input to an unguarded sink.**
-- **A dismissal resting on the presence of a login.**
+- **A generic threat model applied over the repository's own patterns**, so the finding names a boundary this system does not have.
+- **A speculative finding with no path from user input to an unguarded sink.** Taint tracking is what separates a finding from a worry, and a worry costs the author a day.
+- **A dismissal resting on the presence of a login.** Authentication says who is calling; object-level authorization says whether they may touch this row.
 - **Dismissing constrained user input without naming the guard you read.**
-- **Accepting a framework default as the authorization check without reading what it checks.**
+- **Accepting a framework default as the authorization check** without reading what it actually checks.
 
 Example (one instance, not the set):
 ```

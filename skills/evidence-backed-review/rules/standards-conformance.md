@@ -43,10 +43,10 @@ Do:
 
 Avoid:
 
-- **Re-reporting what the declared lint, format, or type-check command enforces.**
-- **Citing "best practice"** where a file and rule should be.
+- **Re-reporting what the declared lint, format, or type-check command enforces**, which buries the findings no tool could have made.
+- **Citing "best practice"** where a file and rule should be, leaving the author to argue with an authority nobody can locate.
 - **Reading a shape as a defect** before checking what already handles it.
-- **Accepting a new convention beside the existing one.** A second convention is itself the defect.
+- **Accepting a new convention beside the existing one.** A second convention is itself the defect, and every later reader pays to learn which one applies.
 
 Exceptions:
 
