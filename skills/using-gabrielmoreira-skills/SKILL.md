@@ -94,8 +94,12 @@ Long sessions here run 29 percent shell against 6 percent in short ones. What fi
 | a defect in the code being changed | `debugging-by-evidence` | `treat-blockers-as-incidents` |
 | where a test goes for behaviour being added | `test-first-by-evidence` | `debugging-by-evidence` |
 | where a test goes to pin a defect | `debugging-by-evidence` | `test-first-by-evidence` |
+| whether a unit should be split, where a module belongs, which way a dependency may point | `maintainable-code` | `typescript-skills` |
+| what construct expresses it: a type, a class against a function, a factory against a ready instance, a promise | `typescript-skills` | `maintainable-code` |
 | judging work that already exists as commits | `evidence-backed-review` | `maintainable-code` |
 | designing work that does not exist yet | `maintainable-code` | `evidence-backed-review` |
+
+- **Between those two, test the answer rather than the subject.** An answer that reads the same in any language belongs to structure. An answer naming a construct of the language belongs to the language skill.
 
 - **Two or more matching is normal.** Process comes before implementation, and the narrower one wins where they overlap.
 - **Not finding a match is an answer.** Do not stretch one to fit.
