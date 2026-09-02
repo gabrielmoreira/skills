@@ -38,6 +38,7 @@ Avoid:
 
 Exceptions:
 - **A description is only read by an agent that reads descriptions.** Some families open the catalogue unprompted; others list it correctly and never open it, and only a reminder in the turn reaches those.
+- **The stronger model consults less.** Measured over twelve routing scenarios on identical wording: the weaker model reached a topic seven times, the stronger three. A gate tuned on the weak one does not carry upward, and no rewording reaches a model that answers unaided.
 - **A skill MAY decline automatic discovery** with `disable-model-invocation`, staying reachable by command. Over half the skills in two maintained collections do.
 
 Example (one instance, not the set):
