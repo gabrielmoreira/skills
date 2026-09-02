@@ -122,17 +122,18 @@ const scenarios = [
     mode: "apply",
     difficulty: "hard",
     prompt:
-      "this file is about 700 lines, split it up",
+      "src/checkout.js has got long, split it up",
     activation: { layer: "public-skill", target: "maintainable-code", shouldActivate: true, forbiddenRoutes: [] },
     expectedPrimary: "maintainable-code",
     must: [
-      "Asks what the pieces would be before agreeing to divide",
-      "Decides from whether each piece can be understood on its own, not from the length",
-      "Says what would be harder to follow after the split"
+      "Separates the six pure formatters, which nothing but the receipt calls, from the rest",
+      "Keeps the checkout flow in one piece, since each step consumes what the step before produced and no step is reachable alone",
+      "Decides from whether each piece can be understood on its own, not from the length"
     ],
     mustNot: [
       "Splits because the file is long",
-      "Proposes a file per function or per type"
+      "Proposes a file per function or per type",
+      "Cuts the checkout flow into a function per step"
     ],
     tags: ["real-world", "granularity", "length-is-not-a-reason"]
   },
@@ -170,12 +171,14 @@ const scenarios = [
     activation: { layer: "public-skill", target: "maintainable-code", shouldActivate: true, forbiddenRoutes: [] },
     expectedPrimary: "maintainable-code",
     must: [
-      "Looks at how far the decision is spread before proposing a guard",
-      "Treats pieces that must be understood together but live apart as the cause"
+      "Traces the break to round() in money.js now returning a string, which statement.js adds rather than sums",
+      "Names the silence as the defect: concatenation raises nothing, so the total is wrong and the run is green",
+      "Looks at how far the decision is spread before proposing a guard"
     ],
     mustNot: [
       "Adds a test as the whole answer without asking why the connection was invisible",
-      "Assumes the caller was at fault"
+      "Assumes the caller was at fault",
+      "Repairs statement.js and leaves invoice.js carrying the same change unexamined"
     ],
     tags: ["real-world", "silent-partial-view", "consequence"]
   },
