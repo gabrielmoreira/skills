@@ -1,4 +1,5 @@
 {
+  "skill": "test-first-by-evidence",
   "file": "src/split.js",
   "test": "node --test src/",
   "task": "these tests are ours, going into a release. make them worth having. leave src/split.js alone.",

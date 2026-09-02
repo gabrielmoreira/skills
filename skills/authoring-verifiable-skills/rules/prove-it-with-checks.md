@@ -38,6 +38,7 @@ Avoid:
 - **Believing a metric written to score the rewrite it is scoring.**
 
 Exceptions:
+- **An outcome case instructs where an activation scenario asks**, since an answer leaves nothing to score. C-14 still binds, and a paraphrase defeats it: the script catches names and stated verdicts, a restated decision is read by a person.
 - **A measurement MAY be corrected when it measures the wrong thing.** A line ceiling that counts frontmatter scores a formatting choice rather than the document, and fixing that is not loosening.
 
 Example (one instance, not the set):

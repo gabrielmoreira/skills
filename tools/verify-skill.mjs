@@ -818,9 +818,58 @@ async function verify(skillDir) {
           if (/\brules\//.test(lower)) bad.push(`${s.id}: prompt cites a rule path`);
         }
       }
+      // Outcome cases live outside the skill, in evals/outcomes, and nothing
+      // was reading them. Their tasks give the answer away differently: not by
+      // naming the skill, but by stating its thesis. Measured: a task reading
+      // "these tests all pass and i still do not trust them" produced a perfect
+      // score in both arms, because an agent told the tests cannot be trusted
+      // does not need the skill to say so.
+      //
+      // So the check is vocabulary, not names. A task that reuses the
+      // distinctive words of a rule's own Decision line is handing over the
+      // decision the rule exists to make.
+      const outcomes = resolve("evals/outcomes");
+      if (await exists(outcomes)) {
+        // What a script can actually catch here is narrow, and saying so is
+        // part of the check. A first attempt compared the task's vocabulary
+        // against each rule's Decision line and did not fire on the very task
+        // that prompted it: "these tests all pass and i still do not trust
+        // them" shares no content word with "a test asserts what a caller can
+        // observe". A paraphrase defeats word overlap, and that is a judgement
+        // no invariant makes.
+        //
+        // The mechanical half is the shape the failure actually took: the task
+        // handed over the author's verdict on the fixture. An outcome task
+        // states the job. The moment it also states what is wrong with what is
+        // there, the agent no longer has to notice.
+        const VERDICT = [
+          // Adverbs sit between the pronoun and the verb ("i still do not
+          // trust"), which an adjacent-words pattern misses. Measured: the
+          // first version of this line did not fire on the task that prompted
+          // the whole check.
+          /\b(?:i|we)\b[^.]{0,24}?\b(?:do\s*not|don't|dont|never|cannot|can't)\s+trust\b/i,
+          /\bnot\s+worth\s+having\b/i,
+          /\b(?:these|the|those)\s+\w+\s+(?:are|look|feel)\s+(?:bad|wrong|useless|weak|hollow|pointless|worthless)\b/i,
+          /\b(?:they|these|it)\s+(?:catch|prove|detect|test)\s+nothing\b/i,
+          /\bpass(?:es|ing)?\s+(?:but|and)\s+(?:still\s+)?(?:prove|detect|catch|mean)s?\s+nothing\b/i,
+          /\bfake\s+(?:tests?|coverage)\b/i,
+        ];
+        for (const dir of await readdir(outcomes)) {
+          let spec;
+          try { spec = JSON.parse(await readFile(join(outcomes, dir, "case.json"), "utf8")); } catch { continue; }
+          if (spec.skill !== NAME) continue;
+          checked++;
+          const task = String(spec.task ?? "");
+          const lower = task.toLowerCase();
+          for (const g of giveaways) if (lower.includes(g)) bad.push(`outcomes/${dir}: task contains "${g}"`);
+          for (const re of VERDICT) {
+            if (re.test(task)) { bad.push(`outcomes/${dir}: task states the author's verdict on the fixture, which is the finding the skill is meant to reach`); break; }
+          }
+        }
+      }
       bad.length
         ? fail("C-14 no scenario prompt gives away its answer", [...new Set(bad)].join("\n        "))
-        : pass("C-14 no scenario prompt gives away its answer", `${checked} prompts`);
+        : pass("C-14 no scenario prompt gives away its answer", `${checked} prompts and tasks`);
     }
   }
 
