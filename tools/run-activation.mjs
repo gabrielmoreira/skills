@@ -693,6 +693,9 @@ async function loadSkill(dir) {
   try {
     for (const f of await readdir(join(dir, "rules"))) if (f.endsWith(".md")) paths.push(`rules/${f}`);
   } catch {}
+  // A skill with something underneath can be looked at and declined. A flat one
+  // cannot: reading its entry is the whole of using it. The negative verdict
+  // below asks a different question of each, and this is what tells them apart.
   for (const d of await readdir(dir, { withFileTypes: true })) {
     if (!d.isDirectory() || ["evals", "references", "rules", "node_modules"].includes(d.name)) continue;
     try {
@@ -730,6 +733,7 @@ casesFor.skipped = [];
 function casesFor(skill, args) {
   const out = [];
   const ungradeable = [];
+  const answerGraded = [];
   for (const s of skill.scenarios) {
     if (typeof s.prompt !== "string") continue;
     if (args.set && args.set !== "all" && setFor(s) !== args.set) continue;
@@ -738,6 +742,11 @@ function casesFor(skill, args) {
     // sharper conclusion, only a slower one.
     if (args.rules_.length && !args.rules_.includes(s.rule)) continue;
     if (args.ids.length && !args.ids.includes(s.id)) continue;
+    // Graded on what was said, not on what was opened. A skill whose
+    // description instructs an unconditional read cannot have a read-based
+    // negative: the verdict would be decided before the scenario ran. Counted
+    // and reported, never failed here.
+    if (s.gradeOn === "answer") { answerGraded.push(`${skill.name}/${s.id}`); continue; }
 
     // The agentic backend sends the developer's message unchanged. Wrapping it
     // in a question about file paths would replace the thing being measured.
@@ -771,6 +780,7 @@ function casesFor(skill, args) {
       out.push({ kind: "activation", arm: "gated", skill: skill.name, id: s.id, scenario: s, system: ACTIVATION_SYSTEM, user: activationPrompt(skill.name, skill.description, s.prompt) });
     }
   }
+  if (answerGraded.length) console.log(`  ${answerGraded.length} scenario(s) graded on the answer, not here: ${answerGraded.join(", ")}`);
   if (ungradeable.length) casesFor.skipped.push(...ungradeable);
   return out;
 }
@@ -870,7 +880,9 @@ async function main(modelOverride) {
   } else {
     for (const dir of dirs) {
       const skill = await loadSkill(dir);
-      if (skill) cases.push(...casesFor(skill, args));
+      // The shape travels with the case: a negative for a skill with rules
+      // beneath it asks a different question from one for a flat skill.
+      if (skill) cases.push(...casesFor(skill, args).map((c) => ({ ...c, skillPaths: skill.paths })));
     }
   }
   // Only a positive can show the gap; a negative passes for free in the arm
@@ -879,6 +891,13 @@ async function main(modelOverride) {
   // goes first. The sort is stable, which keeps each scenario's two arms
   // adjacent: a positive with no control arm would measure nothing.
   const isNegative = (c) => c.scenario?.activation?.shouldActivate === false || c.scenario?.mode === "bypass";
+  // Whether this skill has anything beneath its entry, decided once from the
+  // paths loadSkill found rather than re-read per sample.
+  const deep = new Map();
+  for (const c of cases) {
+    if (deep.has(c.skill)) continue;
+    deep.set(c.skill, (c.skillPaths ?? []).some((x) => x.includes("/") ));
+  }
   cases.sort((a, b) => Number(isNegative(a)) - Number(isNegative(b)));
   // A negative run needs only the arm that has the skills to open: the other
   // arm has nothing to fire and would pass for free, at full price.
@@ -1022,8 +1041,25 @@ async function main(modelOverride) {
         seq ??= seen.seq.slice(0, 12).map((s) => redact(`${s.tool} ${s.path}`, roots));
         const want = c.scenario.activation?.shouldActivate === false;
         const graded = gradeObserved(seen, c.scenario, c.skill);
-        // A negative scenario passes by the skill staying shut.
-        if (want ? !graded.opened : graded.pass) passes++;
+        // A negative scenario passes by the skill not taking the work.
+        //
+        // It used to pass only by the entry file never being read, and that is
+        // a stricter question than any scenario asks. Establishing that a skill
+        // does not apply requires reading enough of it, and one scenario here
+        // carries must: "Answers the question on its merits without opening a
+        // rule" against an agent that opened no rule: by its own criterion it
+        // passed, and the runner failed it anyway.
+        //
+        // Measured over 57 portable negatives: 9 read an entry, 3 went on to
+        // open a rule. Only the second is a skill taking work that is not its
+        // own, and the two numbers were being reported as one.
+        //
+        // Which question applies depends on shape. A skill with rules beneath
+        // it can be opened, judged and declined, so entering is the failure. A
+        // flat skill has nothing underneath, so reading it is the whole of
+        // using it and the old rule still holds.
+        const tookIt = deep.get(c.skill) ? seen.rules.length > 0 : graded.opened;
+        if (want ? !tookIt : graded.pass) passes++;
         answers.push(redact(JSON.stringify({ skills: seen.skills, rules: seen.rules }), roots));
         continue;
       }

@@ -60,7 +60,14 @@ const scenarios = [
     tags: ["activation", "positive", "ceremony"],
   },
 
-  // ---------------------------------------------------------------- negative
+  // ----------------------------------------- negative, graded on the answer
+  //
+  // This skill's description instructs that it be read at the start of every
+  // session, so "was it opened" is settled before the scenario begins and a
+  // read-based verdict can only ever fail. What can still fail is answering
+  // for the skill that owns the work, which is a judgement about the reply.
+  // gradeOn: "answer" says so, and the observed runner reports these as graded
+  // elsewhere rather than failing them for an instructed read.
   {
     id: "just-do-the-work",
     bundle: "using-gabrielmoreira-skills",
@@ -69,6 +76,7 @@ const scenarios = [
     mode: "exception",
     skillMode: "none",
     difficulty: "hard",
+    gradeOn: "answer",
     prompt: "add a retry with backoff to the payment client, three attempts is enough",
     nearMiss:
       "Ordinary work that several skills in this collection do claim, so a router that answers it would be answering for them; the request names no placement, no precedence and no default, so there is nothing here to resolve.",
@@ -85,6 +93,7 @@ const scenarios = [
     mode: "exception",
     skillMode: "none",
     difficulty: "hard",
+    gradeOn: "answer",
     prompt: "i want to add a new skill to this collection, what shape does it need",
     nearMiss:
       "About the collection itself, which sounds like this file's subject; but shape, anatomy and checks belong to the authoring skill, and this one holds preferences rather than conventions.",
