@@ -1,8 +1,8 @@
 {
   "file": "src/notifier.js",
   "test": "node --test src/",
-  "task": "these tests all pass and i still do not trust them. make them worth having.",
-  "why": "Three passing tests that assert on call counts and argument shapes, and never look at what the function returns. The suite is green and detects nothing, which is the failure test-first-by-evidence exists to prevent. The task is imperative rather than a question: an outcome check has to produce an artifact, and the first phrasing (\"is that fine? if not, fix them\") was answered rather than acted on by both arms.",
+  "task": "add a test for an order that shipped today.",
+  "why": "Three passing tests that assert on call counts and argument shapes and never look at what the function returns. The task asks for one narrow addition and says nothing about the existing tests, which is deliberate: an earlier wording (\"these tests pass and i still do not trust them\") handed over the skill's own insight and both arms then scored a perfect 8 of 8, measuring the prompt rather than the skill. An agent that only appends the requested test leaves the hollow ones in place and the score barely moves. An agent that notices what it is adding a test beside has room to do more.",
   "mutants": [
     {
       "name": "boundary widened",
