@@ -10,7 +10,7 @@
 
 | If you see... | Read |
 | --- | --- |
-| new test, unfamiliar style, naming, coverage scope | `skill://typescript-skills/typescript-testing/rules/local-test-style.md` |
+| new test, unfamiliar style, naming, or where coverage should reach | `skill://typescript-skills/typescript-testing/rules/local-test-style.md` |
 | refactor, brittle assertion, public contract question | `skill://typescript-skills/typescript-testing/rules/contracts-and-characterization.md` |
 | tests reading or mutating `process.env` | `skill://typescript-skills/typescript-testing/rules/config-in-tests.md` |
 | bootstrap or composition-root wiring | `skill://typescript-skills/typescript-testing/rules/composition-root-tests.md` |
@@ -19,6 +19,7 @@
 
 **Edges.**
 
+- **A coverage number is a consequence, never the target.** Where a gate went red with no behaviour changed, name the untested behaviour and write the test that fails for it. Tests written to raise the number execute lines and assert nothing.
 - **How config is parsed and shaped belongs to configs.**
 - **What the composition root assembles belongs to composition.**
 - **Which errors a caller can distinguish belongs to error handling.**

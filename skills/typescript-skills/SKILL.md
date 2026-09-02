@@ -35,15 +35,15 @@ description: >-
 
 | If the task involves... | Read this topic index |
 | --- | --- |
-| a value that may be absent, or `any`, `unknown` and casts standing in for a type; a `switch` over a union with no exhaustive check; an abstraction, class or generic added before its second caller; an old shape and its cutover kept side by side | `skill://typescript-skills/typescript-coding-standards/INDEX.md` |
+| a value that may be absent, or `any`, `unknown` and casts standing in for a type; a `switch` over a union with no exhaustive check; an abstraction, class or generic added before its second caller; a long function somebody wants split, or mixed levels inside one; a name that will not settle, for a class, an error or a field; an old shape and its cutover kept side by side | `skill://typescript-skills/typescript-coding-standards/INDEX.md` |
 | an SDK, provider or generated type reaching business logic; an `API` request or response shape used as a domain type; a mapper, transform or translator standing between them | `skill://typescript-skills/typescript-boundaries/INDEX.md` |
 | a dependency constructed where it is used rather than passed in; a factory or singleton picked at runtime; a connect, warm or close step in a lifecycle nobody owns | `skill://typescript-skills/typescript-composition/INDEX.md` |
-| `process.env` read outside startup; a config value parsed, defaulted or exposed with no type; a feature flag or a config migration mid-flight | `skill://typescript-skills/typescript-configs/INDEX.md` |
-| a branch taken with no logging or tracing behind it; a log line naming what happened but not what to do about it | `skill://typescript-skills/typescript-observability/INDEX.md` |
-| a secret, credential or token in a literal, a log or a config default; redaction running after the value was already written; a crypto choice made by habit | `skill://typescript-skills/typescript-security/INDEX.md` |
-| a test asserting on mock calls rather than on behaviour; a boundary contract no test pins; a refactor starting with no characterization test | `skill://typescript-skills/typescript-testing/INDEX.md` |
+| `process.env` read outside startup; a config value parsed, defaulted or exposed with no type; one config object every process loads, where only one of them needs the value; a feature flag or a config migration mid-flight | `skill://typescript-skills/typescript-configs/INDEX.md` |
+| a branch taken with no logging or tracing behind it; a log line naming what happened but not what to do about it. What a log line carries, rather than whether it exists, is security | `skill://typescript-skills/typescript-observability/INDEX.md` |
+| a secret, credential or token in a literal, a log or a config default; a log or debug line printing a header, a payload or a whole request; redaction running after the value was already written; a crypto choice made by habit | `skill://typescript-skills/typescript-security/INDEX.md` |
+| a test asserting on mock calls rather than on behaviour; a boundary contract no test pins; a coverage number or gate that moved; a refactor starting with no characterization test | `skill://typescript-skills/typescript-testing/INDEX.md` |
 | a `throw` where a result type was meant, or the reverse; an error crossing a boundary with its retryability unstated; a `catch` swallowing the cause | `skill://typescript-skills/typescript-error-handling/INDEX.md` |
-| `Promise.all`, sequential awaits, an unawaited promise, bounded concurrency, `AbortSignal` cleanup, retry and backoff, `SIGTERM` shutdown | `skill://typescript-skills/typescript-async/INDEX.md` |
+| `Promise.all`, sequential awaits, an unawaited promise, bounded concurrency, cleanup in a `finally` or a `using`, work still running after the response, `AbortSignal` cleanup, retry and backoff, `SIGTERM` shutdown | `skill://typescript-skills/typescript-async/INDEX.md` |
 
 **Default stance.**
 

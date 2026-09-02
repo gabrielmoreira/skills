@@ -19,16 +19,23 @@
 - **Imports against cutovers.** Imports own whether the dependency list is true today. Cutovers owns how long an old path is allowed to remain.
 - **Generics against exhaustive narrowing.** Generics keep one shape flowing through. Exhaustive narrowing handles several shapes that must each be answered.
 
+**How the code is shaped.**
+
 | If you see... | Read |
 | --- | --- |
 | wrapper, base class, manager, shared helper, premature abstraction | `skill://typescript-skills/typescript-coding-standards/rules/abstraction-and-local-reasoning.md` |
 | function-versus-class question | `skill://typescript-skills/typescript-coding-standards/rules/functions-vs-classes.md` |
 | confusing name or hidden semantic center | `skill://typescript-skills/typescript-coding-standards/rules/naming-and-semantic-center.md` |
 | old and new implementations coexisting | `skill://typescript-skills/typescript-coding-standards/rules/cutovers.md` |
-| assertion, non-null assertion, forced type, suppression | `skill://typescript-skills/typescript-coding-standards/rules/type-narrowing-over-assertion.md` |
-| nullish coalescing against logical or, optional chaining, possibly-undefined, an optional field | `skill://typescript-skills/typescript-coding-standards/rules/absence-and-defaults.md` |
 | unused import, unresolved module, missing export, `require` in an ESM file, deep package path | `skill://typescript-skills/typescript-coding-standards/rules/imports-and-module-graph.md` |
 | long function, mixed abstraction levels, extraction question | `skill://typescript-skills/typescript-coding-standards/rules/vertical-discipline.md` |
+
+**What a value is, and what the type says about it.**
+
+| If you see... | Read |
+| --- | --- |
+| assertion, non-null assertion, forced type, suppression | `skill://typescript-skills/typescript-coding-standards/rules/type-narrowing-over-assertion.md` |
+| nullish coalescing against logical or, optional chaining, possibly-undefined, an optional field | `skill://typescript-skills/typescript-coding-standards/rules/absence-and-defaults.md` |
 | same-shape domain primitives or validated values | `skill://typescript-skills/typescript-coding-standards/rules/branded-and-opaque-types.md` |
 | discriminated union completeness | `skill://typescript-skills/typescript-coding-standards/rules/exhaustive-narrowing.md` |
 | generic, conditional, or mapped type question | `skill://typescript-skills/typescript-coding-standards/rules/generics-and-conditional-types.md` |

@@ -19,6 +19,7 @@ Use when:
 
 Do:
 - **Name the production change that would break this test, before writing it.** If nothing comes to mind, the test asserts nothing.
+- **Where a coverage number is what moved, name the untested behaviour and write the test that fails for it.** The number is a consequence. Tests written to raise it execute lines and assert nothing, which is this rule's failure with a green badge on it.
 - **Assert on results, not on interactions.** The returned value, the row written, the message published, the error raised.
 - **Prefer the real implementation.** Mock only what is slow, remote, non-deterministic, or destructive.
 - **Understand a dependency's side effects before replacing it.** A mock that behaves differently from the real thing tests a system nobody ships.
