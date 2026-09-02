@@ -60,6 +60,61 @@ writeFileSync(join(target, MARKER), "built by tools/fold-variant.mjs; safe to de
 cpSync("skills", OUT, { recursive: true });
 
 const dir = join(OUT, SKILL);
+
+/**
+ * One index, and the rules directory beside it, folded together.
+ *
+ * Returns what it absorbed so the caller can report a total across a tree.
+ */
+function foldInto(indexPath, rulesDir) {
+  let body = readFileSync(indexPath, "utf8");
+  const nl2 = body.includes("\r\n") ? "\r\n" : "\n";
+  body = body.split("\r\n").join("\n");
+  const rules = readdirSync(rulesDir).filter((f) => f.endsWith(".md")).sort();
+  const parts = [];
+  let folded = 0, tokens = 0;
+  for (const f of rules) {
+    const rawRule = readFileSync(join(rulesDir, f), "utf8").split("\r\n").join("\n");
+    const text = rawRule.replace(/^---\n[\s\S]*?\n---\n/, "").trim();
+    const name = f.replace(/\.md$/, "");
+    const shifted = text.replace(/^(#{1,5})\s/gm, (_, h) => `${h}## `.slice(0, h.length + 2) + " ").replace(/^#+ /m, "");
+    parts.push(`\n## ${name}\n\n${shifted.replace(/^#\s/gm, "### ")}\n`);
+    folded++;
+    tokens += Math.round(text.length / 4);
+  }
+  // A route may name the rule from the skill root or from beside the index, and
+  // both become a section of this file.
+  body = body.replace(/`(?:skill:\/\/[a-z0-9/-]*?\/)?rules\/([a-z0-9-]+)\.md`/g, (_, n) => `the **${n}** section below`);
+  body += `\n\n---\n\n# Rules\n${parts.join("")}`;
+  writeFileSync(indexPath, body.split("\n").join(nl2));
+  rmSync(rulesDir, { recursive: true, force: true });
+  return { folded, tokens, after: Math.round(body.length / 4) };
+}
+
+// A three-level tree keeps its rules inside each topic, so that is where the
+// fold happens. Detected rather than declared: a topic is a directory with an
+// INDEX.md and a rules/ beside it.
+const topics = existsSync(dir)
+  ? readdirSync(dir, { withFileTypes: true })
+      .filter((d) => d.isDirectory() && existsSync(join(dir, d.name, "INDEX.md")) && existsSync(join(dir, d.name, "rules")))
+      .map((d) => d.name)
+  : [];
+
+if (topics.length) {
+  let totalRules = 0, totalTokens = 0;
+  for (const t of topics) {
+    const r = foldInto(join(dir, t, "INDEX.md"), join(dir, t, "rules"));
+    totalRules += r.folded;
+    totalTokens += r.tokens;
+    console.log(`  ${t}: ${r.folded} rules folded, index now ${r.after} tokens`);
+  }
+  console.log(`\nfolded ${totalRules} rules into ${topics.length} topic indexes of ${SKILL}`);
+  console.log(`  ${totalTokens} tokens of rules absorbed; the third hop is gone`);
+  console.log(`\nrun the other arm with:`);
+  console.log(`  SKILL_COLLECTION_ROOT=${OUT} node tools/run-activation.mjs --skill ${SKILL} ...`);
+  process.exit(0);
+}
+
 const rulesDir = join(dir, "rules");
 if (!existsSync(rulesDir)) { console.error(`${SKILL} has no rules to fold`); process.exit(2); }
 
