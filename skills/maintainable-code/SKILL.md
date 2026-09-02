@@ -32,7 +32,7 @@ description: >-
 
 ## Which section applies
 
-**Read every row, then act on the matches, hardest to undo first.** Ten sections follow and a task rarely wants more than two. The sections are already loaded, so reaching one costs nothing — skimming all ten and landing nowhere is what costs.
+**Read every row, then act on the matches, hardest to undo first.** Ten sections follow and a task rarely wants more than two. The sections are already loaded, so reaching one costs nothing, skimming all ten and landing nowhere is what costs.
 
 - **Sections 1 and 2 come before the rest.** Investigate, then prove the unknown; structure chosen with a question still open is a guess in the costume of design.
 - **Sections 3 to 10 are concerns, not steps.** Their numbers order the page, not the work.

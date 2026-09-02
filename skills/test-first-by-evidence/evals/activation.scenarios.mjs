@@ -225,7 +225,7 @@ const scenarios = [
     tier: "P1",
     mode: "apply",
     difficulty: "hard",
-    prompt: "signup broke for a customer yesterday, we patched it directly in code this morning without a failing test first, what test-first step do we take now to add the regression guard",
+    prompt: "signup broke for a customer yesterday, we patched it directly in code this morning and it works now, how do we add the regression guard",
     expectedPrimary: "rules/bug-fix-starts-red.md",
     expectedAll: ["rules/bug-fix-starts-red.md", "rules/code-written-first.md"],
     expectedSecondary: [],

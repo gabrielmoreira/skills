@@ -7,10 +7,12 @@ description: >-
   tests prove what they claim, broken contracts and callers outside this
   repository, and stale docs. Every finding at file:line, and it never edits. Use
   when the user says "review this", "check this before I commit", "does this hold
-  up", or hands over a branch before opening it — always about code that
+  up", or hands over a branch before opening it, always about code that
   changed. Not for prose with no diff behind it, explaining code, formatting-only
   passes, running the linter or tests, writing the commit message or changelog for
-  a change, or responding to a review of your own work.
+  a change, responding to a review of your own work, or a change whose author
+  is asking how to add the test that was never written, which is a test-first
+  decision rather than a review.
 ---
 
 # Evidence-Backed Review
@@ -64,22 +66,22 @@ description: >-
 
 | If you see... | and the belief that is usually wrong | Read |
 | --- | --- | --- |
-| the request is **"before I commit"** / "check this first"; nothing pushed, tree dirty or staged | that `git diff` shows the change — the staged half is invisible to it | `rules/pre-commit-self-review.md` |
-| **any hunk** changing a condition, a bound, an assignment, or an error path; lines deleted or replaced | that reading the new line tells you what changed — the deleted one carried the case you are about to lose | `rules/correctness-in-the-diff.md` |
-| one diff both **restructures and adds behaviour**; unrelated files, or ~1000 changed lines in one change | that a large diff reviewed carefully is reviewed — the move hides the edit inside it | `rules/scope-and-slicing.md` |
-| a **changed exported signature**, route, schema, event payload, config key, or a removed field | that the caller ships with you — it deploys on its own schedule and to its own version | `rules/contracts-and-consumers.md` |
-| a **`README`, doc page, example, comment**, or instruction file still describing behaviour this diff changed | that documentation drifts harmlessly — the next reader follows it against the new code | `rules/docs-and-skills-freshness.md` |
-| **callers of that changed contract** outside this package, or feature-specific logic landing in a shared module | that the repository shows you the callers — the ones that matter are in another repository | `rules/dependent-teams.md` |
+| the request is **"before I commit"** / "check this first"; nothing pushed, tree dirty or staged | that `git diff` shows the change, the staged half is invisible to it | `rules/pre-commit-self-review.md` |
+| **any hunk** changing a condition, a bound, an assignment, or an error path; lines deleted or replaced | that reading the new line tells you what changed, the deleted one carried the case you are about to lose | `rules/correctness-in-the-diff.md` |
+| one diff both **restructures and adds behaviour**; unrelated files, or ~1000 changed lines in one change | that a large diff reviewed carefully is reviewed, the move hides the edit inside it | `rules/scope-and-slicing.md` |
+| a **changed exported signature**, route, schema, event payload, config key, or a removed field | that the caller ships with you, it deploys on its own schedule and to its own version | `rules/contracts-and-consumers.md` |
+| a **`README`, doc page, example, comment**, or instruction file still describing behaviour this diff changed | that documentation drifts harmlessly, the next reader follows it against the new code | `rules/docs-and-skills-freshness.md` |
+| **callers of that changed contract** outside this package, or feature-specific logic landing in a shared module | that the repository shows you the callers, the ones that matter are in another repository | `rules/dependent-teams.md` |
 
 
 ## What you have not established
 
 **Nothing in a diff announces an absence**, so no gate fires on these and none is in the table. Each states something about you rather than the code, and only looking discharges it. Report each by name, checked or not.
 
-- **You have not established whether the pipeline runs what this change now needs** — a green check you did not open is not evidence → `rules/execution-and-pipeline.md`
+- **You have not established whether the pipeline runs what this change now needs**, a green check you did not open is not evidence → `rules/execution-and-pipeline.md`
 - **You have not established that the written standard says what you assume** → `rules/standards-conformance.md`, **nor that a quoted requirement has matching code, or this code any requirement** → `rules/spec-conformance.md`
-- **You have not established that this change was asked for** — a capability nobody requested arrives looking like diligence → `rules/motivation-and-necessity.md`
-- **You have not established which security question this repository never answers** → `rules/security-and-abuse-paths.md` — absence of a finding is not absence of a path — **nor what another team documents about this surface** → `rules/external-sources.md`
+- **You have not established that this change was asked for**, a capability nobody requested arrives looking like diligence → `rules/motivation-and-necessity.md`
+- **You have not established which security question this repository never answers** → `rules/security-and-abuse-paths.md`, absence of a finding is not absence of a path, **nor what another team documents about this surface** → `rules/external-sources.md`
 
 **Discriminators.**
 

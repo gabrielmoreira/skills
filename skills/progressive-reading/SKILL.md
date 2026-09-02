@@ -77,5 +77,5 @@ description: >-
 - **The useful answer comes first.**
 - **It can be scanned.**
 - **It is technically complete.**
-- **It reads as continuous prose where the reasoning is continuous.** Not "it reads naturally" — that is unfalsifiable, and next to a scannability check that is concrete it always loses. Point at the sentences that carry the argument between paragraphs.
+- **It reads as continuous prose where the reasoning is continuous.** Not "it reads naturally", that is unfalsifiable, and next to a scannability check that is concrete it always loses. Point at the sentences that carry the argument between paragraphs.
 - **Nothing in it is unsupported.**

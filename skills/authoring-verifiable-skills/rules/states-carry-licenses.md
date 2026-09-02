@@ -21,7 +21,7 @@ Do:
 - **Name the state as the past participle of what plainly happened.** `RED`, `EXPLAINED`, `CLEARED`, `BUDGET SPENT`. A reader should not need the Means column to know which one they are in.
 - **Make the terminal state a result.** `HANDED BACK` and `BUDGET SPENT` end the work honestly; a table whose only exit is success teaches the reader to keep going.
 - **Say that the state is announced before each step.** A slide past a boundary is silent; an announcement is not, and that asymmetry is what the table buys.
-- **Prefix the state with the skill, read as a path: `debug/RED`, `tdd/RED`.** Bare names collide across a collection, and the pairs that collide are the ones that run together — debugging a failing test, hitting a blocker mid-investigation. "I am in `EXPLAINED`" then names two licences at once.
+- **Prefix the state with the skill, read as a path: `debug/RED`, `tdd/RED`.** Bare names collide across a collection, and the pairs that collide are the ones that run together, debugging a failing test, hitting a blocker mid-investigation. "I am in `EXPLAINED`" then names two licences at once.
 - **Let the phases come from the sections the skill already has.** If they do not exist there, the skill has no phases and this is not its pattern.
 
 Avoid:
