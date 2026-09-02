@@ -1,16 +1,48 @@
 {
   "file": "src/split.js",
   "test": "node --test src/",
-  "task": "these tests are ours, going into a release. make them worth having.",
-  "why": "The control. The other two cases start from tests that catch almost nothing, so an arm that improves them looks good however it got there. This one starts from tests that already catch everything, under the identical task wording, and the correct outcome is that both arms leave the score where it is. If the arm with the skills raises a score that cannot be raised, or lowers one by rewriting working tests, the instrument is measuring effort rather than quality and the other two numbers cannot be trusted.",
+  "task": "these tests are ours, going into a release. make them worth having. leave src/split.js alone.",
+  "why": "The control. The other two cases start from tests that catch almost nothing, so an arm that improves them looks good however it got there. This one starts from tests that already catch everything, under the identical task wording, and the correct outcome is that both arms leave the score where it is. If the arm with the skills raises a score that cannot be raised, or lowers one by rewriting working tests, the instrument is measuring effort rather than quality and the other two numbers cannot be trusted. The task names the implementation as off limits because the first run of it had all four arms refactor src/split.js instead, which voids every mutant: they are literal substitutions into that exact source. What is being measured here is the tests, so the source is fixed by the task rather than left to chance.",
   "mutants": [
-    { "name": "guard loosened",       "from": "ways < 1",                          "to": "ways < 0" },
-    { "name": "rounding flipped",     "from": "Math.floor",                        "to": "Math.ceil" },
-    { "name": "remainder off-by-one", "from": "i < remainder",                     "to": "i <= remainder" },
-    { "name": "remainder dropped",    "from": "base + (i < remainder ? 1 : 0)",    "to": "base" },
-    { "name": "remainder miscounted", "from": "totalCents - base * ways",          "to": "totalCents" },
-    { "name": "share count wrong",    "from": "length: ways",                      "to": "length: ways + 1" },
-    { "name": "two cents not one",    "from": "? 1 : 0",                           "to": "? 2 : 0" },
-    { "name": "division inverted",    "from": "totalCents / ways",                 "to": "ways / totalCents" }
+    {
+      "name": "guard loosened",
+      "from": "ways < 1",
+      "to": "ways < 0"
+    },
+    {
+      "name": "rounding flipped",
+      "from": "Math.floor",
+      "to": "Math.ceil"
+    },
+    {
+      "name": "remainder off-by-one",
+      "from": "i < remainder",
+      "to": "i <= remainder"
+    },
+    {
+      "name": "remainder dropped",
+      "from": "base + (i < remainder ? 1 : 0)",
+      "to": "base"
+    },
+    {
+      "name": "remainder miscounted",
+      "from": "totalCents - base * ways",
+      "to": "totalCents"
+    },
+    {
+      "name": "share count wrong",
+      "from": "length: ways",
+      "to": "length: ways + 1"
+    },
+    {
+      "name": "two cents not one",
+      "from": "? 1 : 0",
+      "to": "? 2 : 0"
+    },
+    {
+      "name": "division inverted",
+      "from": "totalCents / ways",
+      "to": "ways / totalCents"
+    }
   ]
 }
