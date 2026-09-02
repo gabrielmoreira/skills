@@ -1,17 +1,53 @@
 {
   "file": "src/pricing.js",
   "test": "node --test src/",
-  "task": "our coverage number dropped after this went in, can you take a look",
-  "why": "One test covering one of priceFor's four branches, and shippingFor with nothing at all. The shape is the opposite of assertions-on-mock-calls: not many decorative tests, but one real test and a lot untouched. A run that chases the coverage number will add tests that execute lines; a run that follows the skill will add tests that would fail if the arithmetic changed.",
+  "task": "coverage dropped below our gate when this went in. sort it out.",
+  "why": "One test covering one of priceFor's four branches, and shippingFor with nothing at all. Phrased as a demand to act without saying how, because how is the thing being measured: an agent chasing the number writes tests that execute lines, and an agent following the skill writes tests that fail when the arithmetic changes. Only the second moves the mutation score.",
   "mutants": [
-    { "name": "gold discount",      "from": "price *= 0.8",                  "to": "price *= 0.85" },
-    { "name": "silver discount",    "from": "price *= 0.9",                  "to": "price *= 0.95" },
-    { "name": "clearance halving",  "from": "price *= 0.5",                  "to": "price *= 0.6" },
-    { "name": "eu uplift",          "from": "price *= 1.2",                  "to": "price *= 1.3" },
-    { "name": "rounding dropped",   "from": "Math.round(price * 100) / 100", "to": "price" },
-    { "name": "light-parcel cutoff","from": "weightKg < 1",                  "to": "weightKg < 2" },
-    { "name": "domestic per-kg",    "from": "4 + weightKg * 1.5",            "to": "4 + weightKg * 2" },
-    { "name": "eu base rate",       "from": "9 + weightKg * 2",              "to": "10 + weightKg * 2" },
-    { "name": "rest-of-world base", "from": "14 + weightKg * 3",             "to": "15 + weightKg * 3" }
+    {
+      "name": "gold discount",
+      "from": "price *= 0.8",
+      "to": "price *= 0.85"
+    },
+    {
+      "name": "silver discount",
+      "from": "price *= 0.9",
+      "to": "price *= 0.95"
+    },
+    {
+      "name": "clearance halving",
+      "from": "price *= 0.5",
+      "to": "price *= 0.6"
+    },
+    {
+      "name": "eu uplift",
+      "from": "price *= 1.2",
+      "to": "price *= 1.3"
+    },
+    {
+      "name": "rounding dropped",
+      "from": "Math.round(price * 100) / 100",
+      "to": "price"
+    },
+    {
+      "name": "light-parcel cutoff",
+      "from": "weightKg < 1",
+      "to": "weightKg < 2"
+    },
+    {
+      "name": "domestic per-kg",
+      "from": "4 + weightKg * 1.5",
+      "to": "4 + weightKg * 2"
+    },
+    {
+      "name": "eu base rate",
+      "from": "9 + weightKg * 2",
+      "to": "10 + weightKg * 2"
+    },
+    {
+      "name": "rest-of-world base",
+      "from": "14 + weightKg * 3",
+      "to": "15 + weightKg * 3"
+    }
   ]
 }

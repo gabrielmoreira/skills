@@ -1,16 +1,48 @@
 {
   "file": "src/notifier.js",
   "test": "node --test src/",
-  "task": "these tests all check that the mock got called with the right args, is that fine? if not, fix them",
-  "why": "Three passing tests that assert on call counts and argument shapes, and never look at what the function returns. The suite is green and detects nothing, which is the failure test-first-by-evidence exists to prevent.",
+  "task": "these tests all pass and i still do not trust them. make them worth having.",
+  "why": "Three passing tests that assert on call counts and argument shapes, and never look at what the function returns. The suite is green and detects nothing, which is the failure test-first-by-evidence exists to prevent. The task is imperative rather than a question: an outcome check has to produce an artifact, and the first phrasing (\"is that fine? if not, fix them\") was answered rather than acted on by both arms.",
   "mutants": [
-    { "name": "boundary widened",    "from": "days < 3",                            "to": "days < 1" },
-    { "name": "boundary off-by-one", "from": "days < 3",                            "to": "days <= 3" },
-    { "name": "rounding flipped",    "from": "Math.floor",                          "to": "Math.ceil" },
-    { "name": "early return lies",   "from": "{ sent: false, days }",               "to": "{ sent: true, days }" },
-    { "name": "late return lies",    "from": "{ sent: true, days }",                "to": "{ sent: false, days }" },
-    { "name": "days dropped",        "from": "return { sent: true, days };",        "to": "return { sent: true, days: 0 };" },
-    { "name": "recipient dropped",   "from": "to: order.email",                     "to": "to: \"\"" },
-    { "name": "body emptied",        "from": "body: `It has been ${days} days.`",   "to": "body: \"\"" }
+    {
+      "name": "boundary widened",
+      "from": "days < 3",
+      "to": "days < 1"
+    },
+    {
+      "name": "boundary off-by-one",
+      "from": "days < 3",
+      "to": "days <= 3"
+    },
+    {
+      "name": "rounding flipped",
+      "from": "Math.floor",
+      "to": "Math.ceil"
+    },
+    {
+      "name": "early return lies",
+      "from": "{ sent: false, days }",
+      "to": "{ sent: true, days }"
+    },
+    {
+      "name": "late return lies",
+      "from": "{ sent: true, days }",
+      "to": "{ sent: false, days }"
+    },
+    {
+      "name": "days dropped",
+      "from": "return { sent: true, days };",
+      "to": "return { sent: true, days: 0 };"
+    },
+    {
+      "name": "recipient dropped",
+      "from": "to: order.email",
+      "to": "to: \"\""
+    },
+    {
+      "name": "body emptied",
+      "from": "body: `It has been ${days} days.`",
+      "to": "body: \"\""
+    }
   ]
 }

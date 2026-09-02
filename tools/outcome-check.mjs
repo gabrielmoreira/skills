@@ -64,10 +64,18 @@ const args = {
  * entry is a real behaviour change, and the case author can say why each one
  * matters. Generated mutants would be more of them and less signal.
  */
-function score(workspace, spec) {
+function score(workspace, spec, pristine) {
   const target = join(workspace, spec.file);
   if (!existsSync(target)) return { died: 0, total: spec.mutants.length, absent: true };
   const orig = readFileSync(target, "utf8");
+  // The mutants are literal substitutions into this exact source. An agent that
+  // rewrote it has invalidated every one of them, and the run would report the
+  // missing patterns as survivors: a worse score for a file that may be better.
+  // Refused rather than scored, because a number nobody can interpret is worse
+  // than no number.
+  if (pristine !== undefined && orig !== pristine) {
+    return { died: 0, total: spec.mutants.length, rewritten: true };
+  }
   let died = 0;
   const survivors = [];
   for (const m of spec.mutants) {
@@ -89,8 +97,17 @@ function score(workspace, spec) {
  * a broken suite is the failure this whole repository keeps finding in itself.
  */
 function suiteIsGreen(workspace, spec) {
-  try { execSync(spec.test ?? "node --test", { cwd: workspace, stdio: "pipe", timeout: 120_000 }); return true; }
-  catch { return false; }
+  let out;
+  try { out = execSync(spec.test ?? "node --test", { cwd: workspace, stdio: "pipe", timeout: 120_000 }); }
+  catch { return { green: false, tests: 0 }; }
+  // Exit zero is not enough. Measured: a directory whose test file has been
+  // deleted exits zero, so an agent that removed the suite would be recorded
+  // as "green, caught 0 of 8", which is exactly the reading a bad rewrite
+  // gets. The runner reports how many tests it actually ran, and a run of
+  // nothing has to be told apart from a run that found nothing.
+  const m = String(out).match(/^.\s*tests (\d+)/m) ?? String(out).match(/# tests (\d+)/m);
+  const tests = m ? Number(m[1]) : 0;
+  return { green: true, tests };
 }
 
 /**
@@ -102,18 +119,29 @@ function suiteIsGreen(workspace, spec) {
  * task is phrased the way a developer asks, which invites an answer rather than
  * an edit, so "did anything change" has to be reported beside the score.
  */
-function fingerprint(dir) {
-  const h = createHash("sha1");
+function snapshot(dir) {
+  const files = new Map();
   const walk = (d, rel = "") => {
     for (const e of readdirSync(d, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
       if (e.name === "node_modules" || e.name.startsWith(".")) continue;
       const p = join(d, e.name);
       if (e.isDirectory()) walk(p, `${rel}${e.name}/`);
-      else h.update(`${rel}${e.name}:${readFileSync(p, "utf8")}`);
+      else files.set(`${rel}${e.name}`, readFileSync(p, "utf8"));
     }
   };
   walk(dir);
-  return h.digest("hex");
+  return files;
+}
+
+/** What the agent actually did to the tree, named rather than counted. */
+function changes(before, after) {
+  const touched = [], added = [], removed = [];
+  for (const [f, v] of after) {
+    if (!before.has(f)) added.push(f);
+    else if (before.get(f) !== v) touched.push(f);
+  }
+  for (const f of before.keys()) if (!after.has(f)) removed.push(f);
+  return { touched, added, removed, any: touched.length + added.length + removed.length > 0 };
 }
 
 // ----------------------------------------------------------------- the runs
@@ -175,12 +203,17 @@ console.log(`case ${args.case}   ${spec.mutants.length} mutants on ${spec.file}`
 console.log(`  task: ${spec.task.slice(0, 100)}${spec.task.length > 100 ? "..." : ""}\n`);
 
 const base = fresh("base");
-if (!suiteIsGreen(base, spec)) {
+const baseRun = suiteIsGreen(base, spec);
+if (!baseRun.green) {
   console.error("  the untouched suite is not green; every mutant would die for the wrong reason");
   process.exit(2);
 }
-const b = score(base, spec);
-console.log(`  baseline (untouched)   ${b.died}/${b.total} mutants caught`);
+if (!baseRun.tests) {
+  console.error("  the untouched suite runs no tests at all; there is nothing to compare against");
+  process.exit(2);
+}
+const b = score(base, spec, undefined);
+console.log(`  baseline (untouched)   ${b.died}/${b.total} mutants caught, ${baseRun.tests} tests`);
 if (b.survivors?.length) console.log(`    survives: ${b.survivors.join(", ")}`);
 if (args.baselineOnly) { if (!args.keep) rmSync(tmp, { recursive: true, force: true }); process.exit(0); }
 
@@ -197,9 +230,10 @@ for (const arm of ["with", "without"]) {
   if (stop) break;
   for (let i = 0; i < args.samples; i++) {
     const ws = fresh(arm);
-    const before = fingerprint(ws);
+    const before = snapshot(ws);
+    const pristine = before.get(spec.file.split("/").join("/"));
     const r = await runAgent(spec.task, ws, overlays[arm]);
-    const touched = fingerprint(ws) !== before;
+    const diff = changes(before, snapshot(ws));
     if (r.killed || r.failed) { console.log(`  ${arm} #${i + 1}  lost (${r.killed ? "deadline" : "spawn failed"})`); continue; }
     // A quota wall answers nothing and edits nothing, which is indistinguishable
     // from a model that chose not to edit. Reported as its own outcome and fatal
@@ -214,11 +248,20 @@ for (const arm of ["with", "without"]) {
     // A rewrite that leaves the suite red is not an improvement, however good
     // its assertions look. Recorded as its own outcome rather than as a zero,
     // because the two say different things about the skill.
-    if (!touched) { console.log(`  ${arm} #${i + 1}  answered without editing anything`); results[arm].push(null); continue; }
-    if (!suiteIsGreen(ws, spec)) { console.log(`  ${arm} #${i + 1}  left the suite RED`); results[arm].push(null); continue; }
-    const s = score(ws, spec);
+    const what = [
+      diff.touched.length ? `edited ${diff.touched.join(", ")}` : null,
+      diff.added.length ? `added ${diff.added.join(", ")}` : null,
+      diff.removed.length ? `REMOVED ${diff.removed.join(", ")}` : null,
+    ].filter(Boolean).join("; ");
+    if (!diff.any) { console.log(`  ${arm} #${i + 1}  answered without editing anything`); results[arm].push(null); continue; }
+    const run = suiteIsGreen(ws, spec);
+    if (!run.green) { console.log(`  ${arm} #${i + 1}  left the suite RED   (${what})`); results[arm].push(null); continue; }
+    if (!run.tests) { console.log(`  ${arm} #${i + 1}  VOID: the suite now runs no tests   (${what})`); results[arm].push(null); continue; }
+    const s = score(ws, spec, pristine);
+    if (s.rewritten) { console.log(`  ${arm} #${i + 1}  VOID: rewrote ${spec.file}, so the mutants no longer apply   (${what})`); results[arm].push(null); continue; }
     results[arm].push(s.died);
-    console.log(`  ${arm} #${i + 1}  ${s.died}/${s.total} caught${s.survivors?.length ? `   survives: ${s.survivors.slice(0, 3).join(", ")}` : ""}`);
+    console.log(`  ${arm} #${i + 1}  ${s.died}/${s.total} caught, ${run.tests} tests   (${what})`);
+    if (s.survivors?.length) console.log(`      survives: ${s.survivors.join(", ")}`);
   }
 }
 
