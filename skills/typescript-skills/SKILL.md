@@ -35,15 +35,37 @@ description: >-
 
 | If the task involves... | Read this topic index |
 | --- | --- |
-| a value that may be absent, or `any`, `unknown` and casts standing in for a type; a `switch` over a union with no exhaustive check; an abstraction, class or generic added before its second caller; a long function somebody wants split, or mixed levels inside one; a name that will not settle, for a class, an error or a field; an old shape and its cutover kept side by side | `skill://typescript-skills/typescript-coding-standards/INDEX.md` |
-| an SDK, provider or generated type reaching business logic; an `API` request or response shape used as a domain type; a mapper, transform or translator standing between them | `skill://typescript-skills/typescript-boundaries/INDEX.md` |
-| a dependency constructed where it is used rather than passed in; a factory or singleton picked at runtime; a connect, warm or close step in a lifecycle nobody owns | `skill://typescript-skills/typescript-composition/INDEX.md` |
-| `process.env` read outside startup; a config value parsed, defaulted or exposed with no type; one config object every process loads, where only one of them needs the value; a feature flag or a config migration mid-flight | `skill://typescript-skills/typescript-configs/INDEX.md` |
-| a branch taken with no logging or tracing behind it; a log line naming what happened but not what to do about it. What a log line carries, rather than whether it exists, is security | `skill://typescript-skills/typescript-observability/INDEX.md` |
-| a secret, credential or token in a literal, a log or a config default; a log or debug line printing a header, a payload or a whole request; redaction running after the value was already written; a crypto choice made by habit | `skill://typescript-skills/typescript-security/INDEX.md` |
-| a test asserting on mock calls rather than on behaviour; a boundary contract no test pins; a coverage number or gate that moved; a refactor starting with no characterization test | `skill://typescript-skills/typescript-testing/INDEX.md` |
-| a `throw` where a result type was meant, or the reverse; an error crossing a boundary with its retryability unstated; a `catch` swallowing the cause | `skill://typescript-skills/typescript-error-handling/INDEX.md` |
-| `Promise.all`, sequential awaits, an unawaited promise, bounded concurrency, cleanup in a `finally` or a `using`, work still running after the response, `AbortSignal` cleanup, retry and backoff, `SIGTERM` shutdown | `skill://typescript-skills/typescript-async/INDEX.md` |
+| a value that may be absent, or `?.` and `??` standing guard over it | `skill://typescript-skills/typescript-coding-standards/INDEX.md` |
+| `any`, `unknown`, or a cast standing in for a type | `skill://typescript-skills/typescript-coding-standards/INDEX.md` |
+| a `switch` over a union with no exhaustive check | `skill://typescript-skills/typescript-coding-standards/INDEX.md` |
+| an abstraction, class or generic added before its second caller | `skill://typescript-skills/typescript-coding-standards/INDEX.md` |
+| a long function somebody wants split, or mixed levels inside one | `skill://typescript-skills/typescript-coding-standards/INDEX.md` |
+| a name that will not settle, for a class, an error or a field | `skill://typescript-skills/typescript-coding-standards/INDEX.md` |
+| an old shape and its cutover kept side by side | `skill://typescript-skills/typescript-coding-standards/INDEX.md` |
+| an SDK, provider or generated type reaching business logic | `skill://typescript-skills/typescript-boundaries/INDEX.md` |
+| an `API` request or response shape used as a domain type | `skill://typescript-skills/typescript-boundaries/INDEX.md` |
+| a mapper, transform or translator standing between them | `skill://typescript-skills/typescript-boundaries/INDEX.md` |
+| a dependency constructed where it is used rather than passed in | `skill://typescript-skills/typescript-composition/INDEX.md` |
+| a factory or singleton picked at runtime, or a lifecycle nobody owns | `skill://typescript-skills/typescript-composition/INDEX.md` |
+| `process.env` read outside startup | `skill://typescript-skills/typescript-configs/INDEX.md` |
+| a config value parsed, defaulted or exposed with no type | `skill://typescript-skills/typescript-configs/INDEX.md` |
+| one config object every process loads, where one of them needs the value | `skill://typescript-skills/typescript-configs/INDEX.md` |
+| a feature flag or a config migration mid-flight | `skill://typescript-skills/typescript-configs/INDEX.md` |
+| a branch taken with no logging or tracing behind it | `skill://typescript-skills/typescript-observability/INDEX.md` |
+| a log line naming what happened but not what to do about it | `skill://typescript-skills/typescript-observability/INDEX.md` |
+| a secret, credential or token in a literal, a log or a config default | `skill://typescript-skills/typescript-security/INDEX.md` |
+| a log or debug line printing a header, a payload or a whole request | `skill://typescript-skills/typescript-security/INDEX.md` |
+| redaction running after the value was already written, or a crypto choice made by habit | `skill://typescript-skills/typescript-security/INDEX.md` |
+| a test asserting on mock calls rather than on behaviour | `skill://typescript-skills/typescript-testing/INDEX.md` |
+| a boundary contract no test pins | `skill://typescript-skills/typescript-testing/INDEX.md` |
+| a coverage number or gate that moved | `skill://typescript-skills/typescript-testing/INDEX.md` |
+| a refactor starting with no characterization test | `skill://typescript-skills/typescript-testing/INDEX.md` |
+| a `throw` where a result type was meant, or the reverse | `skill://typescript-skills/typescript-error-handling/INDEX.md` |
+| an error crossing a boundary with its retryability unstated | `skill://typescript-skills/typescript-error-handling/INDEX.md` |
+| a `catch` swallowing the cause | `skill://typescript-skills/typescript-error-handling/INDEX.md` |
+| `Promise.all`, sequential awaits, or an unawaited promise | `skill://typescript-skills/typescript-async/INDEX.md` |
+| cleanup in a `finally` or a `using`, or work still running after the response | `skill://typescript-skills/typescript-async/INDEX.md` |
+| `AbortSignal` cleanup, retry and backoff, or `SIGTERM` shutdown | `skill://typescript-skills/typescript-async/INDEX.md` |
 
 **Default stance.**
 
