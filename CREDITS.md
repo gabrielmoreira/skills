@@ -43,6 +43,14 @@ that can destroy or invent content: eight real findings capped at five loses
 three, and an estimate nobody measured is a claim this collection forbids
 elsewhere. What replaced the cap is a rule to rank rather than truncate.
 
+### `maintainable-code`
+
+- **A meaning preservation framework**, unpublished, written by this
+  repository's author and set aside. Its argument that a formally correct
+  decomposition is not enough if real developers still get lost became the
+  closing test of that skill: the one question the other ten sections cannot
+  ask, because each of them is checkable alone.
+
 ---
 
 ## Collections this one learned from

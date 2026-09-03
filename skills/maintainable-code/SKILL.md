@@ -148,6 +148,14 @@ composition root -> route -> use case -> focused subtask -> connector
 - **Present the useful answer or decision first**, then the supporting detail, then the risk.
 - **For full response-style guidance, use `skill://progressive-reading`.**
 
+## The test every section above has to pass
+
+**A decomposition can satisfy all ten of these and still leave a working developer lost.** This skill cannot see that from the inside. Each rule is checkable alone. None of them asks the question that matters afterwards.
+
+- **Can somebody who did not write it find the important behaviour?** Not derive it, not reconstruct it from a diagram. Find it.
+- **Does a small change start with archaeology?** Boundaries can be pure and layering elegant while every edit still opens with a week of reading.
+- **Where the answer is no, the structure loses.** It does not matter how well it scores above. Elegance that needs a guided tour is not maintainable. It is initiated.
+
 ## Before applying any of this
 
 - **Ask whether the principle fits this project's scale, framework, and existing contracts.**
