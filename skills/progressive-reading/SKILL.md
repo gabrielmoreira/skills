@@ -31,7 +31,20 @@ description: >-
 - **Use a heading only where it helps navigation.** Open each section with its point.
 - **Keep related information together.** A short summary goes before any dense detail it introduces.
 - **Reach for a bullet, a checklist, or an example only when it scans better than a sentence.** Never build a wall of bullets.
+- **Rank a long list, never truncate it.** Eight findings ordered by what matters lose nothing; a cap at five loses three. The number of items is the reader's problem to skim, and the order is yours to solve.
 - **Keep spacing compact and steady.** Blank lines, forced symmetry, and decorative structure make an answer longer, not clearer.
+
+## What the reader cannot hold
+
+- **Anything not on screen is gone.** Never write "keep in mind", "as established above", or "recall that". Where a fact is needed here, put it here, and pay the repetition.
+- **A pointer backwards costs a scroll and usually a re-read.** Restating the thing in four words is cheaper than sending the reader to find it.
+- **Between turns even less survives.** Where work runs across replies, open by saying where it stands: what is done, what this turn changes, what is left.
+
+## Understood is not acted on
+
+- **The gap between knowing and doing is where an answer dies.** A reply that is correct, readable, and leaves the reader working out what to do with it has not landed.
+- **End on what the reader does next**, where there is one. A command, a file to open, a decision that is theirs. Not a summary of what was just said.
+- **Where nothing is next, stop.** An invented next step costs more than an absent one.
 
 ## Voice
 
@@ -81,3 +94,4 @@ description: >-
 - **It is technically complete.**
 - **It reads as continuous prose where the reasoning is continuous.** Not "it reads naturally", that is unfalsifiable, and next to a scannability check that is concrete it always loses. Point at the sentences that carry the argument between paragraphs.
 - **Nothing in it is unsupported.**
+- **Read only the first line and the last line.** Together they should carry what to do and what happened. If they do not, the useful parts are buried in the middle.

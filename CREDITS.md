@@ -26,6 +26,23 @@ comment and an incident write-up rather than prose in general; the shape each
 kind of message arrives in; and the precedence rules for a voice the user asks
 for, which come from measuring what happens when a skill flattens one.
 
+### `progressive-reading` and `drop-the-model-voice`
+
+- [**`i-have-adhd`, by ayghri**](https://github.com/ayghri/i-have-adhd). Output
+  shaped so a reader with ADHD can act on it, which turns out to be a sharper
+  statement of what any reader needs. Three ideas came from it: that anything not
+  on screen is forgotten, so a backward pointer costs a scroll and a re-read;
+  that understanding an answer and acting on it are different, and a reply that
+  leaves the second to the reader has not landed; and the check that reading only
+  the first line and the last line should tell you what to do and what happened.
+
+**Three of its rules were deliberately not taken**, and the reason is worth
+recording. Capping a list at five items, deferring a second finding as a
+tangent, and giving time estimates in concrete units are all output constraints
+that can destroy or invent content: eight real findings capped at five loses
+three, and an estimate nobody measured is a claim this collection forbids
+elsewhere. What replaced the cap is a rule to rank rather than truncate.
+
 ---
 
 ## Collections this one learned from

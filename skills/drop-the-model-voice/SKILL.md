@@ -60,7 +60,7 @@ praise      seamless  robust  powerful  elegant  comprehensive  delightful
 - **Cut a trailing participle that carries the meaning.** "...ensuring reliability", "...enabling faster delivery". More than one in a paragraph is the pattern.
 - **Cut the third item added to round out a group of three**, and cut "not only X but also Y" where X and Y are one point. A real list of three stays three.
 - **Finish clipped negatives.** "Without forcing the user to guess", not "no guessing".
-- **Write the specific claim a saying stands in for.** "Symmetric layouts feel predictable", not "symmetry is the language of trust".
+- **Write the specific claim a saying stands in for**, and the literal action an idiom stands in for. "Symmetric layouts feel predictable", not "symmetry is the language of trust". "I will read the failing test", not "circle back".
 - **Keep domain vocabulary.** A robust estimator, an elegant proof.
 
 ## The missing actor
