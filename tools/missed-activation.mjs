@@ -34,7 +34,9 @@ import { execFileSync } from "node:child_process";
 
 const argv = process.argv.slice(2);
 const arg = (k, d) => { const i = argv.indexOf(k); return i < 0 ? d : argv[i + 1]; };
-const ROOT = arg("--root", join(homedir(), ".agent-sessions", "agent", "sessions"));
+// Where the agent keeps its session logs, which is not the same on two
+// machines and must not be named here. Pass --root, or set the variable.
+const ROOT = arg("--root", process.env.AGENT_SESSIONS_ROOT ?? join(homedir(), ".agent-sessions"));
 const MAX_BYTES = Number(arg("--max-mb", 150)) * 1024 * 1024;
 
 // ------------------------------------------------------------ eligible window
