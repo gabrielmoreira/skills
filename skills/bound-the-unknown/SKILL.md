@@ -6,7 +6,9 @@ description: >-
   where you cannot yet say whether this is a bug, a feature, or nothing. Use when
   a second probe has run and no finding has been named, when a question needs a
   command nobody has run yet, when a read came back different from what you
-  expected, or when you are about to write a script to find something out. Covers
+  expected, when you are about to write a script to find something out, or when
+  a change has to reach everywhere something appears in a codebase you do not
+  know well enough to say where that is. Covers
   the budget said out loud first, read-only probing, where the intermediate is
   kept, when to stop, and what the probe leaves behind. Nobody needs telling to
   look; what fails is stopping. Not for a symptom that already has a name, a

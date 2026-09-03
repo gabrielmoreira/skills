@@ -4,8 +4,9 @@ description: >-
   Hold what a session settled so it survives a compaction, a model change, a
   resume, or a handoff: the objective in hand, the requests parked behind it, and
   every decision with the alternative it rejected. Use when a decision is made, a
-  constraint is stated, an approval is given, the objective changes, or a second
-  request arrives before the first is finished. Use again on the far side, when
+  constraint is stated, an approval is given, the objective changes, a second
+  request arrives before the first is finished, or you are pointed at a decision
+  taken earlier that the work has to run under. Use again on the far side, when
   you are working from a summary rather than the conversation that produced it.
   A decision that lived only in the conversation did not survive it, and the one
   nobody wrote down is the one that gets re-argued at the worst moment. Not for

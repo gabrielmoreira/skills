@@ -42,8 +42,8 @@ description: >-
 | written material to create, correct, place, or remove, including whether a decision is worth recording | `make-the-docs-trustworthy` |
 | code that should stay simple and testable: boundaries, cohesion, layering, hidden effects, abstraction added too early | `maintainable-code` |
 | a decision inside TypeScript or JavaScript code: what a value may be, what a failure means, what crosses a boundary, what runs concurrently, what a test proves | `typescript-skills` |
-| ground you cannot name yet: two probes in with no finding, or a script about to be written to find out | `bound-the-unknown` |
-| a decision, a constraint, an approval, or a second request arriving before the first closes | `keep-the-thread-across-boundaries` |
+| ground you cannot name yet: two probes in with no finding, a script about to be written to find out, or a change that has to reach everywhere in a codebase you do not know | `bound-the-unknown` |
+| a decision, a constraint, an approval, a settled choice you are told not to reopen, or a second request arriving before the first closes | `keep-the-thread-across-boundaries` |
 | an answer that is dense, buried, or hard to resume | `progressive-reading` |
 | prose that leaves this session and gets read by someone else: a review comment, a pull request description, an incident write-up, a status update, a release note, a page, an announcement | `drop-the-model-voice` |
 | a skill to write, split, rename, or check, or one that never fires | `authoring-verifiable-skills` |
