@@ -8,9 +8,10 @@ description: >-
   short paragraphs, literal headings, preserved nuance, and a small diagram where
   structure is the difficulty. Use when the user says "I do not understand",
   "explain this more simply", "make this clearer", "too dense", "break it into
-  parts", "step by step", "without losing the details", or "that sounds like
-  AI". Not for shortening at the cost of accuracy, and not for compressing an
-  ordered procedure or a security warning. An answer nobody can get into was not
+  parts", "step by step", or "without losing the details". Not for shortening at the
+  cost of accuracy, not for compressing an ordered procedure or a security
+  warning, and not for a draft that sounds generated rather than dense, which
+  is a question about voice and belongs elsewhere. An answer nobody can get into was not
   delivered, and one shortened until it is wrong was not either.
 ---
 
@@ -42,6 +43,7 @@ description: >-
   - Generic conclusions.
   - "Let me know if" endings.
 - **Avoid corporate, salesy, or artificially polished language.** Typographic gimmicks belong in none of it.
+- **A draft that sounds generated rather than dense is a different job.** Voice, over-claiming, and the shape a message arrives in belong to the skill that owns them. This one owns pace, order, and entry.
 - **State uncertainty only where it is real.** Never invent a fact, an example, a citation, or a source.
 
 ## Preserve meaning

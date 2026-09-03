@@ -45,6 +45,7 @@ description: >-
 | ground you cannot name yet: two probes in with no finding, or a script about to be written to find out | `bound-the-unknown` |
 | a decision, a constraint, an approval, or a second request arriving before the first closes | `keep-the-thread-across-boundaries` |
 | an answer that is dense, buried, or hard to resume | `progressive-reading` |
+| written output that will be posted, filed, or published, and has to sound like a person wrote it | `drop-the-model-voice` |
 | a skill to write, split, rename, or check, or one that never fires | `authoring-verifiable-skills` |
 
 - **Know what you are in before matching a row.** The project's own instruction file, its README,

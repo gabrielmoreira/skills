@@ -24,6 +24,7 @@ for a nine-hundred-line review.
 | [`maintainable-code`](#maintainable-code) | code someone can come back to |
 | [`typescript-skills`](#typescript-skills) | the same, specifically for TypeScript |
 | [`progressive-reading`](#progressive-reading) | answers that are readable instead of exhausting |
+| [`drop-the-model-voice`](#drop-the-model-voice) | written output that sounds like the engineer who did the work |
 | [`bound-the-unknown`](#bound-the-unknown) | probing unfamiliar ground on a stated budget before it eats the session |
 | [`keep-the-thread-across-boundaries`](#keep-the-thread-across-boundaries) | holding what a session settled across compactions, resumes, and handoffs |
 | [`authoring-verifiable-skills`](#authoring-verifiable-skills) | writing your own skill, and proving it works |
@@ -77,6 +78,7 @@ for a personal one that follows you everywhere:
 | code should stay simple, testable, and sustainable: boundaries, cohesion, layering | `maintainable-code` |
 | TypeScript needs focused guidance: standards, boundaries, async, errors, testing | `typescript-skills` |
 | an answer must be easier to start, scan, pause, and resume | `progressive-reading` |
+| something is about to be posted, filed, or published and must not read as generated | `drop-the-model-voice` |
 | ground you cannot name yet: two probes in with no finding, or a script about to be written to find out | `bound-the-unknown` |
 | a decision, a constraint, an approval, or a second request before the first closes | `keep-the-thread-across-boundaries` |
 | a skill itself must be written, split, renamed, or checked | `authoring-verifiable-skills` |
@@ -307,8 +309,8 @@ config, async, error handling, observability, security, testing.
 
 **Use it when the agent's answers are exhausting to read.**
 
-Dense walls of text, buried conclusions, or replies that sound like a press
-release.
+Dense walls of text or buried conclusions. A reply that sounds like a press
+release is the other skill below.
 
 - **Answer first, then context, then caveats.**
 - **One idea per paragraph**, short enough to stop between.
@@ -316,6 +318,20 @@ release.
   exact commands or error strings stay exactly as they were.
 - **It knows when to stop.** Shorter is not better once the answer becomes wrong
   or too terse to follow.
+
+### [`drop-the-model-voice`](skills/drop-the-model-voice/SKILL.md)
+
+**Use it for prose that leaves the session: a review comment, an incident
+write-up, a status update, a release note, a wiki page, an announcement.**
+
+- **A claim of impact names its number, artifact, or person**, or the sentence
+  goes.
+- **It removes the run-up, the sales vocabulary, the defence against objections
+  nobody raised**, and formatting that encodes nothing.
+- **Each kind of message has a shape**, and the skill carries the fallback set
+  for teams without one.
+- **One tell proves nothing.** Polish, a dry register, and a single formal word
+  are how many people write.
 
 ### [`bound-the-unknown`](skills/bound-the-unknown/SKILL.md)
 
