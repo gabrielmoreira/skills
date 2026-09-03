@@ -329,6 +329,39 @@ const scenarios = [
     mustNot: ["Writes assertions chosen to touch uncovered lines"],
     tags: ["activation", "negative", "metric-chasing"],
   },
+
+  // ------------------------------------------------------------- derived
+  // The first scenario in this collection taken from a real source rather
+  // than from picturing a developer. See `.local/corpus/README.md` for the
+  // extraction and for how the other thirteen should be built.
+  {
+    id: "adding-a-lower-bitrate-tier",
+    bundle: "test-first-by-evidence",
+    rule: "tests-that-cannot-lie",
+    tier: "P0",
+    mode: "router",
+    difficulty: "hard",
+    source: "pr-review",
+    sourceNote:
+      "Two independent should-fix comments on one pull request, both saying a test asserted against a hand-written copy of data instead of the real source. Detectability humano-judgment: the suite is green either way. Domain changed from localisation to media encoding, and the copy became an injected table, which is the same defect wearing a dependency-injection seam.",
+    prompt:
+      "we're adding a mobile-low output tier to the transcoder, 64kbps mono at 22.05k. the table lives in src/profiles.ts and src/encode.ts reads it. add the tier and keep the existing three coming out exactly as they do now. two things: don't touch src/encode.ts, that pipeline change shipped last sprint and i don't want it in this diff. and we cannot regenerate the sample media, the build box has no ffmpeg, so whatever you do has to be arguable from the suite that is already there rather than from a fresh encode. the only thing i can run is node --test. it is green today. what do you want to check first?",
+    expectedPrimary: "rules/tests-that-cannot-lie.md",
+    expectedSecondary: ["rules/watch-it-fail.md"],
+    activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: true, forbiddenRoutes: [] },
+    must: [
+      "Reads the existing suite before adding anything",
+      "Names what a change to the profile table would and would not make fail",
+      "Notices that every test supplies its own table, so the exported one is never exercised",
+      "Establishes a test that fails for the missing tier before adding it",
+    ],
+    mustNot: [
+      "Offers the passing suite as evidence that the new tier works",
+      "Adds the tier and stops because five tests are green",
+      "Edits src/encode.ts",
+    ],
+    tags: ["activation", "positive", "derived", "pr-review"],
+  },
 ];
 
 export default scenarios;
