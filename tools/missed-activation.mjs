@@ -5,8 +5,7 @@
  *
  *   node tools/missed-activation.mjs [--root <dir>] [--max-mb 150]
  *
- * Every measurement so far has been conditional on the skill being opened —
- * how deep it went, how far it got. That silently studies only the successes.
+ * Every measurement so far has been conditional on the skill being opened,  * how deep it went, how far it got. That silently studies only the successes.
  * A skill that never fires on work squarely in its domain loses quality with no
  * trace anywhere in those numbers, and it is the larger failure of the two.
  *
@@ -18,7 +17,7 @@
  * scored only over sessions after the commit that added it.
  *
  * And a skill should only fire on work in its domain. Domain is inferred from
- * what the session actually touched — file extensions in tool arguments — which
+ * what the session actually touched, file extensions in tool arguments, which
  * is coarse but observable, unlike intent.
  *
  * WHAT THIS STILL CANNOT SEE. It measures whether guidance arrived, never

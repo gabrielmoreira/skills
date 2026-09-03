@@ -44,7 +44,7 @@ const short = (p) => p.replace(homedir(), "~");
  *
  * One rule holds every row together: `slow` must score above `default`, or the
  * escalation escalates to something dumber. That is easy to get wrong from the
- * names — terra sounds like the big one and scores 50 at high, while sol scores
+ * names, terra sounds like the big one and scores 50 at high, while sol scores
  * 57 at the same effort.
  *
  * The same correction applies to the cheap roles. On opencode-go, glm-5.3-flash
@@ -59,7 +59,7 @@ const short = (p) => p.replace(homedir(), "~");
  *
  * That decides the table before any score does. A benchmark run on a model the
  * skills will never face measures a different thing well, and an earlier
- * version of this table was built entirely on sol — cheaper per point and
+ * version of this table was built entirely on sol, cheaper per point and
  * useless as evidence about the fleet in use.
  */
 const PROVIDER_ROLES = {
@@ -77,14 +77,14 @@ const PROVIDER_ROLES = {
   // Copilot policy enables gpt-5.4, 5.4-mini, gpt-5-mini, luna, sol, terra,
   // haiku-4.5 and sonnet-4.5/4.6/5, and disables every Opus, Fable, Gemini,
   // Kimi, GPT-5.5 and all three Grok models. So grok-4.6, briefly the best
-  // candidate here on agentic score, is unavailable — and tools/model-cost.mjs
+  // candidate here on agentic score, is unavailable, and tools/model-cost.mjs
   // killed it independently: on our measured traffic it is 65% dearer than
   // Terra, because its cached input is two and a half times Terra's and cache
   // reads are three-quarters of its bill.
   //
   // What that leaves is better than the candidate that died. Sol is enabled,
   // runs 4% below Terra and 23% below gpt-5.4, and scores 57.8 agentic against
-  // Terra's 50.2 — the highest of anything the policy allows. It was being
+  // Terra's 50.2, the highest of anything the policy allows. It was being
   // avoided as expensive, and on this traffic it is not. The one catch is a
   // date: half price until 3 September 2026, and 92% above Terra after it.
   //
@@ -120,7 +120,7 @@ const PROVIDER_ROLES = {
     smol: "openrouter/z-ai/glm-5.3-flash",
   },
   // None of the work fleet is served here, so this row is not a stand-in for the
-  // others — but it is not merely a survival option either, and calling it one
+  // others, but it is not merely a survival option either, and calling it one
   // was wrong. On the agentic leaderboard, which is the axis this harness
   // actually exercises, glm-5.3-flash ranks 5th and glm-5.3 2nd, above every
   // model in the work fleet. So this row answers a different and useful
@@ -144,14 +144,14 @@ const PROVIDER_ROLES = {
  * [47] ran as the work default and made noticeably more mistakes than gpt-5.4 at
  * high; terra:high [50] replaced it and the trouble stopped. Three points below
  * the floor was the difference, which is why luna appears here only in roles
- * nothing reasons from — and at xhigh [50], not high. `default`, `slow` and `task` clear it; `smol` need
+ * nothing reasons from, and at xhigh [50], not high. `default`, `slow` and `task` clear it; `smol` need
  * not, since nothing reasons from its output.
  *
  * The escalation must escalate: `slow` scores above `default`, or it is a
  * downgrade wearing the name of a fallback.
  *
  * The band is the third. The index does not resolve models a couple of points
- * apart — which is better is a question for a test, not for this table — so
+ * apart, which is better is a question for a test, not for this table, so
  * inside the band the cheaper one wins, and for a benchmark that is the right
  * answer rather than a compromise: it buys more runs for the same money. The
  * band never applies to `slow` against something at or below `default`, which
@@ -162,16 +162,16 @@ const PROVIDER_ROLES = {
  * exercises: an eval here asks whether an agent routes, opens the right file and
  * holds a procedure across many tool calls, which is the agentic axis. The two
  * disagree systematically. Going from the coding board to the agentic one, every
- * OpenAI model loses ground — GPT-5.5 by ten places, Terra by seven, Sol by five,
- * and gpt-5.4 leaves the top twenty — while the open Chinese models gain:
+ * OpenAI model loses ground, GPT-5.5 by ten places, Terra by seven, Sol by five,
+ * and gpt-5.4 leaves the top twenty, while the open Chinese models gain:
  * glm-5.3-flash and Qwen3.8 Max by eleven places each, glm-5.3 by seven. The
  * work fleet sits at the weak end of the axis we measure on.
  *
  * The table is not rebuilt on that board, for a plain reason: it publishes only
  * a top twenty, at max or high effort, and the efforts here are terra:high and
  * luna:xhigh, which do not appear. Rebuilding would mean inventing numbers.
- * Worse, the boards quote different efforts for the same model — Sol at xhigh on
- * one and max on another — so joining them by name silently compares two
+ * Worse, the boards quote different efforts for the same model, Sol at xhigh on
+ * one and max on another, so joining them by name silently compares two
  * configurations. What the agentic board does change is the reading of a result:
  * see the note on the opencode-go row.
  *

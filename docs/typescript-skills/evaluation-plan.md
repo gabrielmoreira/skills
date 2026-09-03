@@ -167,6 +167,6 @@ These invariants are checked by `evals/check-invariants.ts`. Any failure blocks 
 - Every canonical rule has frontmatter with `id`, `owner`, `canonical`, `severity`, `references`.
 - Every canonical rule contains `Decision:`, `Use when:`, `Do:`, `Avoid:`, `Verify:` sections.
 - All code fences are balanced.
-- `references/ownership.md` lists exactly one canonical owner per topic; no topic is owned twice.
+- Every rule declares one `owner:` in its frontmatter, and C-01 fails it where that does not match the directory it sits in.
 - Root router includes the `mapper`/`transform` keyword set on the boundaries row.
 - `local-test-style.md` does not contain the phrase "unit, integration, e2e" as a prescribed ordering.

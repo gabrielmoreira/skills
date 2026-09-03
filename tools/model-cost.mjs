@@ -14,8 +14,8 @@
  * 541 model turns of our own agentic recordings, a turn carries 1,536 input
  * tokens, 34,064 cache reads and 279 output tokens: cache read outweighs input
  * by twenty-two to one and output by a hundred and twenty. So the cached-input
- * column decides the bill, and the output column — the one a price list leads
- * with — barely moves it.
+ * column decides the bill, and the output column, the one a price list leads
+ * with, barely moves it.
  *
  * That reverses the obvious reading of Grok 4.6. Its output is $6 against
  * Terra's $12, which looks like half price, and its cached input is $0.50
@@ -55,8 +55,8 @@ if (record) {
 
 /**
  * GitHub Copilot, USD per million tokens, default context tier. `agentic` is the
- * public agentic-benchmark score where one is published — the axis this harness
- * exercises — and is left out rather than guessed where it is not.
+ * public agentic-benchmark score where one is published, the axis this harness
+ * exercises, and is left out rather than guessed where it is not.
  */
 const POST_PROMO = argv.includes("--post-promo");
 // `work: false` is blocked by the organisation's Copilot policy, so its price is
@@ -120,7 +120,7 @@ for (const x of rows) {
 const credits = Number(arg("--credits", 0));
 if (credits) {
   // 1 AI credit = $0.01. The bill names credits, not turns, so the turn count
-  // has to be inferred from the model it was spent on — state that model rather
+  // has to be inferred from the model it was spent on, state that model rather
   // than let the comparison quietly assume one.
   const spentOn = arg("--spent-on", "gpt-5.4");
   const base = PRICES[spentOn];

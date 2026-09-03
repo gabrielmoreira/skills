@@ -115,7 +115,7 @@ a pass says nothing about whether the writing did any work.
 **`route-baseline.mjs` asks the same question for free.** A bag-of-words router
 scores each gate row against the prompt and picks the best. Where it already
 lands on the expected rule, the scenario measures shared vocabulary rather than
-routing. It solves 26% of them today, and `typescript-skills` is the worst at
+routing. It solves 18% of them today, and `typescript-skills` is the worst at
 55%.
 
 **One sample is a coin toss reported as a fact.** Scenarios run `--samples`
@@ -358,8 +358,9 @@ conventions on purpose.
 
 ## What is not proved
 
-**Activation and routing are declared, not measured.** Every skill carries
-scenarios and every rule has at least one, and none of them have been executed
-against a model.
+**Activation and routing are measured on a sliver.** Every skill carries
+scenarios and every rule has at least one. Fifteen of them, across one skill,
+have been executed against a model. The rest are declared.
 
-The structure is checked. The behaviour is not.
+The structure is checked everywhere. The behaviour is checked in one place, and
+what that place shows does not transfer to the others on its own.

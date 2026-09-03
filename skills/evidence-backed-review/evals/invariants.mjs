@@ -240,8 +240,8 @@ const scannedDocs = [
   // Reachability, not table membership.
   //
   // A gate row fires on something visible in the diff. Some rules answer to an
-  // absence instead — whether the pipeline covers this change, whether the
-  // written standard says what you assume — and nothing in a diff announces
+  // absence instead, whether the pipeline covers this change, whether the
+  // written standard says what you assume, and nothing in a diff announces
   // those. No wording of a left column reaches them, which is why rows of that
   // kind were opened zero times across ninety measured runs. They belong in the
   // coverage obligation, which names each as checked or not.

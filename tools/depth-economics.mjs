@@ -38,7 +38,7 @@
  * The second cost is the one that decides it. A level is not only tokens; it is
  * a place to stop. Measured on evidence-backed-review: of eleven activations
  * that opened the skill, four opened any rule file. One hop delivered its
- * content 36% of the time, and depth multiplies — two hops at that rate reach
+ * content 36% of the time, and depth multiplies, two hops at that rate reach
  * the leaf 13% of the time. So the honest metric is not cost but cost per
  * successful delivery, and that is what this prints.
  */

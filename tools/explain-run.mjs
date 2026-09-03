@@ -109,7 +109,7 @@ for (const b of ["high", "medium", "low"]) {
     : b === "low"
       ? "look at the scenario first; it could not have shown much"
       : "read the trace before deciding which";
-  console.log(`  ${b} confidence — ${verdict}`);
+  console.log(`  ${b} confidence, ${verdict}`);
   for (const r of byBand[b]) {
     const missing = Object.entries(r.conf.parts).filter(([, v]) => !v).map(([k]) => k).join(", ");
     console.log(`    ${r.conf.score}/6  ${r.id}`);

@@ -276,7 +276,7 @@ export function degraded(stream) {
     // above; the rest is judged by whether the sample produced anything.
   }
   // A spent subscription is not one bad sample. Measured: once the limit was
-  // reached, the last 18 recordings of 84 were empty and contiguous — nothing
+  // reached, the last 18 recordings of 84 were empty and contiguous, nothing
   // after it can succeed, so carrying on spends wall-clock to manufacture
   // scenarios that look failed and were never asked.
   // Killed on our deadline. One is a lost sample; several in a row mean the
@@ -293,7 +293,7 @@ export function degraded(stream) {
   // of the second cost 138 empty recordings before anyone looked.
   // Matched as an error, not as a number. An earlier version tested /\b402\b/
   // against the whole stream, which matches any standalone 402 in anything the
-  // agent read — and the arm carrying 12,000 extra tokens of skill text hit one
+  // agent read, and the arm carrying 12,000 extra tokens of skill text hit one
   // and was aborted at sample eight while its twin ran all 120. A detector that
   // fires on something other than what it names is worse than none: it produced
   // a credit diagnosis for a run with no credit problem.
@@ -528,7 +528,7 @@ async function ompRun(a, arm, prompt, paths, cwd) {
  *
  * Concurrency limits how many runs are in flight; it does nothing about when
  * they begin. Eight workers with a limit of eight all launch in the same
- * instant, and the provider sees eight requests at once — a burst, and a rate
+ * instant, and the provider sees eight requests at once, a burst, and a rate
  * limit. So the gate is on launches: each one waits until the configured
  * interval has passed since the previous launch, whichever worker owns it.
  *
@@ -886,8 +886,8 @@ async function main(modelOverride) {
     }
   }
   // Only a positive can show the gap; a negative passes for free in the arm
-  // without the skill. Whatever truncates a run — a quota, a --limit, an
-  // interrupt — takes it from the end, so the half that carries the evidence
+  // without the skill. Whatever truncates a run, a quota, a --limit, an
+  // interrupt, takes it from the end, so the half that carries the evidence
   // goes first. The sort is stable, which keeps each scenario's two arms
   // adjacent: a positive with no control arm would measure nothing.
   const isNegative = (c) => c.scenario?.activation?.shouldActivate === false || c.scenario?.mode === "bypass";
@@ -1001,7 +1001,7 @@ async function main(modelOverride) {
       let bad = backend.agentic ? degraded(answer) : null;
       // On replay every one of these is history. A quota wall recorded last
       // night says nothing about now, and reading one as a live condition
-      // aborted a replay of 81 recordings on the first bad one — throwing away
+      // aborted a replay of 81 recordings on the first bad one, throwing away
       // 80 good samples to re-report a failure that was already known. Nothing
       // a recording contains can end a run that is not calling anyone.
       if (bad && args.replay) bad = { ...bad, fatal: false };

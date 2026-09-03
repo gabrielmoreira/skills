@@ -239,7 +239,7 @@ const MUTATIONS = [
       if (!rule) return NA;
       // The entry's own words for this rule, which an honest prompt must not
       // repeat. That used to mean a gate row, and a rule reached by a coverage
-      // obligation instead has none — so the mutation quietly stopped applying
+      // obligation instead has none, so the mutation quietly stopped applying
       // and C-16 went unexercised while still reporting as present. A check
       // nobody has watched fail is not a check.
       const entry = fs.readFileSync(entryOf(dir), "utf8").split("\r\n").join("\n");

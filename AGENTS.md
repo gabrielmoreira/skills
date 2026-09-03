@@ -27,6 +27,7 @@ It names no tool, so a host with a question tool uses one and a host without sen
 | code should stay simple, testable, and sustainable: boundaries, cohesion, layering | `maintainable-code` |
 | TypeScript needs focused guidance: standards, boundaries, async, errors, testing | `typescript-skills` |
 | an answer must be easier to start, scan, pause, and resume | `progressive-reading` |
+| something is about to be posted, filed, or published and must not read as generated | `drop-the-model-voice` |
 | ground you cannot name yet: two probes in with no finding, or a script about to be written to find out | `bound-the-unknown` |
 | a decision, a constraint, an approval, or a second request before the first closes | `keep-the-thread-across-boundaries` |
 | a skill itself must be written, split, renamed, or checked | `authoring-verifiable-skills` |

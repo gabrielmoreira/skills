@@ -1,6 +1,6 @@
 # Agent Skills That Restore Context
 
-Twelve skills for coding agents. Each one covers a moment you already recognise: a
+Thirteen skills for coding agents. Each one covers a moment you already recognise: a
 feature about to be written, a branch to review, a bug with no reproduction, a git
 command that refuses, docs that went stale.
 
@@ -294,7 +294,7 @@ are named at the top so you can stop after those.
 
 **Use it when the question is specifically about TypeScript.**
 
-Forty-one rules across nine topics: coding standards, boundaries, composition,
+Forty-four rules across nine topics: coding standards, boundaries, composition,
 config, async, error handling, observability, security, testing.
 
 - **It opens one topic, not nine.** The router exists to keep the cost down.
@@ -409,7 +409,7 @@ is a real gap. The interval around that 60% is wide enough that a single edit
 moving it a few points would be invisible, so the number is evidence the skills
 do something and not yet a regression detector.
 
-**A quarter of the routed scenarios are giveaways.** The suite reports how many
+**Under a fifth of the routed scenarios are giveaways.** The suite reports how many
 a bag-of-words router solves with no understanding at all. Those pass for
 reasons that have nothing to do with the skill.
 

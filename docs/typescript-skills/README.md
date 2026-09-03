@@ -7,7 +7,8 @@ current state drifts the moment the tree changes.
 - **`roadmap.md`** lists coverage gaps. Nine of them are still open, marked by
   the absence of a resolved status.
 - **`evaluation-plan.md`** specifies the activation scenarios each topic needs.
-  None of them are written yet, so this topic has no `evals/` directory.
+  They are written: every topic carries an `evals/` directory, and the root one
+  carries the shared types and the invariant suite.
 
 ## Where the current state actually comes from
 

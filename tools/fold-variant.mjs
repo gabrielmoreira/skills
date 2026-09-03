@@ -37,7 +37,7 @@ if (!OUT) { console.error("--out <dir> is required"); process.exit(2); }
  * So the target has to prove it is disposable before anything is removed: a
  * temporary directory, or one this script previously built and left its marker
  * in. Anything else is refused with the reason, and a path that does not exist
- * yet is fine — there is nothing there to lose.
+ * yet is fine, there is nothing there to lose.
  */
 const MARKER = ".fold-variant";
 const target = resolve(OUT);

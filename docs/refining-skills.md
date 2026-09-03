@@ -39,8 +39,8 @@ Avoid:
   that is not there.
 ```
 
-**A technique ladder answers "improve this".** Open-ended requests — make it
-cohesive, improve the layering, make it easier to test — have no answer unless
+**A technique ladder answers "improve this".** Open-ended requests (make it
+cohesive, improve the layering, make it easier to test) have no answer unless
 the rule supplies a way to measure what is wrong and a named move that addresses
 it. `abstraction-and-local-reasoning` does this already and is the model to
 copy: four escalating techniques with the instruction to stop at the first that
@@ -63,7 +63,7 @@ it. Two vocabularies, one per side of the rule:
 
 **Never force one.** A borrowed label that nearly fits teaches a false
 classification, which is worse than no label. Where nothing fits, write a plain
-expression of our own — descriptive, and not pretending to be canon. *Ceremony
+expression of our own, descriptive, and not pretending to be canon. *Ceremony
 without a seam* and *State the object cannot defend* are ours, and read as ours.
 
 **The vocabulary is mostly already chosen.** Measured: **36 of 44 rules cite a
@@ -115,9 +115,9 @@ feature; leave the defect in the file. A rule that only fires when someone
 describes the defect fires when it is not needed.
 
 **The hardest is the open-ended one**, and it is the one that tests whether the
-rule supplies a measure. Grade it on counted, located observations — *this
+rule supplies a measure. Grade it on counted, located observations (*this
 failure path cannot be reached from a test because the catch returns an empty
-list* — and fail it for general design advice that would fit any file.
+list*), and fail it for general design advice that would fit any file.
 
 ---
 
@@ -228,7 +228,7 @@ runs 231 mutations across 16 checks and currently finds none that fail this.
 
 **The eval wins.** Scenarios are the practical test of activation and quality;
 invariants test form. A checker that cannot express a real scenario is the thing
-to widen — in this session a genuine cross-topic scenario was contorted to fit a
+to widen, in this session a genuine cross-topic scenario was contorted to fit a
 checker, and reverting that was correct.
 
 **Invariants are how a scenario's lesson gets cheap.** What a run establishes can
@@ -292,8 +292,8 @@ reading it.
   The observed arm decides a scenario by the files the agent opened, so it needs
   a path. It admitted a scenario carrying `expectedAll` and turned away one
   carrying the identical path as `expectedPrimary`. Sixty positives were
-  decidable all along, and two skills — `debugging-by-evidence` and
-  `make-the-docs-trustworthy` — had never had a single positive measured. Every
+  decidable all along, and two skills, `debugging-by-evidence` and
+  `make-the-docs-trustworthy`, had never had a single positive measured. Every
   run of both had reported only on whether they stayed quiet.
 - **Two of our own tools disagree.** `verdictOf` calls a scenario PASS at three
   passes from three samples; `acceptance` calls the same evidence UNSTABLE, and
@@ -318,7 +318,7 @@ reading it.
   number is only load-bearing once something compares it to the whole.
 
 - **The headline number had the narrowest denominator of all.** The suite's
-  behaviour line — the one number claiming the collection works — reported the
+  behaviour line, the one number claiming the collection works, reported the
   model and the baseline's age, so a stale result could not pass for a current
   one. It never reported coverage. The baseline behind `60% with the skills, 0%
   without` held 15 scenarios of 373, all from a single skill, and had been read
@@ -336,20 +336,20 @@ reading it.
   the more confident half wins the reader.
 
 **Truncation is never uniform, so ordering is a measurement decision.** When a
-run is cut short — a spent quota, a `--limit`, an interrupt — the loss lands
+run is cut short by a spent quota, a `--limit`, or an interrupt, the loss lands
 entirely on whatever ran last. Measured here: the last 18 recordings of 84 were
 empty and contiguous. Because negatives had been queued first, the cut fell
 precisely on the two positives, and the run that survived could say only that
 the skill stays quiet. Only a positive can show the gap, since a negative passes
 for free in the arm where the skill was never loaded. So positives run first,
-sorted stably enough to keep each scenario's two arms adjacent — a positive
+sorted stably enough to keep each scenario's two arms adjacent, a positive
 whose control arm was cut measures nothing at all.
 
 **Which model you measure on is part of the measurement, and one number does
 not settle it.** Public boards rank the same models differently by axis, and the
 disagreement is systematic rather than noisy. From a coding board to an agentic
-one, every OpenAI model loses ground — GPT-5.5 by ten places, Terra by seven,
-Sol by five, gpt-5.4 out of the top twenty — while the open Chinese models gain
+one, every OpenAI model loses ground: GPT-5.5 by ten places, Terra by seven,
+Sol by five, gpt-5.4 out of the top twenty, while the open Chinese models gain
 as much: glm-5.3-flash and Qwen3.8 Max by eleven places each. An eval like this
 one exercises the agentic axis, since it asks whether an agent routes, opens the
 right file and holds a procedure across many tool calls. Picking the model on a
@@ -357,11 +357,11 @@ coding score, or on a general intelligence index, measures the wrong thing well.
 
 Two traps sit next to this. The boards quote different effort levels for the
 same model, so joining them by name compares two configurations and calls it one.
-And they publish a top twenty at high or max, while a cheap role runs at medium —
+And they publish a top twenty at high or max, while a cheap role runs at medium,
 absent from every board, so any number you assign it is invented.
 
 **A question the fixture cannot stage has no answer to grade.** Three arms were
-run on the same scenarios — no skill, the rules a hop away, the rules inlined —
+run on the same scenarios (no skill, the rules a hop away, the rules inlined)
 and they scored 45%, 49% and 45%. The middle arm delivered its guidance to 17%
 of samples and the last to 75%, a 4.4x difference that moved nothing. That reads
 as a devastating verdict on the rules until the criteria are crossed item by
@@ -373,13 +373,13 @@ calling either shape wrong." "Names the written guidance that now describes
 behaviour the change removed, with file:line on both sides." "Checks whether the
 pipeline runs what this change now needs." The workspace each scenario ran in
 contained `package.json` and `src/`. There was no standard, no guidance, no
-pipeline, and no history — and 0 of 133 positive scenarios carry a fixture, with
+pipeline, and no history, and 0 of 133 positive scenarios carry a fixture, with
 one setup.sh in the whole collection and nothing referencing it.
 
 So the comparison measured nothing about the rules. Every arm failed the same
 impossible half, and the half that remained was work a competent agent does
 unprompted. The instrument was sound, the judge was calibrated, the arms were
-matched, the scenarios were identical — and the ground they stood on was empty.
+matched, the scenarios were identical, and the ground they stood on was empty.
 
 **What that invalidates, and what it leaves standing.** Traversal survives: which
 file was opened, how far a session descended, how often a skill fired. None of
@@ -392,9 +392,9 @@ difference between measuring a skill and measuring an empty directory.
 
 **Price a model on your traffic, not on its price list.** A list leads with
 input and output, and an agentic harness spends neither. Measured across 541 of
-our own model turns: 1,536 input tokens, 34,064 cache reads, 279 output. Cache
+our own model turns: 1, 536 input tokens, 34, 064 cache reads, 279 output. Cache
 read outweighs input twenty-two to one and output by a hundred and twenty, so
-the cached-input column — the one nobody quotes — is half to three-quarters of
+the cached-input column, the one nobody quotes, is half to three-quarters of
 every bill. Two conclusions inverted when that was computed instead of eyeballed:
 a model whose output was half the incumbent's turned out 65% dearer, because its
 cache reads cost two and a half times as much; and the model being reached for to
@@ -403,7 +403,7 @@ from recordings you already have, then rank.
 
 **An index can be reached and still deliver nothing, and the tool sequence says
 which.** Measured over 90 runs of one skill: the index was opened 88 times and a
-rule file 4 times. That is not a rule nobody wants — the verdict line said "the
+rule file 4 times. That is not a rule nobody wants, the verdict line said "the
 agent does this anyway", which asserts the arm without the rule succeeded, when
 in fact neither arm had. Both arms at zero is a different finding and now prints
 as NEVER REACHED.
@@ -417,7 +417,7 @@ where guidance is lost, whatever is written at the end of it.
 
 That reading was wrong, and the eval said so. A line was added telling the
 reader to choose its rows from the request before opening the range, and descent
-went from 30% to 28% — the same number, on 60 positives against 90. The
+went from 30% to 28%, the same number, on 60 positives against 90. The
 mechanism was visible and the repair aimed at it did nothing, so the mechanism
 was not the cause, or not a cause an instruction can reach. The line came out
 again: text that was measured not to work is cost on every activation, and
@@ -425,7 +425,7 @@ keeping it because it still sounds right is the failure this whole document is
 about.
 
 Two smaller corrections came with it. The first report of this said 22% descent;
-recomputed it is 30%, because two metrics had been used interchangeably —
+recomputed it is 30%, because two metrics had been used interchangeably,
 "opened any rule" and "opened the rule this scenario expected" are different
 questions and only one was in the number. And a negative result at n=60 against
 n=90 with intervals that overlap almost entirely is "no effect detected", not
@@ -443,12 +443,12 @@ forced the weak end of the agentic axis, until the question was put properly:
 what does that subscription actually serve? Ranked agentically, the provider in
 question offered three models above the one in use, one of them top three on
 every public board and eight points clear of the incumbent. The constraint was
-never the provider — it was the model picked inside it, and nobody had checked
+never the provider, it was the model picked inside it, and nobody had checked
 the rest of the shelf. Before accepting a trade between fidelity and capability,
 enumerate what fidelity actually costs; often it costs nothing.
 
-**So run two arms, and let them answer different questions.** The fleet model —
-whatever the skills actually meet in use — answers *what do people get today*. A
+**So run two arms, and let them answer different questions.** The fleet model,
+whatever the skills actually meet in use, answers *what do people get today*. A
 strong agentic model answers *is this rule followable at all*. The pair
 disentangles the confound that otherwise sits inside every failure: a rule that
 fails on both is unclear and should be rewritten, while one that fails only on
@@ -462,7 +462,7 @@ answers leaves the process alive, the promise unsettled, and the worker holding
 its slot. Measured: ten workers sat on a free model for fourteen hours at two
 seconds of CPU each, and the run reported nothing because it never reached the
 end. The only reliable timeout is the one on your side of the boundary. Bound it,
-kill the child, and record the kill as a lost sample — then escalate, because a
+kill the child, and record the kill as a lost sample, then escalate, because a
 provider answering nothing would otherwise spend the full deadline on every
 remaining launch: 192 of them at three and a half minutes is eleven hours to
 learn what the first three already showed.

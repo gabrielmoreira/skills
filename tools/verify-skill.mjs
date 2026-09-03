@@ -384,8 +384,8 @@ async function verify(skillDir) {
     // A rule is reachable two ways, and this used to know only one.
     //
     // A gate row fires on something the reader can see. Some rules answer to an
-    // absence instead — whether the pipeline covers this change, whether the
-    // written standard says what you assume — and nothing appears in a diff to
+    // absence instead, whether the pipeline covers this change, whether the
+    // written standard says what you assume, and nothing appears in a diff to
     // announce those. No wording of a left column reaches them, which is why
     // seven such rows in this collection were opened zero times in ninety runs.
     // They belong in a coverage obligation that names each as checked or not.
@@ -687,7 +687,7 @@ async function verify(skillDir) {
     // gate-not-checklist already requires the literal tokens that will be on
     // screen in the left column, and nothing checked it. Measured on one skill:
     // eleven of twelve rows carried none, and the rows an agent never reached
-    // were the ones packing the most alternatives — eleven and twelve competing
+    // were the ones packing the most alternatives, eleven and twelve competing
     // clauses each, against a mean of four in the rows it did reach. A row is
     // matched by recognition, and recognition divides across whatever the row
     // offers, so a row offering a dozen concepts gives each of them a twelfth
@@ -710,8 +710,7 @@ async function verify(skillDir) {
     else {
       const bare = gateRows.filter((r) => !/`[^`]+`|"[^"]+"/.test(r.left));
       // Distinct things to check, not words. Counting every comma treats
-      // "provider, SDK, API, request, response" — five names for one signal —
-      // the same as "naming, abstractions, classes, cutovers", which are four
+      // "provider, SDK, API, request, response", five names for one signal,       // the same as "naming, abstractions, classes, cutovers", which are four
       // separate matches. Attention divides across the second kind and barely
       // across the first, so a comma-separated cluster counts once and a clause
       // boundary starts a new one. Undercounting a genuine list is the safer

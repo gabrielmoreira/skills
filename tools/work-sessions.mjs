@@ -28,7 +28,7 @@ const arg = (k, d) => { const i = argv.indexOf(k); return i < 0 ? d : argv[i + 1
 const ROOT = arg("--root", join(homedir(), ".agent-sessions", "agent", "sessions"));
 const MAX_BYTES = Number(arg("--max-mb", 200)) * 1024 * 1024;
 const LIMIT = Number(arg("--limit", Infinity));
-// Practice changed over the months these cover — models, skills, habits — so a
+// Practice changed over the months these cover, models, skills, habits, so a
 // pooled average across all of it describes a person who no longer exists.
 const SINCE = arg("--since", null);
 const dateOf = (f) => (f.match(/(\d{4}-\d{2}-\d{2})T/) ?? [])[1] ?? null;

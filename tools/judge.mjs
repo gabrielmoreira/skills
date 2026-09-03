@@ -91,8 +91,8 @@ function ask(text) {
  *
  * Reading the raw stream as if it were the reply is how this failed the first
  * time: the first line of omp's output is a session header, it does not begin
- * with YES, so every claim came back NO. That produced a constant score — the
- * mustNot items all satisfied by universal denial — identical for a gold answer
+ * with YES, so every claim came back NO. That produced a constant score, the
+ * mustNot items all satisfied by universal denial, identical for a gold answer
  * and a weak one, which is what gave the bug away. A judge that answers the same
  * thing regardless of input looks like a weak judge and is a broken harness.
  */
@@ -222,8 +222,8 @@ if (argv.includes("--replay")) {
   }
 
   const rows = [];
-  // The control arm answers the prior question — whether the skill earns its
-  // place at all — and it is already recorded, so scoring it costs nothing to
+  // The control arm answers the prior question, whether the skill earns its
+  // place at all, and it is already recorded, so scoring it costs nothing to
   // produce and only the judging to read.
   const ARM = arg("--arm", "with");
   const pat = new RegExp(`__${ARM}__\\d+\\.txt$`);
@@ -243,8 +243,8 @@ if (argv.includes("--replay")) {
     rows.push({ id, ...g });
     // Per-criterion verdicts, kept so a null result can be interrogated rather
     // than only reported. A mean that does not move between arms has two very
-    // different causes — the guidance changes nothing, or the criteria were
-    // already satisfied without it — and only the item-level data separates them.
+    // different causes, the guidance changes nothing, or the criteria were
+    // already satisfied without it, and only the item-level data separates them.
     if (OUT) {
       const { appendFileSync } = await import("node:fs");
       for (const it of g.items) appendFileSync(OUT, JSON.stringify({ id, kind: it.kind, verdict: it.verdict, text: it.text }) + "\n");

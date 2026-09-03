@@ -1,6 +1,6 @@
 # Roadmap
 
-This roadmap lists coverage gaps, improvements to existing rules, and alignment with recognized best practices. For current tree state (counts of rules, references, evals), see `references/review-notes.md`. Items are ordered by priority within each phase.
+This roadmap lists coverage gaps, improvements to existing rules, and alignment with recognized best practices. For current tree state, run `node tools/rule-anatomy.mjs` and `node tools/check-all.mjs`; the counted file that used to hold it drifted and was deleted. Items are ordered by priority within each phase.
 
 ---
 
@@ -241,10 +241,10 @@ Action: replace the legacy monolithic behavioral eval file with phased, per-bund
 ## Promotion criteria
 
 Each roadmap item only advances to installed skills when:
-1. Rule written following `references/authoring-checklist.md`.
-2. Ownership updated in `references/ownership.md`.
+1. Rule written following `skills/typescript-skills/references/authoring-checklist.md`.
+2. Owner declared in the rule's own `owner:` frontmatter, which C-01 checks against the filename.
 3. Router(s) updated, root and/or bundle SKILL.md.
 4. At least 2 eval scenarios added to `references/evaluation-plan.md` or the successor per-bundle scenario manifest.
 5. Evals pass the current promotion gate: every scenario scores at least 2/3, hard-gates score 3/3, and the with-skill mean is at least 2.5/3.
-6. Source coverage updated if rule came from external material.
+6. External material named in the rule's `references:` frontmatter if it came from any.
 7. No conflict with existing rules (check conflict audit).
