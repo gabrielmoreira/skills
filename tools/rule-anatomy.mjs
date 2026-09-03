@@ -50,8 +50,27 @@ for (const s of readdirSync(ROOT, { withFileTypes: true }).filter((d) => d.isDir
       const avoid = body.slice(body.indexOf("Avoid:"), body.indexOf("Verify:"));
       const useWhen = body.slice(body.indexOf("Use when:"), body.indexOf("Do:"));
 
-      const refs = (text.match(/^references: \[(.*)\]$/m)?.[1] ?? "")
-        .split(",").map((x) => x.trim().replace(/\s*\(.*\)$/, "")).filter((x) => x.length > 3);
+      // Splitting on every comma breaks a name that carries one inside its
+      // brackets. "Result/Either type (Rust, Scala, fp-ts)" is one name, and
+      // the naive split counted it as three: the head, plus two fragments that
+      // no rule body would ever contain. A length filter then hid part of the
+      // damage by dropping the shortest fragments, which is why this reported
+      // more unused names than there are names.
+      const inner = text.match(/^references: \[(.*)\]$/m)?.[1] ?? "";
+      const parts = [];
+      let depth = 0, buf = "";
+      for (const ch of inner) {
+        if (ch === "(" || ch === "[") depth++;
+        else if (ch === ")" || ch === "]") depth--;
+        if (ch === "," && depth === 0) { parts.push(buf); buf = ""; continue; }
+        buf += ch;
+      }
+      parts.push(buf);
+      // The lookup term is the head. A parenthetical is attribution, so a body
+      // saying "Strangler Fig" uses "Strangler Fig (Fowler)".
+      const refs = parts
+        .map((x) => x.trim().replace(/^["']|["']$/g, "").split("(")[0].trim())
+        .filter((x) => x.length > 3);
       const lower = body.toLowerCase();
 
       rows.push({
