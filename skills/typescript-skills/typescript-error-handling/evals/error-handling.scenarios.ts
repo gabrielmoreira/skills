@@ -709,6 +709,52 @@ const scenarios = [
     ],
     tags: ["real-world", "fixture", "open-ended", "measure-the-problem"]
   },
+  {
+    id: "error-handling-skip-retry-loop-backoff",
+    bundle: "typescript-error-handling",
+    rule: "error-classification",
+    tier: "P1",
+    mode: "exception",
+    difficulty: "hard",
+    prompt:
+      "the payment gateway timeout error is already tagged retryable, how should i set up the loop to back off exponentially with jitter?",
+    nearMiss:
+      "It names a retryable error, which is this topic's domain. But the failure classification is already decided and settled; what is being asked is how to construct the exponential backoff retry loop, which this topic's own Edges hand to async.",
+    activation: {
+      layer: "topic",
+      target: "typescript-error-handling",
+      shouldActivate: false,
+      forbiddenRoutes: [],
+    },
+    expectedPrimary: "typescript-async",
+    expectedAll: ["typescript-async/INDEX.md"],
+    must: ["Treats backoff and jitter as an async loop implementation rather than error classification"],
+    mustNot: ["Re-classifies the error or redesigns error hierarchies"],
+    tags: ["activation", "negative", "edge-to-async"],
+  },
+  {
+    id: "error-handling-skip-redacting-card-number",
+    bundle: "typescript-error-handling",
+    rule: "error-shape-and-metadata",
+    tier: "P1",
+    mode: "exception",
+    difficulty: "hard",
+    prompt:
+      "the checkout failure payload carries the full credit card number in its raw input field, how do i mask it before it gets attached?",
+    nearMiss:
+      "It touches failure payloads and error details, which this topic covers under error metadata. But the decision is data sanitization and masking secrets, which this topic's own Edges hand to security.",
+    activation: {
+      layer: "topic",
+      target: "typescript-error-handling",
+      shouldActivate: false,
+      forbiddenRoutes: [],
+    },
+    expectedPrimary: "typescript-security",
+    expectedAll: ["typescript-security/rules/redaction.md"],
+    must: ["Treats credential and PAN masking as a security redaction requirement"],
+    mustNot: ["Treats masking sensitive card data as merely a custom error shape design"],
+    tags: ["activation", "negative", "edge-to-security"],
+  },
 ] satisfies EvalScenario[];
 
 export default scenarios;

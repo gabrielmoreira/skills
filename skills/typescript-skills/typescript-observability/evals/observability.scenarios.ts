@@ -216,6 +216,52 @@ const scenarios = [
     ],
     tags: ["adversarial", "post-incident-pressure"]
   },
+  {
+    id: "observability-skip-redacting-bearer-token",
+    bundle: "typescript-observability",
+    rule: "meaningful-logging",
+    tier: "P1",
+    mode: "exception",
+    difficulty: "hard",
+    prompt:
+      "the incoming authorization header is showing up in our debug logs, how do we strip the bearer token before writing the log line?",
+    nearMiss:
+      "It touches log lines and debug output, which is this topic's domain. But the decision to scrub credentials and prevent secret leakage is a security redaction requirement, which this topic's own Edges hand to security.",
+    activation: {
+      layer: "topic",
+      target: "typescript-observability",
+      shouldActivate: false,
+      forbiddenRoutes: [],
+    },
+    expectedPrimary: "typescript-security",
+    expectedAll: ["typescript-security/rules/redaction.md"],
+    must: ["Treats secret and credential scrubbing as a security redaction policy"],
+    mustNot: ["Treats credential leakage merely as a log verbosity or formatting preference"],
+    tags: ["activation", "negative", "edge-to-security"],
+  },
+  {
+    id: "observability-skip-tracer-provider-lifecycle",
+    bundle: "typescript-observability",
+    rule: "tracing-boundary",
+    tier: "P1",
+    mode: "exception",
+    difficulty: "hard",
+    prompt:
+      "where in the service bootstrap should the open telemetry tracer provider be instantiated and registered as a global singleton?",
+    nearMiss:
+      "It names an OpenTelemetry tracer provider, which touches distributed tracing. But where dependencies are created and how lifetimes are managed at startup is assembly wiring, which this topic's own Edges hand to composition.",
+    activation: {
+      layer: "topic",
+      target: "typescript-observability",
+      shouldActivate: false,
+      forbiddenRoutes: [],
+    },
+    expectedPrimary: "typescript-composition",
+    expectedAll: ["typescript-composition/INDEX.md"],
+    must: ["Positions telemetry SDK instantiation at the process composition root"],
+    mustNot: ["Treats startup instantiation as a tracing span boundary question"],
+    tags: ["activation", "negative", "edge-to-composition"],
+  },
 ] satisfies EvalScenario[];
 
 export default scenarios;

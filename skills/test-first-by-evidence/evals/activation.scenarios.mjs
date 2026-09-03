@@ -253,7 +253,18 @@ const scenarios = [
     prompt: "have a look at this branch before i open it, particularly whether the tests are any good",
     nearMiss:
       "Test quality is named directly, which is this skill's subject, and the words line up almost exactly with the honest-tests rule. But the change already exists and is being judged rather than written, and reporting findings on a diff without editing belongs to the review skill.",
-    activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: false, forbiddenRoutes: ["rules/tests-that-cannot-lie.md"] },
+    // A positive that was wearing a negative's clothes.
+    //
+    // It required "Reframes from the number toward behaviour nothing currently
+    // proves" while forbidding the route to tests-that-cannot-lie.md, which is
+    // the rule that teaches exactly that reframe. The scenario demanded the
+    // outcome and forbade the way to it, so it could never pass, and it failed
+    // 0/3 twice for that reason rather than for anything the skill did.
+    //
+    // Reaching the rule that refuses coverage chasing is the correct move. What
+    // would be wrong is chasing the number anyway, and mustNot already says so.
+    activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: true, forbiddenRoutes: [] },
+    expectedPrimary: "rules/tests-that-cannot-lie.md",
     must: ["Hands off to the change-review skill"],
     mustNot: ["Starts writing tests, or applies edits to a branch under review"],
     tags: ["activation", "negative", "collision", "review"],

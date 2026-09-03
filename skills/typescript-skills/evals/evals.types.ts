@@ -43,7 +43,7 @@ export type EvalTier = (typeof TIERS)[number];
 export type EvalMode = (typeof MODES)[number];
 export type EvalDifficulty = (typeof DIFFICULTIES)[number];
 
-export const ACTIVATION_LAYERS = ["public-skill", "internal-route"] as const;
+export const ACTIVATION_LAYERS = ["public-skill", "internal-route", "topic"] as const;
 
 export type ActivationLayer = (typeof ACTIVATION_LAYERS)[number];
 
@@ -86,8 +86,12 @@ export type EvalScenario = {
   difficulty?: EvalDifficulty;
   /** User-facing prompt. Must not leak the expected topic/rule name. */
   prompt: string;
+  /** Human explanation of why this scenario looks like a topic but belongs elsewhere. */
+  nearMiss?: string;
   /** Primary owner we expect a strong answer to route to. */
   expectedPrimary?: string;
+  /** Complete list of expected rule/document paths. */
+  expectedAll?: readonly string[] | string[];
   /** Optional secondary owners that may be relevant but not primary. */
   expectedSecondary?: string[];
   /** Optional expectation for measuring public activation or internal routing. */

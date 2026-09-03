@@ -215,6 +215,52 @@ const scenarios = [
     ],
     tags: ["adversarial", "post-incident-pressure"]
   },
+  {
+    id: "security-skip-operation-timing-logs",
+    bundle: "typescript-security",
+    rule: "redaction",
+    tier: "P1",
+    mode: "exception",
+    difficulty: "hard",
+    prompt:
+      "our database migration ran slow last night, what structured log fields should we emit to track each step's duration?",
+    nearMiss:
+      "It touches log fields and diagnostic output, but nothing in the prompt involves credentials, secrets, or sensitive personal data. Deciding what operational events to emit for debugging belongs to observability.",
+    activation: {
+      layer: "topic",
+      target: "typescript-security",
+      shouldActivate: false,
+      forbiddenRoutes: [],
+    },
+    expectedPrimary: "typescript-observability",
+    expectedAll: ["typescript-observability/INDEX.md"],
+    must: ["Treats operational duration and timing fields as observability concerns"],
+    mustNot: ["Treats non-sensitive performance logging as a security redaction problem"],
+    tags: ["activation", "negative", "edge-to-observability"],
+  },
+  {
+    id: "security-skip-non-sensitive-feature-flag",
+    bundle: "typescript-security",
+    rule: "secrets-lifecycle",
+    tier: "P1",
+    mode: "exception",
+    difficulty: "hard",
+    prompt:
+      "we are adding an ENABLE_BETA_UI boolean flag that reads from the environment, how should we shape the config object for the frontend?",
+    nearMiss:
+      "It reads an environment variable, which touches secrets-lifecycle. But a non-sensitive UI feature toggle is ordinary runtime configuration with no secret or credential implications, which this topic's own Edges hand to configs.",
+    activation: {
+      layer: "topic",
+      target: "typescript-security",
+      shouldActivate: false,
+      forbiddenRoutes: [],
+    },
+    expectedPrimary: "typescript-configs",
+    expectedAll: ["typescript-configs/INDEX.md"],
+    must: ["Treats non-sensitive feature toggles as regular application config"],
+    mustNot: ["Treats a non-sensitive UI boolean as a secret requiring vault storage or encryption"],
+    tags: ["activation", "negative", "edge-to-configs"],
+  },
 ] as const satisfies readonly EvalScenario[];
 
 export default scenarios;

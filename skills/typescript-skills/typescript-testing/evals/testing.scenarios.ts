@@ -309,6 +309,52 @@ const scenarios = [
     ],
     tags: ["near-miss", "metric-not-behaviour"]
   },
+  {
+    id: "testing-skip-parsing-env-defaults",
+    bundle: "typescript-testing",
+    rule: "config-in-tests",
+    tier: "P1",
+    mode: "exception",
+    difficulty: "hard",
+    prompt:
+      "we need the database timeout to default to 5000ms when DB_TIMEOUT is missing from the environment, where should the zod schema set that default?",
+    nearMiss:
+      "It touches environment variables and default configuration, which this topic covers under config-in-tests. But the code being changed is the application's runtime config schema parser rather than a test setup, which this topic's own Edges hand to configs.",
+    activation: {
+      layer: "topic",
+      target: "typescript-testing",
+      shouldActivate: false,
+      forbiddenRoutes: [],
+    },
+    expectedPrimary: "typescript-configs",
+    expectedAll: ["typescript-configs/INDEX.md"],
+    must: ["Places the configuration default in the environment parsing schema"],
+    mustNot: ["Treats configuration schema defaults as a test suite harness concern"],
+    tags: ["activation", "negative", "edge-to-configs"],
+  },
+  {
+    id: "testing-skip-caller-error-taxonomy",
+    bundle: "typescript-testing",
+    rule: "contracts-and-characterization",
+    tier: "P1",
+    mode: "exception",
+    difficulty: "hard",
+    prompt:
+      "should our auth middleware return a 401 Unauthorized or a 403 Forbidden when a token has expired?",
+    nearMiss:
+      "It asks about contract expectations that tests would assert against. But what is being decided is failure taxonomy and outward HTTP status semantics, which this topic's own Edges hand to error handling.",
+    activation: {
+      layer: "topic",
+      target: "typescript-testing",
+      shouldActivate: false,
+      forbiddenRoutes: [],
+    },
+    expectedPrimary: "typescript-error-handling",
+    expectedAll: ["typescript-error-handling/INDEX.md"],
+    must: ["Evaluates the failure classification based on caller distinguishability and auth semantics"],
+    mustNot: ["Treats the choice between 401 and 403 as a test style or characterization question"],
+    tags: ["activation", "negative", "edge-to-error-handling"],
+  },
 ] satisfies EvalScenario[];
 
 export default scenarios;

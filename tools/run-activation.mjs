@@ -1058,7 +1058,25 @@ async function main(modelOverride) {
         // it can be opened, judged and declined, so entering is the failure. A
         // flat skill has nothing underneath, so reading it is the whole of
         // using it and the old rule still holds.
-        const tookIt = deep.get(c.skill) ? seen.rules.length > 0 : graded.opened;
+        // Which rules count as this scenario's own.
+        //
+        // c.skill is the top-level directory, because that is what loadSkill
+        // walks. In a multi-topic tree every one of the nine topics reports as
+        // typescript-skills, so "opened any rule" was true whenever the agent
+        // went to the sibling topic a bypass names, which is the correct move.
+        //
+        // Measured on eight topic negatives: the harness called five of them
+        // over-activation. Seven of the eight had left the topic under test
+        // completely shut and gone to the sibling the prompt pointed at. Only
+        // one genuinely entered its own topic.
+        //
+        // So a scenario that names a bundle narrower than the skill is scored
+        // against that bundle. A rule opened in a sibling is a handoff, not a
+        // failure to decline.
+        const own = c.scenario?.bundle && c.scenario.bundle !== c.skill
+          ? seen.rules.filter((r) => String(r).includes(c.scenario.bundle))
+          : seen.rules;
+        const tookIt = deep.get(c.skill) ? own.length > 0 : graded.opened;
         if (want ? !tookIt : graded.pass) passes++;
         answers.push(redact(JSON.stringify({ skills: seen.skills, rules: seen.rules }), roots));
         continue;
