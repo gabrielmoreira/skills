@@ -17,30 +17,8 @@ back what happened.
 is more than I would normally put in a README. Prior work these are built on is
 credited in [CREDITS.md](CREDITS.md).
 
-> The work should leave enough behind that the next person can pick it up cold.
-
-That next person is usually you, on Monday.
-
 **Each skill opens only the parts that apply.** A three-line change does not pay
 for a nine-hundred-line review.
-
-## What is in here
-
-| Skill | Helps you with |
-| --- | --- |
-| [`evidence-backed-review`](#evidence-backed-review) | judging a branch or a pull request before it lands |
-| [`test-first-by-evidence`](#test-first-by-evidence) | writing the test before the code, and proving it can fail |
-| [`debugging-by-evidence`](#debugging-by-evidence) | finding the cause of a bug instead of guessing at it |
-| [`treat-blockers-as-incidents`](#treat-blockers-as-incidents) | tool, install, auth, and environment failures that block the task |
-| [`keep-git-work-recoverable`](#keep-git-work-recoverable) | getting unstuck when git refuses, without losing work |
-| [`make-the-docs-trustworthy`](#make-the-docs-trustworthy) | docs that went stale, and where to put what you write |
-| [`maintainable-code`](#maintainable-code) | code someone can come back to |
-| [`typescript-skills`](#typescript-skills) | the same, specifically for TypeScript |
-| [`progressive-reading`](#progressive-reading) | answers that are readable instead of exhausting |
-| [`drop-the-model-voice`](#drop-the-model-voice) | written output that sounds like the engineer who did the work |
-| [`bound-the-unknown`](#bound-the-unknown) | probing unfamiliar ground on a stated budget before it eats the session |
-| [`keep-the-thread-across-boundaries`](#keep-the-thread-across-boundaries) | holding what a session settled across compactions, resumes, and handoffs |
-| [`authoring-verifiable-skills`](#authoring-verifiable-skills) | writing your own skill, and proving it works |
 
 ## Install
 
@@ -330,16 +308,16 @@ never fires.
 
 ## Checking what you installed
 
-Everything runs on bare node. No install, no toolchain, no dependency.
-
 ```bash
 node tools/check-all.mjs --report
 ```
 
-It prints structural invariants, mutation results, page shape, frontmatter
-validity, and how many scenarios a router with no understanding already solves.
+Bare node, no install. It prints structural invariants, mutation results, page
+shape, frontmatter validity, whether the routing tables agree, how much of the
+scenario set describes a situation somebody was actually in, and how many
+scenarios a router with no understanding already solves.
 [`docs/how-this-is-built.md`](docs/how-this-is-built.md) explains what each check
-protects and why the collection is built this way.
+protects.
 
 The suite reports the behaviour numbers but does not produce them, because a
 behaviour run costs minutes and a network. To produce them:
@@ -363,15 +341,14 @@ every call and sends nothing.
 **Most scenarios have still never been run.** The baseline covers what has been
 measured and the suite prints its age. Everything outside it is a claim.
 
-**The measured rate separates from its control and not much more.** With the
-collection loaded the scenarios pass 60% of the time, and without it 0%, which
-is a real gap. The interval around that 60% is wide enough that a single edit
-moving it a few points would be invisible, so the number is evidence the skills
-do something and not yet a regression detector.
+**The measured rate separates from its control and not much more.** The suite
+prints both arms with their intervals. The gap is real; the interval is wide
+enough that a single edit moving it a few points would be invisible. It is
+evidence the skills do something, not a regression detector.
 
-**Under a fifth of the routed scenarios are giveaways.** The suite reports how many
-a bag-of-words router solves with no understanding at all. Those pass for
-reasons that have nothing to do with the skill.
+**Some routed scenarios are giveaways.** The suite reports how many a
+bag-of-words router solves with no understanding at all. Those pass for reasons
+that have nothing to do with the skill.
 
 **A behaviour run measures one agent on one day.** It says nothing about a
 different harness, a different model, or the same model next month, which is
