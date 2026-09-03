@@ -37,7 +37,7 @@ Do:
 - **Pass the `Error` instance itself**, so `stack`, `cause`, and `message` reach the log pipeline.
 - **Keep fields low-cardinality**, unless a high-cardinality identifier is explicitly safe and needed.
 - **Coordinate with `typescript-security/rules/redaction.md` before logging sensitive context.**
-- **Write to stdout and stderr and let the runtime route them.** Shipping, rotation, and transport are not the application's job.
+- **Follow Twelve-Factor logs**: write to stdout and stderr. Shipping, rotation, and transport are not the application's job.
 
 Avoid:
 - **`logger.info("here")`, an error with no context, or `console.log(payload)`.**

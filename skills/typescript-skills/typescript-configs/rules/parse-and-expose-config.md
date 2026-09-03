@@ -8,7 +8,7 @@ references: [Parse don't validate, Twelve-Factor III (Config)]
 
 # Parse and Expose Config
 
-Decision: **Parse unknown config once, at the boundary, into typed values.** This rule owns raw-to-typed parsing, requiredness, schema choice, and parser failure shape. Who receives which slice belongs to `skill://typescript-skills/typescript-configs/rules/contextual-config.md`.
+Decision: **Parse, don't validate**: turn unknown config into typed values at the boundary. This rule owns parsing, requiredness, schema choice, and failure shape. Who receives which slice belongs to `skill://typescript-skills/typescript-configs/rules/contextual-config.md`.
 
 Use when:
 - **Code reads unknown runtime values.** `process.env`, CLI args, raw config files.

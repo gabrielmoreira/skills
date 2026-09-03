@@ -8,7 +8,7 @@ references: [Strangler Fig, Branch by Abstraction]
 
 # Config Migration
 
-Decision: **Migrate legacy config reads through an explicit seam that preserves observed behaviour first**, then parse and move callers without changing runtime assumptions along the way. The general cutover policy lives in `skill://typescript-skills/typescript-coding-standards/rules/cutovers.md`.
+Decision: **Apply Branch by Abstraction to migrate legacy config reads**: preserve observed behaviour through a seam first, then move callers without changing runtime assumptions. The general cutover policy lives in `skill://typescript-skills/typescript-coding-standards/rules/cutovers.md`.
 
 Use when:
 - **Env reads are scattered across feature modules.**
