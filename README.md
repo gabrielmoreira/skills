@@ -4,6 +4,8 @@ Thirteen skills for coding agents. Each one covers a moment you already recognis
 feature about to be written, a branch to review, a bug with no reproduction, a git
 command that refuses, docs that went stale.
 
+Prior work these are built on is credited in [CREDITS.md](CREDITS.md).
+
 > The work should leave enough behind that the next person can pick it up cold.
 
 That next person is usually you, on Monday.
@@ -332,6 +334,8 @@ write-up, a status update, a release note, a wiki page, an announcement.**
   for teams without one.
 - **One tell proves nothing.** Polish, a dry register, and a single formal word
   are how many people write.
+
+Built on prior work by others, credited in [CREDITS.md](CREDITS.md).
 
 ### [`bound-the-unknown`](skills/bound-the-unknown/SKILL.md)
 

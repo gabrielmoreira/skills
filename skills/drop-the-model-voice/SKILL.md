@@ -142,8 +142,7 @@ fake option     a tempting approach would be / one might be tempted to
 **Nothing.** A single dash, one formal word, or one heading in title case is how many people write. Several tells in one passage is the signal.
 
 - **Do not flag polish.** Clean grammar means somebody edited it.
-- **Do not flag a dry register.** Reference material is meant to be dry.
-- **Do not flag one transition word.** A single "however" is a word, not a pattern.
+- **Do not flag a dry register or one transition word.** Reference material is meant to be dry, and a single "however" is a word rather than a pattern.
 
 **And keep what a model would have removed.** Uneven sentence length, because a steady mid-length cadence is itself a tell. An unresolved feeling, because "this is probably fine and it still bothers me" is information about confidence. A specific, useless-looking detail. An aside or a self-correction, which rarely survive a generated draft.
 
@@ -171,4 +170,5 @@ fake option     a tempting approach would be / one might be tempted to
 - **Say which rule lost, in one line.** A voice the user asked for that comes back flattened and reported as cleaned up is the worst outcome this skill can produce.
 - **No instruction reaches invention.** Matching a voice never licenses adding a fact, a number, a name, or a citation the work did not produce.
 
-The pattern catalogue behind this is Wikipedia's "Signs of AI writing", maintained by its AI cleanup project. This restates it for software prose and adds the shapes a team expects.
+Built on prior work, credited in the repository's `CREDITS.md`: a pattern
+catalogue from Wikipedia, and the skill that first turned it into one.
