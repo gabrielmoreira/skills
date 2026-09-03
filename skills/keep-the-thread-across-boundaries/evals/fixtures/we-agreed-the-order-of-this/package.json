@@ -1,0 +1,5 @@
+{
+  "name": "importers",
+  "type": "module",
+  "scripts": { "test": "node --test" }
+}
