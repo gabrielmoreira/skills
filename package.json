@@ -4,6 +4,7 @@
   "type": "module",
   "description": "Agent skills, their checks, and the fixtures those checks run against.",
   "devDependencies": {
+    "@types/node": "^26.4.1",
     "typescript": "^6.0.3"
   },
   "scripts": {
