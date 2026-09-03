@@ -1,0 +1,9 @@
+{
+  "name": "invoices-service",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "verify-abuse": "node verify-abuse.js"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "payments-fee-service",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "verify-defect": "node verify-defect.js"
+  }
+}

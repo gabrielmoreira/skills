@@ -1,0 +1,9 @@
+{
+  "name": "orders-service",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "verify-consumer": "node verify-consumer.js"
+  }
+}

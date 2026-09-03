@@ -1,0 +1,9 @@
+{
+  "name": "platform-api-client",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "check-docs": "node check-doc-drift.js"
+  }
+}
