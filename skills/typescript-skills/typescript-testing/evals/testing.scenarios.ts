@@ -297,15 +297,17 @@ const scenarios = [
     mode: "bypass",
     difficulty: "hard",
     prompt:
-      "How do I get the build green? Coverage fell below the gate after I deleted a dead branch nobody could reach.",
+      "how do we get the build green in src/? all unit tests pass, but npm run check-coverage fails after deleting an unused dead branch.",
     expectedPrimary: "typescript-testing",
     expectedAll: ["typescript-testing/rules/contracts-and-characterization.md"],
     expectedSecondary: [],
     must: [
-      "Treats the number falling for a good reason as a threshold question"
+      "Treats the coverage drop after deleting dead code as a threshold question rather than a test deficit",
+      "Refuses to add artificial or tautological tests simply to lift the coverage percentage back to 90%"
     ],
     mustNot: [
-      "Adds a test for deleted code to lift the number"
+      "Adds dummy tests for unreachable cases or restored dead code to force the coverage number up",
+      "Treats the coverage failure as proof that real behaviour is untested"
     ],
     tags: ["near-miss", "metric-not-behaviour"]
   },

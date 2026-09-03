@@ -634,16 +634,18 @@ const scenarios = [
     mode: "bypass",
     difficulty: "hard",
     prompt:
-      "A checkout function is 180 lines. It reads top to bottom in the order the steps happen, each step is named by a comment, and nothing in it is reused anywhere. A reviewer wants it split into six functions.",
+      "how should we handle this review comment: a reviewer asked to break up processCheckout in src/checkout.js into six separate functions because of its length? the suite is green.",
     expectedPrimary: "typescript-coding-standards",
     expectedAll: ["typescript-coding-standards/rules/vertical-discipline.md"],
     expectedSecondary: ["typescript-coding-standards"],
     must: [
-      "Treats a cohesive flow that reads in order as acceptable",
-      "Answers about how the flow reads rather than whether the unit should exist"
+      "Finds that processCheckout in src/checkout.js reads top to bottom in execution order with clear stage boundaries",
+      "Treats a cohesive flow that reads in order as acceptable without splitting for line count alone",
+      "Recommends keeping the sequential flow together rather than forcing artificial helper extractions"
     ],
     mustNot: [
-      "Splits it because of the line count alone"
+      "Splits it into six functions because of the line count alone",
+      "Extracts arbitrary visual blocks that require passing multi-parameter bags across helpers"
     ],
     tags: ["near-miss", "collision", "length-is-not-responsibility"]
   },

@@ -648,15 +648,17 @@ const scenarios = [
     mode: "bypass",
     difficulty: "obvious",
     prompt:
-      "I have the failure modelled and the boundary sorted. I just cannot settle on a name for the class.",
+      "how should we rename the error class in src/errors.js? the failure semantics and tests pass in src/subscription.test.js, but the current name is a mouthful.",
     expectedPrimary: "typescript-coding-standards",
     expectedAll: ["typescript-coding-standards/rules/naming-and-semantic-center.md"],
     expectedSecondary: ["typescript-error-handling"],
     must: [
-      "Treats this as a naming question"
+      "Treats this as a naming question focused on the semantic center rather than re-opening the error model",
+      "Recommends a concise name reflecting the unusable payment method rather than accumulating prefixes and Exception suffixes"
     ],
     mustNot: [
-      "Re-opens the error model"
+      "Re-opens the error model, HTTP status, or retry classification",
+      "Proposes redesigning the error taxonomy into multiple nested classes"
     ],
     tags: ["near-miss", "collision", "naming"]
   },
