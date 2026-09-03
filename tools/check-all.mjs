@@ -141,6 +141,11 @@ if (!paths.ok) failed++;
 const baseline = run("route-baseline.mjs", []);
 const baselineLine = baseline.out.trim().split("\n").find((l) => l.includes("routed scenarios:")) ?? "not measured";
 
+// How much of the scenario set is derived from real sources vs invented.
+const provenance = run("scenario-provenance.mjs", []);
+const provenanceLine = provenance.out.trim().split("\n").find((l) => l.includes("scenarios:") && l.includes("invented,")) ?? "not measured";
+if (!provenance.ok) failed++;
+
 /**
  * Behaviour is read from the committed baseline rather than measured here: a
  * run costs minutes and a network, and this suite has to stay something you can
@@ -259,6 +264,7 @@ console.log(`  graders           ${graders.ok ? "passed" : "FAILED"}`);
 console.log(`  local paths       ${paths.ok ? "none committed" : "FOUND"}`);
 console.log(`  scenarios         ${baselineLine}`);
 console.log(`  split             ${splitLine}`);
+console.log(`  provenance        ${provenanceLine}`);
 console.log(`  behaviour         ${behaviourLine(collectionSize)}`);
 console.log(`  far misses        ${farMissLine()}`);
 
