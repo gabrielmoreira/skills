@@ -33,12 +33,13 @@ const scenarios = [
     mode: "apply",
     difficulty: "mixed",
     prompt:
-      "A helper caches `makeClient({ tenantId })` in a module-level singleton so later calls can reuse it. The author says client creation is expensive and this is a performance win. What should change?",
+      "an account is being quoted the wrong price and the response names the right account. src/ is the whole module and the suite is green.",
     expectedPrimary: "typescript-composition",
     expectedSecondary: ["typescript-performance", "typescript-testing"],
     must: [
+      "Finds that rate-client.js builds once and returns that instance to every later account, whose endpoint, credentials and margin were captured from whichever account arrived first",
+      "Explains why the response still names the right account: the id comes from the argument and the price comes from the captured client",
       "Rejects app-singleton reuse when the dependency captures tenant or similarly scoped data",
-      "Requires scope to match captured data such as request, tenant, transaction, or user context",
       "Allows reuse only when the dependency is safe for that longer lifetime",
       "Calls out cache ownership, invalidation, or cleanup if a cache is still needed"
     ],
@@ -81,16 +82,18 @@ const scenarios = [
     mode: "apply",
     difficulty: "mixed",
     prompt:
-      "Our `getCurrentUser()` reads a JWT from a module-level `currentRequest` variable that we set at the start of each request via middleware. It works but feels wrong. What pattern should we use?",
+      "this handler is about to go behind a lot more traffic. anything here going to bite us? src/ is the whole service.",
     expectedPrimary: "typescript-composition",
     must: [
-      "Identifies module-level mutable request state as the core smell",
-      "Recommends passing a request-scoped capability or factory inward",
-      "Connects the fix to deliberate dependency scope decisions",
-      "Mentions tests cannot isolate request state with the current design"
+      "Finds that session.js holds the actor in a module-level variable shared by every in-flight request",
+      "Names what happens when two overlap: the second beginRequest overwrites the first, and whichever endRequest lands first clears it for both",
+      "Says the green suite does not cover it, because the tests await one request at a time",
+      "Recommends carrying the actor inward on the call rather than beside it"
     ],
     mustNot: [
-      "Recommends AsyncLocalStorage as the first answer instead of a later escalation"
+      "Recommends AsyncLocalStorage as the first answer instead of a later escalation",
+      "Calls the code fine because the tests pass",
+      "Treats it as a locking or race-condition problem to solve with a mutex"
     ],
     tags: ["dependency-scope", "request-scope", "module-state", "legacy-migrated"]
   },

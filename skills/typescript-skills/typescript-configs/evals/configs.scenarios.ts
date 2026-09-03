@@ -353,16 +353,18 @@ const scenarios = [
     mode: "bypass",
     difficulty: "hard",
     prompt:
-      "Where does this go? Only the background worker needs it, the API never reads it, and today every process loads one config object.",
+      "we need a retry delay for the label printer. where does it go? src/ is the whole service.",
     expectedPrimary: "typescript-configs",
     expectedAll: ["typescript-configs/rules/contextual-config.md"],
     expectedSecondary: ["typescript-composition"],
     must: [
-      "Scopes the value to the process that needs it",
-      "Stops an unrelated process failing startup over a value it never reads"
+      "Notices settings.js already requires LABEL_PRINTER_HOST of every process, so the API cannot start without a value it never reads",
+      "Scopes the new value to the worker rather than adding it beside the others",
+      "Treats the existing shared object as the thing to change, not as the place to add to"
     ],
     mustNot: [
-      "Adds it to the shared object because that is where config lives"
+      "Adds it to the shared object because that is where config lives",
+      "Adds it to the required list, which extends the same failure to every process"
     ],
     tags: ["near-miss", "scope-not-parsing"]
   },
