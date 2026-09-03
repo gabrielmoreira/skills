@@ -71,6 +71,15 @@ description: >-
 - **One question decides between the two learnings directories.** Would a colleague cloning this repository hit the same thing? Yes goes inside, no goes outside.
 - **Report the path chosen and whether it is tracked**, every time.
 
+## What must not leave this machine
+
+**This collection is written from real material: pull requests, session logs, and production checkouts that live in other folders.** None of it reaches a commit.
+
+- **Never commit any of these.** A machine path. An environment value. A company or product name from that material. A borrowed checkout's name. A host. A credential. The easiest to miss is a default value, because nobody passes the flag and so nobody reads it.
+- **A derived scenario carries a shape, never content.** The domain changes. The mechanism changes. Names, paths, hosts and vendors do not travel.
+- **A local hook in `.git/hooks` blocks a commit carrying any of it.** It is not committed and cannot be, so a fresh clone has no guard until somebody installs one.
+- **Two places name me on purpose.** The licence and this file. Removing it here would remove the warning this file exists to carry.
+
 ## Scouting, scripts and subagents
 
 **A throwaway analysis is a script, not a subagent.** Node, and `.mjs` so it runs with bare `node` and no toolchain. Use `.ts` only where it has to meet types that already exist.
