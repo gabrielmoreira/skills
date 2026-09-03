@@ -86,6 +86,15 @@ export type EvalScenario = {
   difficulty?: EvalDifficulty;
   /** User-facing prompt. Must not leak the expected topic/rule name. */
   prompt: string;
+  /**
+   * Where this situation came from. `invented` is legal and must be honest:
+   * a scenario nobody can trace to a source is invented, and saying so is the
+   * point. Anything other than `invented` claims a real situation and is held
+   * to the constrained prompt shape by C-17.
+   */
+  source?: "session" | "repo-debt" | "pr-review" | "incident" | "invented";
+  /** For a derived scenario, what it was derived from, in one line. */
+  sourceNote?: string;
   /** Human explanation of why this scenario looks like a topic but belongs elsewhere. */
   nearMiss?: string;
   /** Primary owner we expect a strong answer to route to. */

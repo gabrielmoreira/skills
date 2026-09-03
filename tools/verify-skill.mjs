@@ -767,26 +767,64 @@ async function verify(skillDir) {
     if (!files.length) na("C-17 prompts ask rather than describe", "no scenario files to read");
     else {
       const ASKS = /^(re)?(add|fix|implement|write|view|review|factor|refactor|improve|make|check|delete|remove|move|rename|split|simplify|explain|clean|tidy|extract|harden|cover|document|test|name|update|migrate|port|why|what|where|which|when|how|should|can |could |would |is this|does this|do we|i need|i want|help|ok to|any )/i;
+      // Length was the wrong proxy, and the measurement says so twice over.
+      //
+      // Across 387 prompts: median 24 words, p90 39, max 65, against a cap of
+      // 45. The cap fired on nothing. It was never enforcing; it was deterring,
+      // and what it deterred was the constraint. Real requests run long because
+      // they carry conditions ("only these paths", "do not edit files", "must
+      // not use sudo"), and the condition is where the difficulty lives. A
+      // prompt carrying constraints is not narrating, however long it runs.
+      //
+      // So the cap rises for a constrained prompt and holds for an unconstrained
+      // one. Measured before the change: 1.3 percent of the collection carried
+      // two constraint markers, which is the size of the gap being described.
+      //
+      // Raising a cap that fires on nothing changes nothing, so the second half
+      // is a floor. A scenario declaring a source other than `invented` claims
+      // to come from a situation somebody was in, and that claim is checkable:
+      // it must carry the constraints such a situation has. Without this the
+      // next author writes 24 words, labels it `session`, and no gate objects.
       const LONG = 45;
+      const LONG_CONSTRAINED = 160;
+      const CONSTRAINT = [
+        /\bdo\s+not\b/i, /\bdon'?t\b/i, /\bmust\s+not\b/i, /\bnever\b/i,
+        /\bonly\b/i, /\bwithout\b/i, /\b(?:cannot|can'?t)\b/i, /\bavoid\b/i,
+        /\bleave\s+\w+\s+alone\b/i, /\bno\s+(?:new|other|extra|further|additional)\b/i,
+        /^\s*goals?\s*:/im, /^\s*constraints?\s*:/im, /^\s*non-?goals?\s*:/im,
+      ];
       const bad = [];
-      let checked = 0, asks = 0, narrated = 0;
+      let checked = 0, asks = 0, narrated = 0, constrained = 0, derived = 0;
       for (const f of files) {
         const mod = await import(pathToFileURL(join(evalsDir, f)).href);
         for (const s of mod.default ?? []) {
           if (typeof s.prompt !== "string") continue;
           checked++;
-          const words = s.prompt.trim().split(/\s+/).length;
-          const asked = ASKS.test(s.prompt.trim());
+          const prompt = s.prompt.trim();
+          const words = prompt.split(/\s+/).length;
+          const asked = ASKS.test(prompt);
           if (asked) asks++; else narrated++;
+          const markers = CONSTRAINT.filter((re) => re.test(prompt)).length;
+          if (markers >= 2) constrained++;
+          const cap = markers >= 2 ? LONG_CONSTRAINED : LONG;
           const hasFixture = await exists(join(evalsDir, "fixtures", s.id));
           // The failing shape is the compound one: describing at length, with
           // no code present, so every fact the agent has was handed to it.
-          if (!asked && words > LONG && !hasFixture) {
+          if (!asked && words > cap && !hasFixture) {
             bad.push(`${s.id}: ${words} words, describes rather than asks, and no fixture`);
+          }
+          if (s.source && s.source !== "invented") {
+            derived++;
+            if (markers < 2) {
+              bad.push(`${s.id}: declares source "${s.source}" but carries no constraints, so it is an invented prompt wearing a provenance label`);
+            }
+            if (typeof s.sourceNote !== "string" || !s.sourceNote.trim()) {
+              bad.push(`${s.id}: declares source "${s.source}" without a sourceNote saying what it was derived from`);
+            }
           }
         }
       }
-      const shape = `${asks} ask, ${narrated} describe, of ${checked}`;
+      const shape = `${asks} ask, ${narrated} describe, ${constrained} constrained, ${derived} derived, of ${checked}`;
       if (bad.length) fail("C-17 prompts ask rather than describe", [...bad, shape].join("\n        "));
       // The count rides in the pass detail rather than a judgement. An opening
       // verb is a poor proxy: "cart total comes out short on some orders" hands
@@ -806,6 +844,33 @@ async function verify(skillDir) {
       // A prompt naming the skill or a rule filename is not a test of routing:
       // it hands over the answer and then checks the answer came back.
       const giveaways = [NAME, ...ruleNames].filter((n) => n.includes("-"));
+      // Naming the skill is one way to hand over the answer. Stating the
+      // remedy is the other, and until now only outcome tasks were checked for
+      // it. A prompt that says what is wrong has done the finding, and what is
+      // left to measure is agreement.
+      //
+      // Four patterns survived a pass over the collection; two proposed ones
+      // did not and are recorded here so they are not proposed again.
+      //
+      //   "should we use X"  fires on `which-hash-for-these-tokens`, whose
+      //                      prompt asks which hash and names none. An open
+      //                      question is the opposite of a giveaway.
+      //   "it should be"     fires on `green-checks-nobody-opened`, whose
+      //                      prompt states a wrong premise on purpose. Handing
+      //                      over a misconception is the near-miss shape, not
+      //                      a leak.
+      //   "the answer is"    fires on `progressive-reading-clearer-not-shorter`,
+      //                      where it refers to a previous answer being
+      //                      critiqued rather than to a remedy.
+      //
+      // The four below fire on none of the 387 and on a planted probe reading
+      // "the problem is the module-level cache". They gate new work.
+      const REMEDY = [
+        /\bthe\s+(?:fix|solution)\s+(?:here\s+)?is\b/i,
+        /\bthe\s+(?:problem|issue|cause|bug)\s+(?:here\s+)?is\s+(?:the|that|a|an)\b/i,
+        /\bwe\s+need\s+to\s+(?:switch|move|replace|rewrite|extract|split|add|introduce)\b/i,
+        /\bwe\s+should\s+(?:switch|move|replace|rewrite|extract|split)\b/i,
+      ];
       const bad = [];
       let checked = 0;
       for (const f of files) {
@@ -816,6 +881,9 @@ async function verify(skillDir) {
           const lower = s.prompt.toLowerCase();
           for (const g of giveaways) if (lower.includes(g)) bad.push(`${s.id}: prompt contains "${g}"`);
           if (/\brules\//.test(lower)) bad.push(`${s.id}: prompt cites a rule path`);
+          for (const re of REMEDY) {
+            if (re.test(s.prompt)) { bad.push(`${s.id}: prompt states the remedy or the diagnosis, which is the finding the skill is meant to reach`); break; }
+          }
         }
       }
       // Outcome cases live outside the skill, in evals/outcomes, and nothing
