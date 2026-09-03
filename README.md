@@ -48,39 +48,22 @@ rejected, with an error that lists back the exact names you passed.
 
 **Installing is only half of it.** Without a routing table, an agent has to guess
 from descriptions alone, and on a machine carrying hundreds of skills that is a
-coin flip. This is the step that makes them actually fire.
+coin flip. This is the step that makes them fire.
 
-**Write an `AGENTS.md`** at the root of your project, or at `~/.agents/AGENTS.md`
-for a personal one that follows you everywhere:
-
-```md
-## Skills
-
-**Reach for one when the work matches.** Name the one you opened and why, in one line.
-
-| When | Skill |
-| --- | --- |
-| a change must be judged before it lands: a branch, a diff, uncommitted work | `evidence-backed-review` |
-| a feature or a bugfix is about to be implemented, or a test was written after the code | `test-first-by-evidence` |
-| something is wrong and the cause is not yet known | `debugging-by-evidence` |
-| a tool, runtime, install, auth, or network failure that is not the change being made | `treat-blockers-as-incidents` |
-| a repository operation refused, or the working state is unclear | `keep-git-work-recoverable` |
-| written material must be created, corrected, or removed | `make-the-docs-trustworthy` |
-| code should stay simple, testable, and sustainable: boundaries, cohesion, layering | `maintainable-code` |
-| TypeScript needs focused guidance: standards, boundaries, async, errors, testing | `typescript-skills` |
-| an answer must be easier to start, scan, pause, and resume | `progressive-reading` |
-| something is about to be posted, filed, or published and must not read as generated | `drop-the-model-voice` |
-| ground you cannot name yet: two probes in with no finding, or a script about to be written to find out | `bound-the-unknown` |
-| a decision, a constraint, an approval, or a second request before the first closes | `keep-the-thread-across-boundaries` |
-| a skill itself must be written, split, renamed, or checked | `authoring-verifiable-skills` |
-
-- **Not finding a match is an answer.** Do not stretch one to fit.
-- **Two or more matching is normal.** Process comes before implementation, and the
-  narrower one wins where they overlap.
-```
+**Copy the `## Skills` section from [`AGENTS.md`](AGENTS.md) in this repository**
+into your own `AGENTS.md`, at the root of your project or at `~/.agents/AGENTS.md`
+for a personal one that follows you everywhere. It is one table, one row per
+skill, and a check in this repository fails if it ever stops matching what is
+installed here.
 
 **Trim the rows to what you installed.** A row pointing at a skill that is not
 there is worse than no row.
+
+**There is also a `using-gabrielmoreira-skills` skill in here, and it is not a
+substitute for that table.** It is one person's configuration: where generated
+files go, which agent is primary, which model, what must never be committed. It
+is named after him so nobody adopts it by accident. Read it for ideas; do not
+install it expecting neutral routing.
 
 ### Claude Code reads CLAUDE.md, not AGENTS.md
 

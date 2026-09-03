@@ -24,9 +24,13 @@ import { join } from "node:path";
 // is the router itself, and a router does not route to itself.
 const NOT_ROUTED = new Set(["managing-tools-with-mise", "using-gabrielmoreira-skills"]);
 
-const SOURCES = [
+// Each file promises something different, so each is checked against its own
+// promise. AGENTS.md and the router carry a routing table: one row per skill,
+// naming it in backticks. The README carries a section per skill instead, since
+// inlining the table there made a third copy of it and the third copy is the one
+// that drifted.
+const TABLES = [
   ["AGENTS.md", "AGENTS.md"],
-  ["README.md", "README.md"],
   ["the router", "skills/using-gabrielmoreira-skills/SKILL.md"],
 ];
 
@@ -51,7 +55,7 @@ const rowsIn = (text) => {
 let failed = 0;
 const report = [];
 
-for (const [label, path] of SOURCES) {
+for (const [label, path] of TABLES) {
   let text;
   try { text = readFileSync(path, "utf8"); } catch { report.push(`  ${label}: missing at ${path}`); failed++; continue; }
   const routed = rowsIn(text);
@@ -62,13 +66,23 @@ for (const [label, path] of SOURCES) {
   else report.push(`  ${label} routes all ${expected.length}`);
 }
 
-// The README also carries a section per skill, and a table row pointing at a
-// section that does not exist is a link nobody can follow.
+// The README's promise is a section per skill, each linking to the skill it
+// describes. A skill with no section is one a reader cannot find out about
+// without opening the directory.
 const readme = readFileSync("README.md", "utf8");
 const sectioned = new Set([...readme.matchAll(/^###\s+\[`([a-z][a-z0-9-]+)`\]/gm)].map((m) => m[1]));
 const unsectioned = expected.filter((s) => !sectioned.has(s));
-if (unsectioned.length) { report.push(`  README has a row but no section for: ${unsectioned.join(", ")}`); failed++; }
-else report.push(`  README has a section for all ${expected.length}`);
+if (unsectioned.length) { report.push(`  README has no section for: ${unsectioned.join(", ")}`); failed++; }
+else report.push(`  README describes all ${expected.length}`);
+
+// And the README should not carry a third copy of the table. It did, and that
+// copy is the one that fell behind.
+const readmeRows = rowsIn(readme);
+const duplicated = expected.filter((s) => readmeRows.has(s));
+if (duplicated.length > expected.length / 2) {
+  report.push(`  README carries a routing table again: ${duplicated.length} of ${expected.length} skills in table rows`);
+  failed++;
+}
 
 console.log(`${installed.length} installed, ${expected.length} expected in every routing table\n`);
 console.log(report.join("\n"));
