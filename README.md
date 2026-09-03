@@ -1,10 +1,21 @@
-# Agent Skills That Restore Context
+# My agent skills
 
-Thirteen skills for coding agents. Each one covers a moment you already recognise: a
-feature about to be written, a branch to review, a bug with no reproduction, a git
-command that refuses, docs that went stale.
+Personal skills for coding agents, which I use at work and on my own projects and
+change whenever something goes wrong often enough to be worth writing down.
 
-Prior work these are built on is credited in [CREDITS.md](CREDITS.md).
+Each one covers a moment you already recognise: a feature about to be written, a
+branch to review, a bug with no reproduction, a git command that refuses, docs
+that went stale.
+
+**Not a product.** No stability commitment, no versioning policy, no promise
+about token cost. What there is instead is an attempt at a balance I can live
+with between what comes back and what it costs to get it. They will be good in
+some situations and bad in others, and I find out which by using them and reading
+back what happened.
+
+[Where this is at](docs/where-this-is-at.md) says what I have not settled, which
+is more than I would normally put in a README. Prior work these are built on is
+credited in [CREDITS.md](CREDITS.md).
 
 > The work should leave enough behind that the next person can pick it up cold.
 
@@ -118,64 +129,9 @@ agent instruction file. [`docs/agents-md.md`](docs/agents-md.md) walks through i
 block by block and says which parts are worth copying and which are one person's
 taste.
 
-<details>
-<summary><b>Other ways to install</b></summary>
-
-**Project level**, committed with the repo, instead of global:
-
-```bash
-npx skills@latest add gabrielmoreira/skills --skill '*' -y
-```
-
-**One skill only:**
-
-```bash
-npx skills@latest add gabrielmoreira/skills --skill evidence-backed-review
-```
-
-**Interactive**, which asks you which skills and which agents:
-
-```bash
-npx skills@latest add gabrielmoreira/skills
-```
-
-**See what is in here first**, without installing:
-
-```bash
-npx skills@latest add gabrielmoreira/skills --list
-```
-
-**Real files instead of symlinks:** add `--copy`.
-
-**Afterwards:** `npx skills list` shows what you have, `npx skills update` pulls
-newer versions, `npx skills remove` takes one out. Running the install twice is
-fine; the second run reports overwrites, which is the same skills replacing
-themselves.
-
-**About `--all`:** it expands to `--skill '*' --agent '*' -y`, and that `'*'`
-means all 76 agents the CLI knows rather than the ones you have. It will try
-tools you never installed and print a larger failure block. Prefer the commands
-above.
-
-### Manual install, without the CLI
-
-Each skill is a self-contained folder with `SKILL.md` at its root. Copy the ones
-you want into the directory your agent reads.
-
-```bash
-git clone https://github.com/gabrielmoreira/skills.git
-
-# Claude Code, user level
-cp -r skills/skills/* ~/.claude/skills/
-
-# Claude Code, project level
-mkdir -p .claude/skills && cp -r skills/skills/* .claude/skills/
-```
-
-`~/.agents/skills/` is the shared location many agents read, and is where the CLI
-puts the real files before symlinking them out.
-
-</details>
+[`docs/install.md`](docs/install.md) has the rest: project-level installs, one
+skill at a time, interactive mode, real files instead of symlinks, and the
+manual path with no CLI at all.
 
 ## The skills
 
