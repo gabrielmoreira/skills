@@ -101,7 +101,7 @@ const scenarios = [
     skillMode: "keep-git-work-recoverable",
     difficulty: "mixed",
     prompt:
-      "error: pathspec 'feature/date-parsing' did not match any file(s) known to git. i'm sure it exists, someone pushed it yesterday. try again with origin/ in front?",
+      "error: pathspec 'feature/date-parsing' did not match any file(s) known to git. someone opened the pull request yesterday, should we re-run checkout prefixing origin/?",
     expectedPrimary: "rules/resolve-the-ref.md",
     expectedSecondary: ["rules/stale-refs.md"],
     activation: {

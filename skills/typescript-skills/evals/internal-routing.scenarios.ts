@@ -50,7 +50,7 @@ const scenarios = [
     mode: "router",
     difficulty: "mixed",
     prompt:
-      "A handler passes a generated SDK response through business logic. We need to parse it once and translate it into local domain terms at the edge. What exact rule owns the change?",
+      "our order service takes the raw Stripe client object directly and reads nested fields deep inside the checkout loop. where should we convert third-party vendor types into our own internal models?",
     expectedPrimary: "skill://typescript-skills/typescript-boundaries/rules/provider-containment.md",
     activation: {
       layer: "internal-route",

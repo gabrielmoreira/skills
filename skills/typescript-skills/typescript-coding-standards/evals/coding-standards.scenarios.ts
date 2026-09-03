@@ -589,7 +589,7 @@ const scenarios = [
     mode: "apply",
     difficulty: "hard",
     prompt:
-      "A shared helper now takes six boolean options, one added per caller over three years. My caller needs a seventh behaviour. The helper is used in eleven places and has no tests.",
+      "this function takes six boolean flags now and every callsite passes a different combination. i need a seventh toggle for my flow, and it is called in eleven places with no tests.",
     expectedPrimary: "typescript-coding-standards",
     expectedAll: ["typescript-coding-standards/rules/abstraction-and-local-reasoning.md"],
     expectedSecondary: ["typescript-testing"],

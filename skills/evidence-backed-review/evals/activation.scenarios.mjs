@@ -222,7 +222,7 @@ const scenarios = [
     skillMode: "review",
     difficulty: "mixed",
     prompt:
-      "this PR changes the default retry behaviour of the shared client. the README and the instructions file everyone in the repo reads still teach the old behaviour. does that block the merge or can it wait?",
+      "the diff switches the client timeout default from 30s to 5s. onboarding docs and the setup guide say it defaults to 30 seconds. do we make them update the markdown in this pull request, or approve and let them fix the guide later?",
     expectedPrimary: "rules/docs-and-skills-freshness.md",
     expectedSecondary: [],
     activation: {
