@@ -1,0 +1,4 @@
+schema:
+  package: "@org/shared-schema"
+  version: "3.4.1"
+  generated: true

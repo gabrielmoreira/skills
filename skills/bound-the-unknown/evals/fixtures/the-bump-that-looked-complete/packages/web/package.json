@@ -1,0 +1,5 @@
+{
+  "name": "web",
+  "type": "module",
+  "dependencies": { "@org/shared-schema": "3.4.1" }
+}
