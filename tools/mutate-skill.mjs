@@ -309,23 +309,42 @@ const MUTATIONS = [
     apply(dir) {
       const evals = path.join(dir, "evals");
       if (!fs.existsSync(evals)) return false;
-      const file = fs.readdirSync(evals).find((f) => /\.scenarios\.(mjs|ts)$/.test(f));
-      if (!file) return NA;
-      const p = path.join(evals, file);
-      let t = fs.readFileSync(p, "utf8").split("\r\n").join("\n");
+      // Every scenario file, not the first one found.
+      //
+      // Taking the first alphabetically made the mutation depend on a filename.
+      // A skill whose scenarios sat in one file mutated correctly; adding a
+      // second file that sorted earlier and held one scenario turned the
+      // mutation into a no-op, because pointing one scenario at its own rule
+      // changes nothing. C-11 then did not fire, correctly, and the suite
+      // reported a mutation escaping when what had escaped was the mutation.
+      const files = fs.readdirSync(evals).filter((f) => /\.scenarios\.(mjs|ts)$/.test(f));
+      if (!files.length) return NA;
       // Two fields can carry the scenario-to-rule link, and a scenario may
       // carry both. Rewriting only one left the other still naming the real
       // rule, so coverage survived the mutation and the check never fired.
+      const PATTERNS = [/expectedPrimary: "rules\/[a-z0-9-]+\.md",/g, /rule: "[a-z0-9-]+",/g];
+      // One target across the whole directory, so two files cannot between them
+      // still cover two rules.
+      const target = {};
+      for (const f of files) {
+        const t = fs.readFileSync(path.join(evals, f), "utf8");
+        for (const [i, re] of PATTERNS.entries()) target[i] ??= t.match(re)?.[0];
+      }
       let applied = false;
-      for (const re of [/expectedPrimary: "rules\/[a-z0-9-]+\.md",/g, /rule: "[a-z0-9-]+",/g]) {
-        const first = t.match(re)?.[0];
-        if (!first) continue;
-        t = t.replace(re, first);   // point every scenario at the same rule
+      for (const f of files) {
+        const p = path.join(evals, f);
+        let t = fs.readFileSync(p, "utf8").split("\r\n").join("\n");
+        let touched = false;
+        for (const [i, re] of PATTERNS.entries()) {
+          if (!target[i] || !re.test(t)) continue;
+          t = t.replace(re, target[i]);
+          touched = true;
+        }
+        if (!touched) continue;
+        fs.writeFileSync(p, t, "utf8");
         applied = true;
       }
-      if (!applied) return false;
-      fs.writeFileSync(p, t, "utf8");
-      return true;
+      return applied ? true : false;
     },
   },
 ];
