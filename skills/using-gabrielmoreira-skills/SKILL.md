@@ -95,13 +95,13 @@ Long sessions here run 29 percent shell against 6 percent in short ones. What fi
 
 ## Which skill wins
 
-**Only genuinely ambiguous pairs belong here.** Everything else is settled by the skills themselves.
+**Only genuinely ambiguous pairs belong here.** Everything else is settled by the skills themselves. **The third column is order, not prohibition**, except where it says stop.
 
-| Situation | Open | Not |
+| Situation | Open first | Then, where it still applies |
 | --- | --- | --- |
-| a command failed for a reason that is not the change being made | `treat-blockers-as-incidents` | `debugging-by-evidence` |
-| a test fails because the behaviour is missing | `test-first-by-evidence` | `treat-blockers-as-incidents` |
-| a defect in the code being changed | `debugging-by-evidence` | `treat-blockers-as-incidents` |
+| a command failed for a reason that is not the change being made | `treat-blockers-as-incidents` | stop there, the tool is not the walk |
+| a test fails because the behaviour is missing | `test-first-by-evidence` | stop there, this is the work |
+| a defect in the code being changed | `debugging-by-evidence` | stop there, it is yours |
 | where a test goes for behaviour being added | `test-first-by-evidence` | `debugging-by-evidence` |
 | where a test goes to pin a defect | `debugging-by-evidence` | `test-first-by-evidence` |
 | whether a unit should be split, where a module belongs, which way a dependency may point | `maintainable-code` | `typescript-skills` |
@@ -112,9 +112,9 @@ Long sessions here run 29 percent shell against 6 percent in short ones. What fi
 | a text that is easy to read and reads as generated | `drop-the-model-voice` | `progressive-reading` |
 | a message about to be posted, with no decision yet on the shape its kind arrives in | `drop-the-model-voice` | `make-the-docs-trustworthy` |
 
-- **Between those two, test the answer rather than the subject.** An answer that reads the same in any language belongs to structure. An answer naming a construct of the language belongs to the language skill.
+- **Test the answer, not the subject.** An answer that reads the same in any language belongs to structure. One naming a construct of the language belongs to the language skill. One about what a test proves belongs to the testing skill, whichever of the three you opened first.
 
-- **Two or more matching is normal.** Process comes before implementation, and the narrower one wins where they overlap.
+- **Two or more matching is normal, and opening the second is normal too.** Process comes before implementation, and the narrower one leads where they overlap. Testing, structure and the language skill pass work between them constantly; take the second only when the first leaves the question open, and say which one you are in.
 - **Not finding a match is an answer.** Do not stretch one to fit.
 - **My own skills come first**, ahead of any borrowed collection, because they are being validated against real work.
 
