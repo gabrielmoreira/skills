@@ -19,7 +19,7 @@ Use when:
 Do:
 - **Look at callers, framework conventions, and neighbouring packages first.**
 - **Keep one default within a coherent package or surface.**
-- **Use a discriminated result for outcomes callers routinely branch on.**
+- **Return a Result/Either type where callers routinely branch on it.**
 - **Preserve cause, code, and classification in either style.** The style changes the channel, not the content.
 - **Throw for a programmer error or a broken invariant**, rather than returning it as an ordinary result.
 

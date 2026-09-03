@@ -8,7 +8,7 @@ references: [Discriminated unions (TypeScript Handbook), "`never` exhaustiveness
 
 # Exhaustive Narrowing
 
-Decision: **Where a value is a discriminated union, the compiler MUST prove every variant is handled**, so adding a variant fails the build at each callsite that has to change. Distinguishing same-shaped values belongs to `skill://typescript-skills/typescript-coding-standards/rules/branded-and-opaque-types.md`.
+Decision: **Model closed variant sets as discriminated unions (like sealed classes) and prove every case is handled.** Adding a variant must fail compilation at each unhandled callsite. Distinguishing same-shaped values belongs to `skill://typescript-skills/typescript-coding-standards/rules/branded-and-opaque-types.md`.
 
 Use when:
 - **A discriminated union is consumed by an if-chain or a switch.**
@@ -17,8 +17,8 @@ Use when:
 - **A cast is silencing a switch** the author believes is exhaustive.
 
 Do:
-- **Use a literal-typed discriminant** and dispatch on it with a switch.
-- **End the switch by assigning the value to `never`**, or by calling an `assertNever` helper.
+- **Emulate pattern matching using a literal-typed discriminant** dispatched with a switch.
+- **Enforce a `never` exhaustiveness check in the default branch**, or call an `assertNever` helper.
 - **Let narrowing do the work inside each case.** No cast is needed there.
 - **Extract a shared `assertNever` helper** once several consumers need it.
 - **Consider a map keyed by the discriminant** where the same dispatch repeats across consumers.

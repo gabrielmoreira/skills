@@ -8,7 +8,7 @@ references: [Newspaper Metaphor (Clean Code), Step-Down Rule, Extract Method (Fo
 
 # Vertical Discipline
 
-Decision: **Make the main path easy to follow.** Respect the file's local order, and where none exists put orchestration before supporting detail. Whether a thing should exist at all belongs to `skill://typescript-skills/typescript-coding-standards/rules/abstraction-and-local-reasoning.md`.
+Decision: **Make the main path easy to follow.** Respect the file's local order, and where none exists apply the Step-Down Rule. Whether a thing should exist at all belongs to `skill://typescript-skills/typescript-coding-standards/rules/abstraction-and-local-reasoning.md`.
 
 Use when:
 - **A function mixes decisions, infrastructure, and formatting.**
@@ -19,14 +19,14 @@ Use when:
 Do:
 - **Read the function whole first.** Cohesive code that reads well stays together.
 - **Use a short stage comment** where extracting would hide the context.
-- **Extract a block once it has a stable name, a contract, or independent test value.** All three, ideally.
+- **Apply Extract Method once a block has a stable name, contract, or test value.** All three, ideally.
 - **Keep a helper near its caller**, unless reuse or ownership gives it a better home.
 - **Prefer the repository's convention** over a universal top-down layout.
 
 Avoid:
 - **Extracting every visual block**, or enforcing a one-screen function.
 - **A template method or a class hierarchy for simple sequencing.**
-- **Mixing abstraction levels**, which forces the reader to simulate infrastructure while following a decision.
+- **Violating Single Level of Abstraction**, forcing readers to simulate low-level mechanics while following decisions.
 - **Reordering an established file** only to satisfy a style preference.
 
 Exceptions:
