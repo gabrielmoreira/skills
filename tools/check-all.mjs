@@ -141,6 +141,13 @@ if (!paths.ok) failed++;
 const baseline = run("route-baseline.mjs", []);
 const baselineLine = baseline.out.trim().split("\n").find((l) => l.includes("routed scenarios:")) ?? "not measured";
 
+// Three tables route to these skills and they drift. One shipped with a row in
+// two of them and none in the third, so an agent reading that file alone could
+// not reach the skill at all.
+const routing = run("check-routing-parity.mjs", []);
+const routingLine = routing.out.trim().split("\n").at(-1) ?? "not measured";
+if (!routing.ok) failed++;
+
 // How much of the scenario set is derived from real sources vs invented.
 const provenance = run("scenario-provenance.mjs", []);
 const provenanceLine = provenance.out.trim().split("\n").find((l) => l.includes("scenarios:") && l.includes("invented,")) ?? "not measured";
@@ -264,6 +271,7 @@ console.log(`  graders           ${graders.ok ? "passed" : "FAILED"}`);
 console.log(`  local paths       ${paths.ok ? "none committed" : "FOUND"}`);
 console.log(`  scenarios         ${baselineLine}`);
 console.log(`  split             ${splitLine}`);
+console.log(`  routing tables    ${routingLine}`);
 console.log(`  provenance        ${provenanceLine}`);
 console.log(`  behaviour         ${behaviourLine(collectionSize)}`);
 console.log(`  far misses        ${farMissLine()}`);

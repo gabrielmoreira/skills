@@ -13,6 +13,8 @@ the question the tool answers rather than by what it is called.
 | `verify-skill.mjs` | does every skill hold the structural invariants |
 | `mutate-skill.mjs` | does each check fire for its own reason, or is it passing by luck |
 | `check-yaml-parity.mjs` | does our frontmatter parser agree with a real one |
+| `check-routing-parity.mjs` | do AGENTS.md, the README and the router name the same skills |
+| `scenario-provenance.mjs` | how much of the suite describes a situation somebody was in |
 | `readability.mjs` | is any unit past the size a reader can hold |
 | `route-baseline.mjs` | how many scenarios a router with no understanding already solves |
 | `split-activation.mjs` | which half of the scenarios is held out from tuning |
