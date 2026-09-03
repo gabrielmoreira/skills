@@ -59,11 +59,16 @@ installed here.
 **Trim the rows to what you installed.** A row pointing at a skill that is not
 there is worse than no row.
 
-**There is also a `using-gabrielmoreira-skills` skill in here, and it is not a
-substitute for that table.** It is one person's configuration: where generated
-files go, which agent is primary, which model, what must never be committed. It
-is named after him so nobody adopts it by accident. Read it for ideas; do not
-install it expecting neutral routing.
+**A skill in here also does this job, and measurably.** Across 57 recorded runs
+with the collection loaded, the agent opened `using-gabrielmoreira-skills` in all
+57 and opened it first in 56. It works as a master router in practice, not just
+by intention.
+
+**It is still not a drop-in replacement for that table.** Alongside the routing
+it carries one person's configuration: where generated files go, which agent is
+primary, what must never be committed, which style is wanted. It is named after
+him so nobody adopts it by accident. Read it, take the routing table out of it if
+you want that mechanism, and leave the rest.
 
 ### Claude Code reads CLAUDE.md, not AGENTS.md
 
@@ -96,13 +101,24 @@ manual path with no CLI at all.
 
 ## The skills
 
-### [`evidence-backed-review`](skills/evidence-backed-review/SKILL.md)
+## Finding out what is true
 
-**A change you want judged before it lands.** Uncommitted work you just made, a
-diff, a branch, a pull request.
+### [`debugging-by-evidence`](skills/debugging-by-evidence/SKILL.md)
 
-It says what it did not look at, instead of calling something clean because it
-never opened it. Every finding carries a file and a line, and it edits nothing.
+**Something is wrong and the cause is not established.**
+
+No hypothesis before a command that reproduces the symptom. Rival explanations
+get ranked and separated by evidence rather than by which was thought of first.
+
+### [`bound-the-unknown`](skills/bound-the-unknown/SKILL.md)
+
+**Ground you cannot name yet.** Two probes in with no finding, or a script about
+to be written to find something out.
+
+A budget stated before the probing starts, and a stop when the shape appears
+rather than when patience runs out.
+
+## Changing code
 
 ### [`test-first-by-evidence`](skills/test-first-by-evidence/SKILL.md)
 
@@ -111,12 +127,31 @@ never opened it. Every finding carries a file and a line, and it edits nothing.
 The test comes first and has to be seen failing. A test that has never failed has
 not been shown to test anything.
 
-### [`debugging-by-evidence`](skills/debugging-by-evidence/SKILL.md)
+### [`maintainable-code`](skills/maintainable-code/SKILL.md)
 
-**Something is wrong and the cause is not established.**
+**Where code goes and which way it points.** Whether a module belongs here,
+whether a dependency may flow that way, whether an abstraction has been earned.
 
-No hypothesis before a command that reproduces the symptom. Rival explanations
-get ranked and separated by evidence rather than by which was thought of first.
+Language neutral. It closes by asking the question its own sections cannot: can
+somebody who did not write this find the important behaviour.
+
+### [`typescript-skills`](skills/typescript-skills/SKILL.md)
+
+**A decision inside TypeScript or JavaScript.** What a value may be and what
+happens when it is absent, what a failure means and who handles it, what crosses
+a boundary, what runs concurrently, what a test proves.
+
+Nine topics, forty-four rules, and the router opens the one that applies.
+
+### [`evidence-backed-review`](skills/evidence-backed-review/SKILL.md)
+
+**A change you want judged before it lands.** Uncommitted work you just made, a
+diff, a branch, a pull request.
+
+It says what it did not look at, instead of calling something clean because it
+never opened it. Every finding carries a file and a line, and it edits nothing.
+
+## When the tooling gets in the way
 
 ### [`treat-blockers-as-incidents`](skills/treat-blockers-as-incidents/SKILL.md)
 
@@ -135,28 +170,14 @@ be lost.
 Establish where you are before doing anything. Nothing that destroys work runs
 until the work is recoverable.
 
+## What gets written and read
+
 ### [`make-the-docs-trustworthy`](skills/make-the-docs-trustworthy/SKILL.md)
 
 **Written material to correct, create, place, or remove.**
 
 Look for the fact before writing it, because a second copy of a fact is the one
 that will disagree later. Write only what cannot be found by looking.
-
-### [`maintainable-code`](skills/maintainable-code/SKILL.md)
-
-**Where code goes and which way it points.** Whether a module belongs here,
-whether a dependency may flow that way, whether an abstraction has been earned.
-
-Language neutral. It closes by asking the question its own sections cannot: can
-somebody who did not write this find the important behaviour.
-
-### [`typescript-skills`](skills/typescript-skills/SKILL.md)
-
-**A decision inside TypeScript or JavaScript.** What a value may be and what
-happens when it is absent, what a failure means and who handles it, what crosses
-a boundary, what runs concurrently, what a test proves.
-
-Nine topics, forty-four rules, and the router opens the one that applies.
 
 ### [`progressive-reading`](skills/progressive-reading/SKILL.md)
 
@@ -174,13 +195,7 @@ comment, an incident write-up, a status update, a release note, an announcement.
 It removes claims the evidence does not carry, sales language where a report
 belongs, and the run-up before the point. A tone you ask for outranks all of it.
 
-### [`bound-the-unknown`](skills/bound-the-unknown/SKILL.md)
-
-**Ground you cannot name yet.** Two probes in with no finding, or a script about
-to be written to find something out.
-
-A budget stated before the probing starts, and a stop when the shape appears
-rather than when patience runs out.
+## Across turns
 
 ### [`keep-the-thread-across-boundaries`](skills/keep-the-thread-across-boundaries/SKILL.md)
 
@@ -190,6 +205,8 @@ first one closes.**
 What was settled survives a compaction, a model change, a resume, or a handoff.
 Every decision keeps the alternative it rejected, so it is not re-argued from
 nothing.
+
+## Making your own
 
 ### [`authoring-verifiable-skills`](skills/authoring-verifiable-skills/SKILL.md)
 

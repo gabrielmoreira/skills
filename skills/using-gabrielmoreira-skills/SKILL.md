@@ -30,7 +30,7 @@ description: >-
 
 ## Routing the work
 
-**Match the work to a row and open that skill.** Then come back here only for what the matched skill left open.
+**Match the work to a row and open that skill.** Then come back here only for what the matched skill left open. Measured across 57 recorded runs: this file was opened in all 57 and first in 56. Whether it then routes to the right one is a separate number, and lower.
 
 | When the work is | Open |
 | --- | --- |
@@ -115,8 +115,7 @@ Long sessions here run 29 percent shell against 6 percent in short ones. What fi
 - **Test the answer, not the subject.** An answer that reads the same in any language belongs to structure. One naming a construct of the language belongs to the language skill. One about what a test proves belongs to the testing skill, whichever of the three you opened first.
 
 - **Two or more matching is normal, and opening the second is normal too.** Process comes before implementation, and the narrower one leads where they overlap. Testing, structure and the language skill pass work between them constantly; take the second only when the first leaves the question open, and say which one you are in.
-- **Not finding a match is an answer.** Do not stretch one to fit.
-- **My own skills come first**, ahead of any borrowed collection, because they are being validated against real work.
+- **Not finding a match is an answer**, and my own skills come first, ahead of any borrowed collection, because they are being validated against real work.
 
 ## Discussion is not authorization
 
