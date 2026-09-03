@@ -1,6 +1,6 @@
 # Agent Skills That Restore Context
 
-Nine skills for coding agents. Each one covers a moment you already recognise: a
+Twelve skills for coding agents. Each one covers a moment you already recognise: a
 feature about to be written, a branch to review, a bug with no reproduction, a git
 command that refuses, docs that went stale.
 
@@ -18,11 +18,14 @@ for a nine-hundred-line review.
 | [`evidence-backed-review`](#evidence-backed-review) | judging a branch or a pull request before it lands |
 | [`test-first-by-evidence`](#test-first-by-evidence) | writing the test before the code, and proving it can fail |
 | [`debugging-by-evidence`](#debugging-by-evidence) | finding the cause of a bug instead of guessing at it |
+| [`treat-blockers-as-incidents`](#treat-blockers-as-incidents) | tool, install, auth, and environment failures that block the task |
 | [`keep-git-work-recoverable`](#keep-git-work-recoverable) | getting unstuck when git refuses, without losing work |
 | [`make-the-docs-trustworthy`](#make-the-docs-trustworthy) | docs that went stale, and where to put what you write |
 | [`maintainable-code`](#maintainable-code) | code someone can come back to |
 | [`typescript-skills`](#typescript-skills) | the same, specifically for TypeScript |
 | [`progressive-reading`](#progressive-reading) | answers that are readable instead of exhausting |
+| [`bound-the-unknown`](#bound-the-unknown) | probing unfamiliar ground on a stated budget before it eats the session |
+| [`keep-the-thread-across-boundaries`](#keep-the-thread-across-boundaries) | holding what a session settled across compactions, resumes, and handoffs |
 | [`authoring-verifiable-skills`](#authoring-verifiable-skills) | writing your own skill, and proving it works |
 
 ## Install
@@ -66,13 +69,16 @@ for a personal one that follows you everywhere:
 | When | Skill |
 | --- | --- |
 | a change must be judged before it lands: a branch, a diff, uncommitted work | `evidence-backed-review` |
-| a feature or a bugfix is about to be implemented | `test-first-by-evidence` |
+| a feature or a bugfix is about to be implemented, or a test was written after the code | `test-first-by-evidence` |
 | something is wrong and the cause is not yet known | `debugging-by-evidence` |
+| a tool, runtime, install, auth, or network failure that is not the change being made | `treat-blockers-as-incidents` |
 | a repository operation refused, or the working state is unclear | `keep-git-work-recoverable` |
 | written material must be created, corrected, or removed | `make-the-docs-trustworthy` |
-| code should stay simple, testable, and sustainable | `maintainable-code` |
-| TypeScript needs focused guidance | `typescript-skills` |
+| code should stay simple, testable, and sustainable: boundaries, cohesion, layering | `maintainable-code` |
+| TypeScript needs focused guidance: standards, boundaries, async, errors, testing | `typescript-skills` |
 | an answer must be easier to start, scan, pause, and resume | `progressive-reading` |
+| ground you cannot name yet: two probes in with no finding, or a script about to be written to find out | `bound-the-unknown` |
+| a decision, a constraint, an approval, or a second request before the first closes | `keep-the-thread-across-boundaries` |
 | a skill itself must be written, split, renamed, or checked | `authoring-verifiable-skills` |
 
 - **Not finding a match is an answer.** Do not stretch one to fit.
@@ -227,6 +233,17 @@ actually reproduced the problem in front of it.
 Good for intermittent failures, "it works on my machine", and anything that got
 slow.
 
+### [`treat-blockers-as-incidents`](skills/treat-blockers-as-incidents/SKILL.md)
+
+**Use it when a command fails for a reason that is not the change you were asked to make.**
+
+A tool that will not install, a runtime the shell cannot find, expired authentication, a permission error, or a broken registry.
+
+- **The stone in your shoe is not the walk.** It separates environment blockers from application defects.
+- **It bounds the search before it eats the session.** A stated probe or time budget, announced up front.
+- **It reports its state explicitly.** `blocker/BLOCKED`, `blocker/REPRODUCED`, `blocker/EXPLAINED`, `blocker/CLEARED`, or `blocker/HANDED BACK`.
+- **A workaround that needs contortions is a finding, not a fix.**
+
 ### [`keep-git-work-recoverable`](skills/keep-git-work-recoverable/SKILL.md)
 
 **Use it when git refuses and you are not sure what is safe to do.**
@@ -299,6 +316,28 @@ release.
   exact commands or error strings stay exactly as they were.
 - **It knows when to stop.** Shorter is not better once the answer becomes wrong
   or too terse to follow.
+
+### [`bound-the-unknown`](skills/bound-the-unknown/SKILL.md)
+
+**Use it when you are two probes in with no finding, or about to write a script to find something out.**
+
+For the state before anything is a task, where you cannot yet say whether something is a bug, a feature, or nothing.
+
+- **Looking is not the hard part. Stopping is.** It announces how far it will go before the first probe.
+- **Probe without changing anything.** Read-only exploration so the probe does not destroy its own evidence.
+- **Keeps intermediates in temporary files.** Large extracts stay on disk rather than flooding the context window.
+- **Stopping on a named boundary is a result**, not a failure.
+
+### [`keep-the-thread-across-boundaries`](skills/keep-the-thread-across-boundaries/SKILL.md)
+
+**Use it to hold what a session settled across compactions, resumes, and handoffs.**
+
+The objective in hand, the requests parked behind it, and every decision with the alternative it rejected.
+
+- **A boundary does not lose the work. It loses the reasons.**
+- **An entry stands alone.** Written at settle time in words that need no previous turn to understand.
+- **Decisions survive; authorizations do not.** A recorded choice persists, but actions require fresh approval on the other side.
+- **Push and pop for interrupted work.** Park the previous request with its state intact when a new request arrives.
 
 ### [`authoring-verifiable-skills`](skills/authoring-verifiable-skills/SKILL.md)
 
