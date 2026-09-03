@@ -45,7 +45,7 @@ description: >-
 | ground you cannot name yet: two probes in with no finding, or a script about to be written to find out | `bound-the-unknown` |
 | a decision, a constraint, an approval, or a second request arriving before the first closes | `keep-the-thread-across-boundaries` |
 | an answer that is dense, buried, or hard to resume | `progressive-reading` |
-| written output that will be posted, filed, or published, and has to sound like a person wrote it | `drop-the-model-voice` |
+| prose that leaves this session and gets read by someone else: a review comment, a pull request description, an incident write-up, a status update, a release note, a page, an announcement | `drop-the-model-voice` |
 | a skill to write, split, rename, or check, or one that never fires | `authoring-verifiable-skills` |
 
 - **Know what you are in before matching a row.** The project's own instruction file, its README,
@@ -99,6 +99,9 @@ Long sessions here run 29 percent shell against 6 percent in short ones. What fi
 | what construct expresses it: a type, a class against a function, a factory against a ready instance, a promise | `typescript-skills` | `maintainable-code` |
 | judging work that already exists as commits | `evidence-backed-review` | `maintainable-code` |
 | designing work that does not exist yet | `maintainable-code` | `evidence-backed-review` |
+| a text that is correct and hard to get into | `progressive-reading` | `drop-the-model-voice` |
+| a text that is easy to read and reads as generated | `drop-the-model-voice` | `progressive-reading` |
+| a message about to be posted, with no decision yet on the shape its kind arrives in | `drop-the-model-voice` | `make-the-docs-trustworthy` |
 
 - **Between those two, test the answer rather than the subject.** An answer that reads the same in any language belongs to structure. An answer naming a construct of the language belongs to the language skill.
 
@@ -117,6 +120,18 @@ Long sessions here run 29 percent shell against 6 percent in short ones. What fi
 
 - **The record lives beside the project, not beside the session.** A session-scoped one dies with the thing it exists to outlive, and the host already keeps per-project learnings, so this matches where the rest of the durable material already sits.
 - **Authorization still does not survive a boundary**, which is the one half of it I want present even when no skill opens.
+
+## How I want things written
+
+**Result first. Then the evidence. Then the detail.** No greeting. No restatement of what I asked. No filler, and no generic closing. `drop-the-model-voice` owns the rest. This is the default it starts from.
+
+- **A tone I state outranks that default and every rule in the skill.** Formal, playful, blunt, ceremonial, or a house template. Match it for the rest of the thread.
+- **Match it including the habits a rule would remove.** A voice is made of those habits.
+- **A sample beats an instruction.** Take sentence length, punctuation, openings and repeated phrases from the sample. Not from any rule.
+- **The em dash is the one mark a sample does not license.** It stays out of every file and every message here. Whatever the sample does.
+- **Never flatten a voice I asked for and call it cleaned up.** Where a rule and my instruction disagree, follow me. Say which rule lost, in one line.
+- **No instruction reaches invention.** Matching a voice never licenses a fact, a number, a name, or a citation the work did not produce.
+- **Portuguese in chat. English in everything that ships.** Files, comments, commit messages, and anything another person reads.
 
 ## What I do not want
 
