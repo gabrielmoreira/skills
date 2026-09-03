@@ -131,7 +131,7 @@ const scenarios = [
     skillMode: "debugging-by-evidence",
     difficulty: "mixed",
     prompt:
-      "cart total comes out short on some orders. it's the discount cache, it always is. want me to just flush it and see?",
+      "what should we test first: cart total in src/discounts.js comes out short on some orders. it's the discount cache, it always is. want me to just flush it and see?",
     expectedPrimary: "rules/rival-hypotheses.md",
     expectedSecondary: ["rules/probing.md"],
     activation: {
@@ -221,7 +221,7 @@ const scenarios = [
     skillMode: "debugging-by-evidence",
     difficulty: "mixed",
     prompt:
-      "endpoint blows up because a quantity arrives as zero and we divide by it. easiest thing is a guard right there before the division, yeah?",
+      "how should we fix this: calculateFreightRate in src/shipping.js throws division by zero when total weight arrives as 0. can we put a guard right before the division?",
     expectedPrimary: "rules/fix-at-the-source.md",
     expectedSecondary: ["rules/regression-seam.md"],
     activation: {

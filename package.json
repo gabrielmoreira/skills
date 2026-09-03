@@ -1,0 +1,13 @@
+{
+  "name": "skills",
+  "private": true,
+  "type": "module",
+  "description": "Agent skills, their checks, and the fixtures those checks run against.",
+  "devDependencies": {
+    "typescript": "^6.0.3"
+  },
+  "scripts": {
+    "check": "node tools/check-all.mjs",
+    "check:types": "node tools/check-fixture-types.mjs"
+  }
+}
