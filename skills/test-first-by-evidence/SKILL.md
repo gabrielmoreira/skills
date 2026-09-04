@@ -54,7 +54,7 @@ NO PRODUCTION CODE WITHOUT A TEST YOU WATCHED FAIL
 | **a test about to be written**, or one that passed on its first run | `rules/watch-it-fail.md` |
 | **a red you trust** and code to write against it | `rules/smallest-green.md` |
 | **no obvious place for the test**, or a choice between unit, integration, and end to end | `rules/where-the-test-goes.md` |
-| **mocks, fixtures, or assertions on calls** rather than on results | `rules/tests-that-cannot-lie.md` |
+| **mocks, fixtures, or assertions on calls** rather than on results, or a suite that supplies its own copy of the thing under test | `rules/tests-that-cannot-lie.md` |
 | **implementation that already exists** with no test behind it | `rules/code-written-first.md` |
 | **a bug report, a stack trace, or a regression** | `rules/bug-fix-starts-red.md` |
 | **a test that is hard to write, or needs everything mocked** | `rules/hard-to-test-is-a-signal.md` |

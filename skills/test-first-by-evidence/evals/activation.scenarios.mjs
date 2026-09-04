@@ -347,6 +347,11 @@ const scenarios = [
     prompt:
       "we're adding a mobile-low output tier to the transcoder, 64kbps mono at 22.05k. the table lives in src/profiles.ts and src/encode.ts reads it. add the tier and keep the existing three coming out exactly as they do now. two things: don't touch src/encode.ts, that pipeline change shipped last sprint and i don't want it in this diff. and we cannot regenerate the sample media, the build box has no ffmpeg, so whatever you do has to be arguable from the suite that is already there rather than from a fresh encode. the only thing i can run is node --test. it is green today. what do you want to check first?",
     expectedPrimary: "rules/tests-that-cannot-lie.md",
+    // Not expectedAll with watch-it-fail beside it. Requiring both was tried and
+    // took this scenario from 2/3 to 0/3, and the reason is not the number: the
+    // observed answer wrote a test against the real table and watched it fail,
+    // which is what tests-that-cannot-lie asks for, reached without opening it.
+    // expectedAll should name what the answer must contain, not the route.
     expectedSecondary: ["rules/watch-it-fail.md"],
     activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: true, forbiddenRoutes: [] },
     must: [
