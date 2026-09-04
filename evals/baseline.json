@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-09-04T19:44:51.460Z",
+  "ranAt": "2026-09-04T19:47:52.481Z",
   "model": "github-copilot/gpt-5.6-luna",
   "backend": "omp",
   "replayed": true,
@@ -34,7 +34,27 @@
       "rule": "states-carry-licenses",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "authoring-verifiable-skills",
+        "debugging-by-evidence",
+        "rules/order-and-strength.md",
+        "rules/states-carry-licenses.md",
+        "rules/prove-it-with-checks.md",
+        "rules/runnable-signal.md",
+        "rules/minimising.md",
+        "rules/rival-hypotheses.md",
+        "rules/probing.md",
+        "rules/fix-at-the-source.md",
+        "rules/regression-seam.md",
+        "rules/stopping-and-escalating.md",
+        "rules/gate-not-checklist.md",
+        "rules/one-rule-one-decision.md",
+        "rules/readable-in-one-pass.md",
+        "SKILL.md",
+        "SKILL.md:1-140",
+        "*"
+      ],
       "negative": false,
       "entered": true,
       "passes": 3,
@@ -62,7 +82,10 @@
       "rule": "states-carry-licenses",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "authoring-verifiable-skills",
+        "debugging-by-evidence"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -90,7 +113,11 @@
       "rule": "name-and-scope",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "authoring-verifiable-skills",
+        "rules/name-and-scope.md"
+      ],
       "negative": false,
       "entered": true,
       "passes": 1,
@@ -127,7 +154,11 @@
       "rule": "portable-by-default",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "authoring-verifiable-skills",
+        "rules/portable-by-default.md"
+      ],
       "negative": false,
       "entered": true,
       "passes": 2,
@@ -155,7 +186,10 @@
       "rule": "portable-by-default",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "authoring-verifiable-skills",
+        "using-gabrielmoreira-skills"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -178,7 +212,10 @@
       "rule": "trigger-boundary",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "bound-the-unknown"
+      ],
       "negative": false,
       "entered": false,
       "passes": 3,
@@ -202,7 +239,10 @@
       "rule": "trigger-boundary",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "bound-the-unknown",
+        "debugging-by-evidence"
+      ],
       "negative": false,
       "entered": false,
       "passes": 2,
@@ -225,7 +265,11 @@
       "rule": "trigger-boundary",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "maintainable-code",
+        "bound-the-unknown"
+      ],
       "negative": false,
       "entered": false,
       "passes": 3,
@@ -248,7 +292,10 @@
       "rule": "trigger-boundary",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "maintainable-code",
+        "using-gabrielmoreira-skills"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -268,7 +315,12 @@
       "rule": "runnable-signal",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "debugging-by-evidence",
+        "rules/runnable-signal.md",
+        "bound-the-unknown"
+      ],
       "negative": false,
       "entered": true,
       "passes": 3,
@@ -296,7 +348,9 @@
       "rule": "runnable-signal",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "debugging-by-evidence"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -318,7 +372,18 @@
       "rule": "regression-seam",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "test-first-by-evidence",
+        "rules/where-the-test-goes.md",
+        "rules/code-written-first.md",
+        "rules/tests-that-cannot-lie.md",
+        "rules/hard-to-test-is-a-signal.md",
+        "rules/watch-it-fail.md",
+        "rules/bug-fix-starts-red.md",
+        "debugging-by-evidence",
+        "rules/regression-seam.md"
+      ],
       "negative": false,
       "entered": true,
       "passes": 1,
@@ -346,7 +411,9 @@
       "rule": "regression-seam",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "test-first-by-evidence"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -368,7 +435,15 @@
       "rule": "stopping-and-escalating",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "bound-the-unknown",
+        "debugging-by-evidence",
+        "progressive-reading",
+        "drop-the-model-voice",
+        "rules/runnable-signal.md",
+        "rules/rival-hypotheses.md"
+      ],
       "negative": false,
       "entered": true,
       "passes": 0,
@@ -388,7 +463,10 @@
       "rule": "stopping-and-escalating",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "debugging-by-evidence",
+        "bound-the-unknown"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -407,7 +485,10 @@
       "rule": "trigger-boundary",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "drop-the-model-voice"
+      ],
       "negative": false,
       "entered": false,
       "passes": 3,
@@ -440,7 +521,10 @@
       "rule": "trigger-boundary",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "drop-the-model-voice"
+      ],
       "negative": false,
       "entered": false,
       "passes": 3,
@@ -458,7 +542,9 @@
       "rule": "trigger-boundary",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "make-the-docs-trustworthy"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -475,7 +561,10 @@
       "rule": "trigger-boundary",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "drop-the-model-voice"
+      ],
       "negative": false,
       "entered": false,
       "passes": 3,
@@ -497,7 +586,10 @@
       "rule": "trigger-boundary",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "make-the-docs-trustworthy",
+        "using-gabrielmoreira-skills"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -517,7 +609,20 @@
       "rule": "contracts-and-consumers",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "test-first-by-evidence",
+        "keep-the-thread-across-boundaries",
+        "rules/where-the-test-goes.md",
+        "rules/watch-it-fail.md",
+        "bound-the-unknown",
+        "typescript-skills",
+        "typescript-boundaries/INDEX.md",
+        "typescript-coding-standards/INDEX.md",
+        "typescript-coding-standards/rules/absence-and-defaults.md",
+        "typescript-boundaries/rules/earned-mapping.md",
+        "rules/tests-that-cannot-lie.md"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -545,7 +650,11 @@
       "rule": "contracts-and-consumers",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "test-first-by-evidence",
+        "maintainable-code",
+        "keep-the-thread-across-boundaries"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -573,7 +682,20 @@
       "rule": "docs-and-skills-freshness",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "test-first-by-evidence",
+        "typescript-skills",
+        "typescript-async/INDEX.md",
+        "rules/watch-it-fail.md",
+        "typescript-async/rules/retry-and-backoff.md",
+        "rules/where-the-test-goes.md",
+        "typescript-error-handling/rules/error-classification.md",
+        "typescript-async/rules/promise-ownership.md",
+        "rules/smallest-green.md",
+        "keep-the-thread-across-boundaries",
+        "rules/code-written-first.md"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -601,7 +723,10 @@
       "rule": "docs-and-skills-freshness",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "debugging-by-evidence",
+        "test-first-by-evidence"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -626,7 +751,12 @@
       "rule": "contracts-and-consumers",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "evidence-backed-review",
+        "typescript-skills",
+        "bound-the-unknown"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -654,7 +784,9 @@
       "rule": "contracts-and-consumers",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "evidence-backed-review"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -678,7 +810,15 @@
       "rule": "switch-refused",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "keep-git-work-recoverable",
+        "rules/switch-refused.md",
+        "rules/locate-yourself.md",
+        "rules/isolate-or-work-in-place.md",
+        "rules/returning-work.md",
+        "rules/removing-work.md"
+      ],
       "negative": false,
       "entered": true,
       "passes": 3,
@@ -704,7 +844,10 @@
       "rule": "switch-refused",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "keep-git-recoverable",
+        "keep-git-work-recoverable"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -722,7 +865,13 @@
       "rule": "resolve-the-ref",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "keep-git-work-recoverable",
+        "rules/locate-yourself.md",
+        "rules/resolve-the-ref.md",
+        "rules/stale-refs.md"
+      ],
       "negative": false,
       "entered": true,
       "passes": 3,
@@ -749,7 +898,9 @@
       "rule": "resolve-the-ref",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "keep-git-recoverable"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -768,7 +919,11 @@
       "rule": "locate-yourself",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "keep-git-work-recoverable",
+        "rules/locate-yourself.md"
+      ],
       "negative": false,
       "entered": true,
       "passes": 2,
@@ -790,7 +945,10 @@
       "rule": "locate-yourself",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "keep-git-recoverable",
+        "keep-git-work-recoverable"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -808,7 +966,16 @@
       "rule": "trigger-boundary",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "debugging-by-evidence",
+        "bound-the-unknown",
+        "keep-the-thread-across-boundaries",
+        "test-first-by-evidence",
+        "rules/runnable-signal.md",
+        "rules/minimising.md",
+        "rules/rival-hypotheses.md"
+      ],
       "negative": false,
       "entered": true,
       "passes": 3,
@@ -836,7 +1003,10 @@
       "rule": "trigger-boundary",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "debugging-by-evidence",
+        "test-first-by-evidence"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -864,7 +1034,11 @@
       "rule": "trigger-boundary",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "maintainable-code",
+        "bound-the-unknown"
+      ],
       "negative": false,
       "entered": false,
       "passes": 3,
@@ -892,7 +1066,9 @@
       "rule": "trigger-boundary",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "maintainable-code"
+      ],
       "negative": false,
       "entered": false,
       "passes": 3,
@@ -914,7 +1090,12 @@
       "rule": "core-rules",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "debugging-by-evidence",
+        "maintainable-code",
+        "progressive-reading"
+      ],
       "negative": false,
       "entered": false,
       "passes": 2,
@@ -934,7 +1115,11 @@
       "rule": "core-rules",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "maintainable-code",
+        "test-first-by-evidence",
+        "typescript-skills"
+      ],
       "negative": false,
       "entered": false,
       "passes": 3,
@@ -956,7 +1141,10 @@
       "rule": "choose-dependencies-deliberately",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "maintainable-code"
+      ],
       "negative": false,
       "entered": false,
       "passes": 3,
@@ -974,7 +1162,10 @@
       "rule": "choose-dependencies-deliberately",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "maintainable-code",
+        "typescript-skills"
+      ],
       "negative": false,
       "entered": false,
       "passes": 3,
@@ -994,7 +1185,13 @@
       "rule": "one-place-for-a-fact",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "make-the-docs-trustworthy",
+        "bound-the-unknown",
+        "rules/one-place-for-a-fact.md",
+        "rules/restatement-is-drift.md"
+      ],
       "negative": false,
       "entered": true,
       "passes": 2,
@@ -1022,7 +1219,10 @@
       "rule": "one-place-for-a-fact",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "make-the-docs-trustworthy",
+        "test-first-by-evidence"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -1049,7 +1249,22 @@
       "rule": "record-what-code-cannot-show",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "make-the-docs-trustworthy",
+        "keep-the-thread-across-boundaries",
+        "rules",
+        "evidence-backed-review",
+        "one-place-for-a-fact.md",
+        "record-what-code-cannot-show.md",
+        "match-the-existing-shape.md",
+        "one-artifact-one-job.md",
+        "rules/record-what-code-cannot-show.md",
+        "rules/match-the-existing-shape.md",
+        "rules/one-artifact-one-job.md",
+        "rules/one-place-for-a-fact.md",
+        "rules/docs-and-skills-freshness.md"
+      ],
       "negative": false,
       "entered": true,
       "passes": 3,
@@ -1077,7 +1292,10 @@
       "rule": "record-what-code-cannot-show",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "make-the-docs-trustworthy",
+        "using-gabrielmoreira-skills"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -1100,7 +1318,20 @@
       "rule": "record-what-code-cannot-show",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "make-the-docs-trustworthy",
+        "keep-the-thread-across-boundaries",
+        "evidence-backed-review",
+        "rules/one-place-for-a-fact.md",
+        "rules/restatement-is-drift.md",
+        "rules/record-what-code-cannot-show.md",
+        "rules/match-the-existing-shape.md",
+        "rules/one-artifact-one-job.md",
+        "rules/unreviewed-prose.md",
+        "rules/docs-and-skills-freshness.md",
+        "treat-blockers-as-incidents"
+      ],
       "negative": false,
       "entered": true,
       "passes": 3,
@@ -1128,7 +1359,10 @@
       "rule": "record-what-code-cannot-show",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "make-the-docs-trustworthy",
+        "using-gabrielmoreira-skills"
+      ],
       "negative": false,
       "entered": false,
       "passes": 3,
@@ -1156,7 +1390,12 @@
       "rule": "trigger-boundary",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "managing-tools-with-mise",
+        "debugging-by-evidence",
+        "treat-blockers-as-incidents"
+      ],
       "negative": false,
       "entered": false,
       "passes": 3,
@@ -1184,7 +1423,9 @@
       "rule": "trigger-boundary",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "debugging-by-evidence"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -1212,7 +1453,11 @@
       "rule": "trigger-boundary",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "progressive-reading",
+        "maintainable-code"
+      ],
       "negative": false,
       "entered": false,
       "passes": 3,
@@ -1236,7 +1481,9 @@
       "rule": "trigger-boundary",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "maintainable-code"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -1257,7 +1504,10 @@
       "rule": "detail-handling",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "progressive-reading"
+      ],
       "negative": false,
       "entered": false,
       "passes": 3,
@@ -1275,7 +1525,9 @@
       "rule": "detail-handling",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "make-the-docs-trustworthy"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -1294,7 +1546,25 @@
       "rule": "watch-it-fail",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "test-first-by-evidence",
+        "typescript-skills",
+        "typescript-async/INDEX.md",
+        "rules/watch-it-fail.md",
+        "rules/where-the-test-goes.md",
+        "typescript-async/rules/retry-and-backoff.md",
+        "typescript-error-handling/rules/error-classification.md",
+        "rules/tests-that-cannot-lie.md",
+        "rules/code-written-first.md",
+        "rules/where-the-test-goes",
+        "rules/tests-that-cannot-lie",
+        "rules/watch-it-fail",
+        "rules/smallest-green",
+        "rules/smallest-green.md",
+        "typescript-testing/INDEX.md",
+        "typescript-testing/rules/local-test-style.md"
+      ],
       "negative": false,
       "entered": true,
       "passes": 3,
@@ -1322,7 +1592,11 @@
       "rule": "watch-it-fail",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "test-first-by-evidence",
+        "maintainable-code",
+        "typescript-skills"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -1350,7 +1624,15 @@
       "rule": "hard-to-test-is-a-signal",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "test-first-by-evidence",
+        "rules/hard-to-test-is-a-signal.md",
+        "rules/tests-that-cannot-lie.md",
+        "typescript-skills",
+        "typescript-testing/INDEX.md",
+        "maintainable-code"
+      ],
       "negative": false,
       "entered": true,
       "passes": 3,
@@ -1370,7 +1652,10 @@
       "rule": "hard-to-test-is-a-signal",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "maintainable-code",
+        "test-first-by-evidence"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -1391,7 +1676,27 @@
       "rule": "watch-it-fail",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "debugging-by-evidence",
+        "test-first-by-evidence",
+        "rules/where-the-test-goes",
+        "rules/watch-it-fail",
+        "rules/bug-fix-starts-red",
+        "rules/runnable-signal",
+        "rules/bug-fix-starts-red.md",
+        "rules/watch-it-fail.md",
+        "rules/where-the-test-goes.md",
+        "rules/smallest-green.md",
+        "rules/rival-hypotheses.md",
+        "rules/regression-seam.md",
+        "rules/fix-at-the-source.md",
+        "typescript-skills",
+        "rules/runnable-signal.md",
+        "rules/tests-that-cannot-lie.md",
+        "typescript-error-handling/INDEX.md",
+        "typescript-error-handling/rules/throw-vs-result.md"
+      ],
       "negative": false,
       "entered": true,
       "passes": 2,
@@ -1419,7 +1724,12 @@
       "rule": "watch-it-fail",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "test-first-by-evidence",
+        "maintainable-code",
+        "typescript-skills",
+        "debugging-by-evidence"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -1447,7 +1757,14 @@
       "rule": "whose-failure-is-it",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "treat-blockers-as-incidents",
+        "rules/whose-failure-is-it.md",
+        "rules/stop-conditions.md",
+        "managing-tools-with-mise",
+        "rules/record-the-learning.md"
+      ],
       "negative": false,
       "entered": true,
       "passes": 3,
@@ -1475,7 +1792,10 @@
       "rule": "whose-failure-is-it",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "debugging-by-evidence",
+        "treat-blockers-as-incidents"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -1503,7 +1823,14 @@
       "rule": "record-the-learning",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "treat-blockers-as-incidents",
+        "rules/record-the-learning.md",
+        "keep-the-thread-across-boundaries",
+        "rules/stop-conditions.md",
+        "rules/workarounds-are-findings.md"
+      ],
       "negative": false,
       "entered": true,
       "passes": 3,
@@ -1525,7 +1852,10 @@
       "rule": "record-the-learning",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "keep-the-thread-across-boundaries",
+        "using-gabrielmoreira-skills"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -1553,7 +1883,13 @@
       "rule": "retry-and-backoff",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "typescript-skills",
+        "typescript-async/INDEX.md",
+        "typescript-async/rules/retry-and-backoff.md",
+        "maintainable-code"
+      ],
       "negative": false,
       "entered": true,
       "passes": 1,
@@ -1579,7 +1915,11 @@
       "rule": "retry-and-backoff",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "debugging-by-evidence",
+        "maintainable-code",
+        "typescript-skills"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -1601,7 +1941,10 @@
       "rule": "retry-and-backoff",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "maintainable-code"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -1634,7 +1977,11 @@
       "rule": "error-shape-and-metadata",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "maintainable-code",
+        "progressive-reading"
+      ],
       "negative": false,
       "entered": false,
       "passes": 0,
@@ -1668,7 +2015,10 @@
       "rule": null,
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "debugging-by-evidence"
+      ],
       "negative": true,
       "entered": false,
       "passes": 3,
@@ -1686,7 +2036,10 @@
       "rule": null,
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "debugging-by-evidence",
+        "using-gabrielmoreira-skills"
+      ],
       "negative": true,
       "entered": false,
       "passes": 3,
@@ -1704,7 +2057,10 @@
       "rule": "trigger-boundary",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "treat-blockers-as-incidents"
+      ],
       "negative": true,
       "entered": false,
       "passes": 3,
@@ -1732,7 +2088,10 @@
       "rule": "trigger-boundary",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "debugging-by-evidence",
+        "treat-blockers-as-incidents"
+      ],
       "negative": true,
       "entered": false,
       "passes": 3,
@@ -1760,7 +2119,19 @@
       "rule": "activation-boundary",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "test-first-by-evidence",
+        "typescript-skills",
+        "maintainable-code",
+        "typescript-observability/INDEX.md",
+        "typescript-security/INDEX.md",
+        "typescript-observability/rules/meaningful-logging.md",
+        "typescript-security/rules/redaction.md",
+        "rules/watch-it-fail.md",
+        "rules/where-the-test-goes.md",
+        "rules/tests-that-cannot-lie.md"
+      ],
       "negative": true,
       "entered": false,
       "passes": 0,
@@ -1788,7 +2159,11 @@
       "rule": "activation-boundary",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "test-first-by-evidence",
+        "maintainable-code",
+        "typescript-skills"
+      ],
       "negative": true,
       "entered": false,
       "passes": 3,
@@ -1816,7 +2191,10 @@
       "rule": null,
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "drop-the-model-voice"
+      ],
       "negative": true,
       "entered": false,
       "passes": 0,
@@ -1834,7 +2212,9 @@
       "rule": null,
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "make-the-docs-trustworthy"
+      ],
       "negative": true,
       "entered": false,
       "passes": 3,
@@ -1851,7 +2231,13 @@
       "rule": "activation-boundary",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "debugging-by-evidence",
+        "rules/runnable-signal.md",
+        "bound-the-unknown",
+        "rules/minimising.md"
+      ],
       "negative": true,
       "entered": false,
       "passes": 0,
@@ -1879,7 +2265,11 @@
       "rule": "activation-boundary",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "debugging-by-evidence",
+        "test-first-by-evidence",
+        "maintainable-code"
+      ],
       "negative": true,
       "entered": false,
       "passes": 3,
@@ -1904,7 +2294,14 @@
       "rule": "activation-boundary",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "debugging-by-evidence",
+        "keep-git-work-recoverable",
+        "treat-blockers-as-incidents",
+        "rules/runnable-signal.md",
+        "rules/locate-yourself.md"
+      ],
       "negative": true,
       "entered": true,
       "passes": 0,
@@ -1932,7 +2329,9 @@
       "rule": "activation-boundary",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "debugging-by-evidence"
+      ],
       "negative": true,
       "entered": false,
       "passes": 3,
@@ -1960,7 +2359,13 @@
       "rule": "trigger-boundary",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "make-the-docs-trustworthy",
+        "rules/record-what-code-cannot-show.md",
+        "rules/match-the-existing-shape.md",
+        "rules/one-artifact-one-job.md"
+      ],
       "negative": true,
       "entered": false,
       "passes": 3,
@@ -1984,7 +2389,10 @@
       "rule": "trigger-boundary",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "make-the-docs-trustworthy",
+        "using-gabrielmoreira-skills"
+      ],
       "negative": true,
       "entered": false,
       "passes": 3,
@@ -2008,7 +2416,10 @@
       "rule": "trigger-boundary",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "maintainable-code"
+      ],
       "negative": true,
       "entered": false,
       "passes": 2,
@@ -2049,7 +2460,15 @@
       "rule": "activation-boundary",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "evidence-backed-review",
+        "rules/docs-and-skills-freshness.md",
+        "rules/execution-and-pipeline.md",
+        "make-the-docs-trustworthy",
+        "bound-the-unknown",
+        "rules/pre-commit-self-review.md"
+      ],
       "negative": true,
       "entered": true,
       "passes": 0,
@@ -2074,7 +2493,10 @@
       "rule": "activation-boundary",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "evidence-backed-review",
+        "make-the-docs-trustworthy"
+      ],
       "negative": true,
       "entered": false,
       "passes": 3,
@@ -2098,7 +2520,9 @@
       "rule": "trigger-boundary",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills"
+      ],
       "negative": true,
       "entered": false,
       "passes": 3,
@@ -2138,7 +2562,15 @@
       "rule": null,
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "test-first-by-evidence",
+        "rules/watch-it-fail.md",
+        "rules/code-written-first.md",
+        "rules/tests-that-cannot-lie.md",
+        "debugging-by-evidence",
+        "rules/where-the-test-goes.md"
+      ],
       "negative": true,
       "entered": true,
       "passes": 0,
@@ -2166,7 +2598,11 @@
       "rule": null,
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "test-first-by-evidence",
+        "maintainable-code",
+        "debugging-by-evidence"
+      ],
       "negative": true,
       "entered": false,
       "passes": 3,
@@ -2194,7 +2630,13 @@
       "rule": "meaningful-logging",
       "kind": "observed",
       "arm": "with",
-      "opened": [],
+      "opened": [
+        "using-gabrielmoreira-skills",
+        "typescript-skills",
+        "typescript-security/INDEX.md",
+        "typescript-security/rules/redaction.md",
+        "debugging-by-evidence"
+      ],
       "negative": true,
       "entered": true,
       "passes": 3,
@@ -2215,7 +2657,10 @@
       "rule": "meaningful-logging",
       "kind": "observed",
       "arm": "without",
-      "opened": [],
+      "opened": [
+        "debugging-by-evidence",
+        "test-first-by-evidence"
+      ],
       "negative": true,
       "entered": false,
       "passes": 3,

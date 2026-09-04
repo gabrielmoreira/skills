@@ -1144,6 +1144,20 @@ async function main(modelOverride) {
           : seen.rules;
         const tookIt = deep.get(c.skill) ? own.length > 0 : graded.opened;
         if (want ? !tookIt : graded.pass) passes++;
+        // What the run reached, recorded rather than only graded on.
+        //
+        // Only the far-miss branch filled this, so `opened` came out empty for
+        // every observed scenario, which is nearly all of them. An empty list
+        // under that name does not read as "not recorded". It reads as "the
+        // agent opened nothing", and that reading survived until a seq entry
+        // contradicted it: a row whose opened was empty had `read
+        // skill://evidence-backed-review` two lines below.
+        //
+        // Rules are kept apart from skills because the difference is the whole
+        // question above: reading an entry and entering a rule are different
+        // acts, and folding them into one list would lose the distinction the
+        // grader was just careful to make.
+        opened.push(...seen.skills, ...seen.rules);
         answers.push(redact(JSON.stringify({ skills: seen.skills, rules: seen.rules }), roots));
         continue;
       }
