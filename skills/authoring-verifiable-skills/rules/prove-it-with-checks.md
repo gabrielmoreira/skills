@@ -8,7 +8,7 @@ references: [mutation testing, differential testing against a reference implemen
 
 # Prove It With Checks
 
-Decision: **A check suite proves nothing until a deliberately broken skill fails it for the right reason, so every check MUST have a mutation that makes it, and only it, turn red.**
+Decision: **A check suite proves nothing until a deliberately broken skill fails it for the right reason, so every check MUST have a mutation that makes it, and only it, turn red.** Proving a measure, which returns a number rather than a verdict, belongs to `rules/prove-a-measure.md`.
 
 Use when:
 - **A skill is being added or changed**, which is every time.
@@ -35,7 +35,6 @@ Avoid:
 - **A check with no mutation.** It is an opinion with a pass label.
 - **Loosening a check because one instance is defensible.** Reword the instance, or the check stops holding everywhere else.
 - **Moving a threshold to make a file pass.** Move it only where the measurement itself is wrong, and record the reason in the code.
-- **Believing a metric written to score the rewrite it is scoring.**
 
 Exceptions:
 - **An outcome case instructs where an activation scenario asks**, since an answer leaves nothing to score. C-14 still binds, and a paraphrase defeats it: the script catches names and stated verdicts, a restated decision is read by a person.

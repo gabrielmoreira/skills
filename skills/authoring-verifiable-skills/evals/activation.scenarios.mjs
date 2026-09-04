@@ -160,6 +160,31 @@ const scenarios = [
     tags: ["activation", "positive", "shape"],
   },
   {
+    id: "a-number-from-a-script-nobody-has-fooled",
+    bundle: "authoring-verifiable-skills",
+    rule: "prove-a-measure",
+    tier: "P0",
+    mode: "router",
+    difficulty: "hard",
+    source: "session",
+    sourceNote:
+      "A measure written to count how often an agent announced a state searched the whole recorded stream, which inlines every file the run read. It reported 54% and the corrected version reported 32%. The situation is kept and the defect is not named in the prompt, so the answer has to find it.",
+    prompt:
+      "i have a script that greps the recorded run transcripts for the state names and counts how often the agent announced one. it says 54% across 228 runs. do not rewrite it for me, and only tell me whether that number can be trusted yet",
+    expectedPrimary: "rules/prove-a-measure.md",
+    expectedSecondary: [],
+    activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: true, forbiddenRoutes: [] },
+    must: [
+      "Says the number cannot be quoted until the measure has been watched returning a known-wrong answer",
+      "Names input that would separate a state the agent said from one the text merely contains",
+    ],
+    mustNot: [
+      "Accepts the number because the script ran without error",
+      "Treats a second reviewer reading the script as the check",
+    ],
+    tags: ["activation", "positive", "measure", "derived"],
+  },
+  {
     id: "suite-is-green-but-proves-nothing",
     bundle: "authoring-verifiable-skills",
     rule: "prove-it-with-checks",

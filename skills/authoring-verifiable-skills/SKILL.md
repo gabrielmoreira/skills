@@ -38,6 +38,7 @@ description: >-
 | a rule carrying two decisions, missing a mandated block, or restating another rule | `rules/one-rule-one-decision.md` |
 | a wall of prose, a paragraph that is really a list, or a file that cannot be skimmed | `rules/readable-in-one-pass.md` |
 | a check suite that has never been watched fail, or a skill with no scenarios | `rules/prove-it-with-checks.md` |
+| a tool returning a number rather than a verdict, or a number about to enter a report or a decision | `rules/prove-a-measure.md` |
 | a file ordered by the sequence the author thought of things, or every line marked MUST | `rules/order-and-strength.md` |
 | a name that will not come, or one colliding with skills already installed | `rules/name-and-scope.md` |
 | a skill whose work has phases and no way to say which one it is in; a rule saying `not yet` to something a reader would otherwise do now | `rules/states-carry-licenses.md` |
