@@ -170,7 +170,7 @@ const scenarios = [
     sourceNote:
       "A measure written to count how often an agent announced a state searched the whole recorded stream, which inlines every file the run read. It reported 54% and the corrected version reported 32%. The situation is kept and the defect is not named in the prompt, so the answer has to find it.",
     prompt:
-      "i have a script that greps the recorded run transcripts for the state names and counts how often the agent announced one. it says 54% across 228 runs. do not rewrite it for me, and only tell me whether that number can be trusted yet",
+      "i added a check to my skill suite that scores how often each rule gets opened, and it reports 54% across the collection. i want to put that number in the skill README as evidence the routing works. do not touch the skill files, and only tell me whether that number is ready to stand as evidence",
     expectedPrimary: "rules/prove-a-measure.md",
     expectedSecondary: [],
     activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: true, forbiddenRoutes: [] },
