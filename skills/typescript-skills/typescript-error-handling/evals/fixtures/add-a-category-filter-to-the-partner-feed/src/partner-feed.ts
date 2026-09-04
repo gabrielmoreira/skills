@@ -1,5 +1,5 @@
-import { fetchCatalogue } from "./catalogue-client";
-import { PartnerItem, CatalogueRow } from "./types";
+import { fetchCatalogue } from "./catalogue-client.ts";
+import type { PartnerItem, CatalogueRow } from "./types.ts";
 
 const REGION_DEFAULT = "eu-west";
 

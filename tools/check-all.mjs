@@ -148,6 +148,12 @@ const routing = run("check-routing-parity.mjs", []);
 const routingLine = routing.out.trim().split("\n").at(-1) ?? "not measured";
 if (!routing.ok) failed++;
 
+// Do the TypeScript fixtures compile, and would Node run them? The one that
+// existed did not, and nothing here had ever compiled a fixture.
+const fixtureTypes = run("check-fixture-types.mjs", []);
+const fixtureTypesLine = fixtureTypes.out.trim().split("\n").find((l) => /compiles|error\(s\)|skipped|no TypeScript/.test(l)) ?? "not measured";
+if (!fixtureTypes.ok) failed++;
+
 // How much of the scenario set is derived from real sources vs invented.
 const provenance = run("scenario-provenance.mjs", []);
 const provenanceLine = provenance.out.trim().split("\n").find((l) => l.includes("scenarios:") && l.includes("invented,")) ?? "not measured";
@@ -272,6 +278,7 @@ console.log(`  local paths       ${paths.ok ? "none committed" : "FOUND"}`);
 console.log(`  scenarios         ${baselineLine}`);
 console.log(`  split             ${splitLine}`);
 console.log(`  routing tables    ${routingLine}`);
+console.log(`  fixture types     ${fixtureTypesLine}`);
 console.log(`  provenance        ${provenanceLine}`);
 console.log(`  behaviour         ${behaviourLine(collectionSize)}`);
 console.log(`  far misses        ${farMissLine()}`);
