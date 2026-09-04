@@ -106,6 +106,7 @@ Long sessions here run 29 percent shell against 6 percent in short ones. What fi
 | where a test goes to pin a defect | `debugging-by-evidence` | `test-first-by-evidence` |
 | whether a unit should be split, where a module belongs, which way a dependency may point | `maintainable-code` | `typescript-skills` |
 | what construct expresses it: a type, a class against a function, a factory against a ready instance, a promise | `typescript-skills` | `maintainable-code` |
+| whether a test proves anything, or only that it ran | `test-first-by-evidence` | `typescript-skills` |
 | judging work that already exists as commits | `evidence-backed-review` | `maintainable-code` |
 | designing work that does not exist yet | `maintainable-code` | `evidence-backed-review` |
 | a text that is correct and hard to get into | `progressive-reading` | `drop-the-model-voice` |
