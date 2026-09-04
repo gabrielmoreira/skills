@@ -40,7 +40,7 @@ description: >-
 
 ## Say which state you are in
 
-**Report it every time.** Each state licenses only what it names.
+**You MUST report it every time.** Each state licenses only what it names.
 
 | State | Means | Licenses |
 | --- | --- | --- |

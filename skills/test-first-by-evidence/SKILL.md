@@ -73,7 +73,7 @@ NO PRODUCTION CODE WITHOUT A TEST YOU WATCHED FAIL
 
 ## Say which phase you are in
 
-**Report it every time.** Each phase licenses only what it names.
+**You MUST report it every time.** Each phase licenses only what it names.
 
 | Phase | Means | Licenses |
 | --- | --- | --- |

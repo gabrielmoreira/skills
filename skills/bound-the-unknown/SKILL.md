@@ -34,7 +34,7 @@ description: >-
 
 ## Where you are
 
-**Say the state before each probe.** The phases already exist in the sections below; naming the one you are in is what stops a budget sliding, because the slide is silent and the announcement is not.
+**You MUST say the state before each probe.** The phases already exist in the sections below; naming the one you are in is what stops a budget sliding, because the slide is silent and the announcement is not.
 
 | State | Means | Licenses |
 | --- | --- | --- |

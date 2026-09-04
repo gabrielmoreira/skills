@@ -73,7 +73,7 @@ description: >-
 - **Never assert a cause no run has supported.** An untested explanation is labelled as one.
 
 ## Say which loop state you are in
-**Report it every time.** Each state licenses only what it names.
+**You MUST report it every time.** Each state licenses only what it names.
 
 | State | Means | Licenses |
 | --- | --- | --- |

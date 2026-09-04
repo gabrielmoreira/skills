@@ -61,7 +61,7 @@ description: >-
 
 ## Say which state you are in
 
-**Report it every time.** Each state licenses only what it names, and acting from a state you
+**You MUST report it every time.** Each state licenses only what it names, and acting from a state you
 have not established is how work that existed nowhere else stops existing.
 
 | State | Means | Licenses |
