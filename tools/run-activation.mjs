@@ -1139,9 +1139,33 @@ async function main(modelOverride) {
         // So a scenario that names a bundle narrower than the skill is scored
         // against that bundle. A rule opened in a sibling is a handoff, not a
         // failure to decline.
+        //
+        // And where the bundle is the skill, `own` used to be every rule the
+        // run opened, from anywhere in the collection. A run that never touched
+        // the skill under test and opened a rule somewhere else scored as that
+        // skill over-firing.
+        //
+        // Measured across twelve negatives: three failed that way, and in all
+        // three the skill under test had opened no rule of its own. One of them
+        // never opened its entry either. The same three rules of
+        // make-the-docs-trustworthy were opened under a keep-the-thread negative
+        // that passed, because a flat skill is scored on its entry instead, so
+        // the verdict depended on the shape of the skill being accused rather
+        // than on anything it did.
+        //
+        // Ownership comes from skillPaths, which is already loaded: a bare
+        // `rules/x.md` belongs if it is listed there, and a `topic/rules/x.md`
+        // belongs if that topic's INDEX is.
+        const mine = (r) => {
+          const p = String(r).replace(/^skill:\/\//, "");
+          const paths = c.skillPaths ?? [];
+          if (paths.some((x) => samePath(x, p))) return true;
+          const topic = p.split("/")[0];
+          return p.includes("/rules/") && paths.some((x) => x === `${topic}/INDEX.md`);
+        };
         const own = c.scenario?.bundle && c.scenario.bundle !== c.skill
           ? seen.rules.filter((r) => String(r).includes(c.scenario.bundle))
-          : seen.rules;
+          : seen.rules.filter(mine);
         const tookIt = deep.get(c.skill) ? own.length > 0 : graded.opened;
         if (want ? !tookIt : graded.pass) passes++;
         // What the run reached, recorded rather than only graded on.
