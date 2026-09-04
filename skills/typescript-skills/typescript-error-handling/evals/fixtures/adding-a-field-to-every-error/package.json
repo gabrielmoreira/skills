@@ -1,0 +1,11 @@
+{
+  "name": "shared-errors",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3"
+  }
+}

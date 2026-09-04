@@ -1,0 +1,7 @@
+Resources:
+  ReportWorker:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handler.handler
+      Runtime: nodejs22.x
+      Timeout: 30
