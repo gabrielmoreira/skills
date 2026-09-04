@@ -37,7 +37,7 @@
  *   node tools/run-activation.mjs --write-baseline
  */
 import { readdir, readFile, writeFile, mkdir, rm, cp, stat } from "node:fs/promises";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { join, resolve, basename, dirname } from "node:path";
 import { pathToFileURL } from "node:url";
 import { spawn } from "node:child_process";
@@ -590,7 +590,41 @@ export function saidYes(answer) {
  * or did not. A bare bundle name names a routing answer instead, and no amount
  * of watching the filesystem settles it.
  */
-export const gradableTarget = (t) => typeof t === "string" && /\.md$/.test(t);
+// A target is gradable when the run can be checked against it.
+//
+// A file is the obvious case. A bundle name is the other one, and excluding it
+// cost a fifth of the suite: 82 of 413 scenarios named a topic rather than a
+// file and were skipped before any call was made, concentrated in the topic
+// trees, so the largest skill in the collection was also the least measured.
+//
+// A topic-level claim is a real claim. The router in a multi-topic skill routes
+// to topics and each topic's own index routes to rules, so a scenario naming
+// the topic is asserting the first hop. It is settled by whether anything under
+// that topic was reached, which is looser than a rule-level pass and is
+// reported as its own kind rather than pooled with one.
+export const gradableTarget = (t) =>
+  typeof t === "string" && (/\.md$/.test(t) || bundleDir(t) !== null);
+
+/** The directory a bare bundle or topic name refers to, or null if it names none. */
+const bundleCache = new Map();
+function bundleDir(name) {
+  if (bundleCache.has(name)) return bundleCache.get(name);
+  let found = null;
+  if (typeof name === "string" && /^[a-z][a-z0-9-]*$/.test(name)) {
+    // ROOT is the collection directory itself, so a skill is one level in.
+    if (existsSync(join(ROOT, name, "SKILL.md")) || existsSync(join(ROOT, name, "INDEX.md"))) found = name;
+    else {
+      // A topic sits one level under its skill, and its entry is an INDEX.
+      for (const parent of readdirSync(ROOT, { withFileTypes: true })) {
+        if (!parent.isDirectory()) continue;
+        const cand = join(parent.name, name);
+        if (existsSync(join(ROOT, cand, "INDEX.md")) || existsSync(join(ROOT, cand, "SKILL.md"))) { found = cand; break; }
+      }
+    }
+  }
+  bundleCache.set(name, found);
+  return found;
+}
 
 export function gradeRouting(answer, scenario) {
   const got = pathsIn(answer);
@@ -660,6 +694,16 @@ export function gradeObserved(seen, scenario, skillName) {
     if (seen.rules.some((g) => samePath(g, w))) { how.set(w, "opened"); return true; }
     const via = read.find((p) => deliveredBy(p, w));
     if (via) { how.set(w, `inline in ${via}`); return true; }
+    // A topic target is reached by anything under it: its index, or any rule it
+    // owns. Recorded as topic-level so a report never quietly mixes the two.
+    const dir = bundleDir(w);
+    if (dir) {
+      const under = [...seen.rules, ...seen.skills].find((p) => {
+        const rel = String(p).replace(/^skill:\/\//, "");
+        return rel === w || rel.startsWith(`${w}/`) || rel.includes(`/${w}/`) || rel.endsWith(`/${w}`);
+      });
+      if (under) { how.set(w, `topic level via ${under}`); return true; }
+    }
     return false;
   };
   const hit = want.every(reached);
