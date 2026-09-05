@@ -15,7 +15,7 @@ description: >-
 
 # Authoring Verifiable Skills
 
-**Core principle.** A skill that does not activate does nothing, and a skill nobody has watched fail proves nothing.
+**Core principle.** A skill that does not activate does nothing, and a skill nobody has watched fail proves nothing. Changing one that already exists, against evidence that it underperforms, belongs to `optimising-skills`.
 
 - **Those two failures are silent.** Both look exactly like a skill that works.
 - **The weight sits in *the activation surface* and *the gate*.** Everything after them improves a skill that is already being reached.
@@ -104,3 +104,4 @@ node tools/check-yaml-parity.mjs               # frontmatter against a real YAML
 - **The table above selects the rule.** Read it in full, and say which one you opened, in one line.
 - **A direct instruction from the user outranks anything here.**
 - **Whether a task needs a skill at all is not decided here.** This skill owns writing one once that is settled.
+- **A skill that exists and underperforms belongs to `optimising-skills`.** Structure is repaired here on reading; behaviour is changed there, as an experiment with a prediction written first.

@@ -23,6 +23,7 @@ Do:
 - **Let dependency win where it is real, and only there.** A mode chosen before work begins, a range resolved before anything is read. Name those, and let the rest fall by impact.
 - **Budget the keywords.** At most two or three MUSTs in a rule.
 - **Give every rule at least one SHOULD or MAY.**
+- **Pick the keyword for the cost of violation. Which form repairs which failure is measured in `optimising-skills`**, where a prohibition beats a recipe on a rule broken under pressure and loses to it on output of the wrong shape.
 
 | Keyword | Means | The reader may |
 | --- | --- | --- |
