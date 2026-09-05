@@ -44,7 +44,7 @@ description: >-
 | `probe/BUDGET SPENT` | the budget ran out and you still cannot decide | reporting where you stopped and what was ruled out, not a silent fourth cycle |
 
 - **`probe/BUDGET SPENT` is a result, not a failure.** A search that stopped somewhere you can name beats one still running with no end in sight.
-- **Extending is allowed, announcing it is not.** Say the new number out loud and go back to `probe/WITHIN BUDGET`.
+- **Extending is allowed, announcing it is not optional.** Say the new number out loud and go back to `probe/WITHIN BUDGET`.
 
 ## Say the budget first
 

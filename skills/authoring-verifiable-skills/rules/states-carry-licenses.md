@@ -32,5 +32,5 @@ Avoid:
 
 Verify:
 - **Read the state names with the Means column covered.** Any you cannot place is misnamed.
-- **Check each Licenses cell forbids something the previous state allowed**, or the row is decoration.
+- **Check each Licenses cell changes what the previous state allowed**, or the row is decoration.
 - **Confirm a terminal state exists that is not success.**

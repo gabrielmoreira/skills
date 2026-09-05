@@ -8,7 +8,7 @@ references: [five instrument defects found in one day, four caught before they w
 
 # Prove A Measure
 
-Decision: **A measure MUST be watched returning a known-wrong answer on planted input before any number it produces is quoted, because a wrong check turns red and a wrong measure returns something plausible.** Proving a check with a mutation belongs to `rules/prove-it-with-checks.md`.
+Decision: **A measure MUST be watched refusing a known-wrong answer on planted input before any number it produces is quoted, because a wrong check turns red and a wrong measure returns something plausible.** Proving a check with a mutation belongs to `rules/prove-it-with-checks.md`.
 
 Use when:
 - **A tool returns a number rather than a verdict.**
@@ -45,6 +45,6 @@ a planted transcript                a state counted from the file it read
 None was caught by the number looking wrong.
 
 Verify:
-- **Run the planted case and watch the wrong answer come back.**
+- **Run the planted case and watch the right answer come back.**
 - **Name the witness** for every number that reached a conclusion.
 - **Say which numbers have no witness yet**, rather than leaving them level with the rest.
