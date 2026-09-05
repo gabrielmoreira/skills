@@ -31,6 +31,7 @@ It names no tool, so a host with a question tool uses one and a host without sen
 | ground you cannot name yet: two probes in with no finding, a script about to be written to find out, or a change that has to reach everywhere in a codebase you do not know | `bound-the-unknown` |
 | a decision, a constraint, an approval, a settled choice you are told not to reopen, or a second request before the first closes | `keep-the-thread-across-boundaries` |
 | a skill itself must be written, split, renamed, or checked | `authoring-verifiable-skills` |
+| a skill that already exists underperforms, and a number says so | `optimising-skills` |
 
 - **Not finding a match is an answer.** Do not stretch one to fit.
 - **Two or more matching is normal.** Process comes before implementation, and the narrower one

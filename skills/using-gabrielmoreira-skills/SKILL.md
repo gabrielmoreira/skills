@@ -47,6 +47,7 @@ description: >-
 | an answer that is dense, buried, or hard to resume | `progressive-reading` |
 | prose that leaves this session and gets read by someone else: a review comment, a pull request description, an incident write-up, a status update, a release note, a page, an announcement | `drop-the-model-voice` |
 | a skill to write, split, rename, or check, or one that never fires | `authoring-verifiable-skills` |
+| a skill that exists, evidence that it underperforms, and a change about to be made to it | `optimising-skills` |
 
 - **Know what you are in before matching a row.** The project's own instruction file, its README,
   and what the files actually are. Usually one read, and it is what makes a row land on the right

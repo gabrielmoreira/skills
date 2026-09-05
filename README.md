@@ -268,3 +268,13 @@ The current state is always what the suite prints, never what this file claims.
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+
+### [`optimising-skills`](skills/optimising-skills/SKILL.md)
+
+**A skill that already exists, and evidence that it underperforms.** It fires on
+work it excludes, misses work it claims, or is read and then disobeyed.
+
+Treats the change as an experiment and the number that motivated it as the first
+thing to doubt. Carries what has already been tried here and failed, so the same
+lever is not measured a third time.
