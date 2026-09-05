@@ -21,7 +21,7 @@ description: >-
 
 ## How the work actually runs here
 
-**Assume a long, interrupted session, because that is what the record says.** Peak context sits near 154k with a p90 of 202k, capped at 200k, so boundaries are frequent rather than exceptional. What fills the context is probing and not conversation: long sessions run 29 percent shell against 6 percent in short ones.
+**Assume a long, interrupted session, because that is what the record says.** Boundaries are frequent rather than exceptional here, and what fills the context is probing rather than conversation.
 
 - **Requests arrive before the previous one closes.** That is how I work, not a lapse to apologise for. Classify the new one and carry on.
 - **Two disciplines are therefore not optional here.** Bounding a probe before it runs long, and keeping what settled so a boundary costs less. The skills that own them exist because of the numbers above.
@@ -148,7 +148,6 @@ Long sessions here run 29 percent shell against 6 percent in short ones. What fi
 - **No workaround reported as a fix.** Say the tool is broken and let me decide.
 - **No review that closes on local test and lint output.** Numbers are not a judgment.
 - **No skill's procedure replacing the thing I asked for.** Answer what I asked, then say what else you found.
-- **No em dash anywhere**, in any file, in any message.
 
 ## Defaults the portable skills leave open
 
