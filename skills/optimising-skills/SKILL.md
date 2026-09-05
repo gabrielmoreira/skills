@@ -50,6 +50,7 @@ description: >-
 | a chosen change and no written prediction | §4 One variable, registered first |
 | a finished run | §5 Decide, and say which |
 | an intention to remove instructions because a newer model looks capable enough | §6 Subtraction, and what it costs to get wrong |
+| a suite that scores well and a suspicion that the work does not look like it | §7 What the real sessions say |
 
 ## 1. Is the number real
 
@@ -118,6 +119,19 @@ description: >-
 - **Remove one group at a time and rerun the same scenarios.** A block removed wholesale cannot be attributed either.
 - **Minimal is not short.** The target is the smallest set of high-signal instructions that still produces the behaviour, which is a different quantity from the shortest file.
 - **A threshold is a diagnostic, not an acceptance criterion.** A measure written to score a rewrite gets satisfied by that rewrite, and the argument the prose carried is what pays.
+
+## 7. What the real sessions say
+
+**A suite is a distribution somebody wrote. A session store is the one that happened.** A skill can score well on every scenario and never be reached by the work, and no amount of rerunning the suite shows that. `scripts/session-extract.mjs` normalises the stores once; `scripts/session-signal.mjs` reads only what that wrote.
+
+- **Read it by week when the collection is being edited by week.** A rate that moved the week after a change is a lead; one that moved the week before it is not, and the same table separates them.
+- **An open is a read, a mention is a name, and an invocation is a person.** A skill named in prose and never opened is a routing lead. One a person had to invoke by name is a routing failure the score will not show, because the person fixed it.
+- **Count how often a skill is reached first, and how often inside a subagent.** One opened often and never first is a second hop, reached through something else; a trigger measured in isolation will not describe it.
+- **Suspect a column that is all one value.** Reading the wrong field produced 974 shell verbs here that were a single word, and every total stayed plausible while it did. The distribution shows it; the count never will.
+- **The window is part of the instrument.** Two sessions from one harness looked like a broken adapter and were the eight-week boundary: at ten weeks the same code found nineteen.
+- **A planted case that agrees with the code proves nothing about the store.** The case that invented that harness's format passed for as long as it existed.
+- **The store is not yours to publish.** Redact at the adapter, not before printing: names of skills, tools, and tasks are the vocabulary of somebody's work, and a program name cannot be told from a private one by shape.
+- **This cannot say whether an open helped.** It says where to look, and a person reading the transcript says the rest.
 
 ## Where the evidence is
 
