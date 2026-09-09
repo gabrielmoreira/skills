@@ -1,15 +1,10 @@
 /**
  * Activation scenarios for optimising-skills.
  *
- * Every negative here is a collision with `authoring-verifiable-skills` or with
- * a review, because those are the only places this skill can be confused for.
- * A negative that shares no vocabulary would test nothing: the whole difficulty
- * is that "change this skill" is the sentence for both writing one and tuning
- * one, and only the presence of an existing skill plus evidence separates them.
- *
- * The balance is deliberate. Five positives against four negatives, because the
- * collection's own coverage audit found a suite at 4.5 positives per negative
- * and the imbalance is what produces a skill that fires on everything.
+ * Includes discovery collisions and behavioural-evaluation questions.
+ * This small suite is not an estimate of production class prevalence.
+ * Its expectations concern supported decisions, not a mandatory wording,
+ * an inferred failure cause, or compliance with this skill's own procedure.
  *
  * Prompts are written the way a developer types one: lowercase, contracted,
  * naming no skill file and no rule.
@@ -29,7 +24,7 @@ const scenarios = [
     activation: { layer: "public-skill", target: "optimising-skills", shouldActivate: true, forbiddenRoutes: [] },
     must: [
       "Checks whether the number and the instrument behind it hold before proposing any change",
-      "Names the failure class from what the run did rather than from the score",
+      "Separates the observed routing mismatch from competing explanations requiring evidence",
       "Says what would send the change back, before the change runs",
     ],
     mustNot: [
@@ -49,8 +44,8 @@ const scenarios = [
     prompt: "the new model is a lot better so i want to strip out maybe half the instructions in my tdd skill that were only there for the old one. how do i know whats safe to take out",
     activation: { layer: "public-skill", target: "optimising-skills", shouldActivate: true, forbiddenRoutes: [] },
     must: [
-      "Makes the coverage of the existing suite the precondition rather than a later step",
-      "Removes one group at a time against the same scenarios",
+      "Checks whether evaluation covers the outcomes the removed instructions protect",
+      "Proposes an attributable comparison on equivalent task inputs",
       "Separates the smallest set that still works from the shortest file",
     ],
     mustNot: [
@@ -70,7 +65,7 @@ const scenarios = [
     prompt: "my eval says the docs skill went from 60 percent to 72 after my edit. is that real or am i fooling myself",
     activation: { layer: "public-skill", target: "optimising-skills", shouldActivate: true, forbiddenRoutes: [] },
     must: [
-      "Asks what the measure would return on input built to fool it, before reading the delta",
+      "Checks the instrument, sampling and comparability before accepting a causal gain",
       "Names the sample size and the spread rather than the two point values alone",
       "Reads what the runs produced rather than the score alone",
     ],
@@ -94,8 +89,8 @@ const scenarios = [
     prompt: "the skill got opened, i can see it read four of its own rules, and it still did the exact thing one of those rules says never to do. do not tell me to reword the rule, and only tell me what class of failure this is",
     activation: { layer: "public-skill", target: "optimising-skills", shouldActivate: true, forbiddenRoutes: [] },
     must: [
-      "Separates a compliance failure from a routing failure using what the run opened",
-      "Chooses the form of any fix from the failure class rather than from habit",
+      "Identifies observed noncompliance rather than failure to discover the supplied rule",
+      "Leaves the underlying cause unresolved without the task, instruction hierarchy and trace",
     ],
     mustNot: [
       "Treats this as the skill not being found",
@@ -114,11 +109,11 @@ const scenarios = [
     prompt: "changed the wording and reran it, went from 0 of 3 to 1 of 3. do i keep it",
     activation: { layer: "public-skill", target: "optimising-skills", shouldActivate: true, forbiddenRoutes: [] },
     must: [
-      "Compares the result against the noise floor at that sample size before calling it a gain",
-      "Reports it as unproven rather than as a small improvement",
+      "Distinguishes the observed one-trial difference from evidence of a reliable effect",
+      "Treats the evidence as insufficient for a general improvement claim",
     ],
     mustNot: [
-      "Reads one of three as movement",
+      "Claims that three trials establish either a reliable gain or no possible effect",
       "Keeps the change on the strength of the direction alone",
     ],
     tags: ["activation", "positive", "noise-floor"],
@@ -179,9 +174,9 @@ const scenarios = [
     difficulty: "hard",
     prompt: "the verify script is red on my skill, says 190 lines against a limit of 160",
     nearMiss:
-      "A number about a skill, which is the surface pattern this skill matches on. But it is a structural gate reporting a fact about the file, not evidence about behaviour, and there is no instrument to doubt and no experiment to run. Structure belongs to the authoring skill.",
+      "This is a reported structural limit, not evidence of behavioural harm. Inspect the file and the check's contract before deciding whether to change structure; no behavioural experiment is required merely to reconcile a count.",
     activation: { layer: "public-skill", target: "optimising-skills", shouldActivate: false, forbiddenRoutes: [] },
-    must: ["Treats a structural gate as a fact about the file rather than a behavioural measurement"],
+    must: ["Separates the reported structural count from any claim about quality or behaviour"],
     mustNot: ["Opens an experiment to decide whether a line count is real"],
     tags: ["activation", "negative", "collision", "structural"],
   },

@@ -1,177 +1,208 @@
-# Evidence
+# Evidence and transfer register
 
-What each source established, what it did not, and where independent sources
-arrived at the same place. Names sit inside fenced blocks so the instruction
-prose stays portable.
+Reviewed 2026-09-05. URLs below are primary documents unless stated otherwise. Moving
+web documentation is dated by retrieval, not treated as an immutable release. Local
+acquisitions and the initial research are retained in the authorised ignored research
+workspace; no private session data is required to reproduce the proposed coding pilot.
 
-## The sources
+**Source statement is not independent replication.** Vendor recommendations, empirical
+results on a stated benchmark, methods adapted from other domains, and local findings
+are different evidence classes. A citation licenses only the claim it actually supports.
 
-```
-A  vendor guidance, model provider one     current model and prompting guides
-B  vendor guidance, model provider two     context engineering and eval guides
-C  four public skill collections           their own skill-authoring skills
-D  requirements engineering, public        NASA Systems Engineering Handbook, Appendix C
-E  qualitative content analysis, academic  Mayring, 2000
-F  long-context research, public           RULER; independent context-degradation work
-G  this collection, measured               two days of activation runs and textual audit
-```
+## Evaluation and experimental method
 
-`G` is the only source that measured this collection. Everything else describes
-other corpora, other models, or a method. A recommendation from `A` through `F`
-is a hypothesis here until `G` has a number for it.
+### OpenAI: Evaluation best practices
 
-## What each established
+Source: <https://developers.openai.com/api/docs/guides/evaluation-best-practices>
 
-### A and B, converging
+- **Type/conditions:** current provider guidance for evaluating variable generative systems.
+- **Statement:** define task-specific objectives, representative data and metrics; compare
+  results, inspect logs and calibrate automatic scoring against human feedback. It warns
+  against biased datasets, generic metrics and vibe-based evaluation.
+- **Use here:** evaluation.md separates outcomes, task families, graders and repeated trials.
+- **Limit:** example thresholds are examples, not validated thresholds for this collection.
+  Provider guidance does not establish local skill lift.
 
-Both arrived at nearly the same guidance in different vocabulary.
+### Anthropic: Demystifying evals for AI agents
 
-```
-smallest prompt that preserves the contract  <->  smallest set of high-signal tokens
-outcome, constraints, success criteria       <->  the right altitude, not procedural logic
-state each instruction once                  <->  remove over-prompting
-reasoning effort is a dial beside the prompt  <->  effort is the channel for thinking volume
-revalidate scaffolding when the model changes <->  revalidate workarounds built for older models
-expose only the tools the task needs          <->  bloated tool sets create ambiguity
-```
+Source: <https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents>
 
-**Established:** removing instructions written for an earlier model is a real
-and reported gain, with score, token and cost figures from one vendor's internal
-coding-agent evals, marked directional by the vendor itself.
+- **Type/conditions:** engineering guidance and examples of multi-turn agent evaluation.
+- **Statement:** task, trial, grader, transcript, outcome and harness are different objects.
+  An agent saying it booked a flight is not the same as the reservation existing. Multiple
+  trials address variability; static graders can reject valid creative solutions.
+- **Use here:** inspect produced artifacts and environment state; allow correct alternatives;
+  distinguish agent harness from evaluation harness; retain trial-level evidence.
+- **Limit:** the article is not an experiment on these skills or a universal grader recipe.
 
-**Not established:** that the same holds for a skill collection. A system prompt
-is always present; a skill is loaded on demand, and the cost model differs.
+### SkillsBench
 
-**The line that carries the most weight and is easiest to skim past:** minimal is
-not short. Without it, subtraction becomes the same defect it was meant to cure.
+Source: <https://arxiv.org/abs/2602.12670> (Li et al., first submitted 2026-02-13;
+current abstract retrieved 2026-09-05).
 
-### B on evals, which is the precondition for all of it
+- **Type/conditions:** paired benchmark of curated skill packages against no-skills conditions.
+  Current abstract describes 87 tasks, eight domains and 18 model-harness configurations.
+- **Reported result:** average pass rate 33.9% without versus 50.5% with curated skills.
+- **Use here:** compare actual task completion under controlled interventions rather than
+  scoring Markdown structure. Keep the package and harness in the treatment definition.
+- **Limit:** curated tasks/packages, versions and verifiers condition the result. The aggregate
+  is not an estimate for this collection. An association with module count is not a universal
+  cap on files, and a package effect does not isolate its prose from scripts or references.
 
-```
-representative of production traffic     an eval that does not reproduce real traffic is an anti-pattern
-class balance                            testing only when a behaviour should fire produces one that always fires
-task solvability                         a reference solution proves the task can be done
-grade outcome, not trajectory            a correct answer by another route is not a failure
-prod-like harness, isolation per trial    the harness must not be what the score measures
-multiple trials                          a single run decides nothing when variance is unmeasured
-grader bugs                              confirm a failure is the agent's before repairing the skill
-eval saturation                          a suite near 100% measures regression, not capability
-transcript inspection                    read trajectories, not only scores
-false confidence                         automated evals mislead when they miss real usage patterns
-```
+### Automatic Prompt Optimization with "Gradient Descent" and Beam Search
 
-**Established:** every failure mode this collection hit in two days is named
-here, in advance, by a source that had never seen it.
+Source: <https://arxiv.org/abs/2305.03495> (Pryzant et al., 2023-05-04).
 
-### C, the four authoring collections
+- **Type/conditions:** prompt optimisation on three NLP benchmarks and jailbreak detection,
+  using training data, natural-language criticism, edits, beam search and bandit selection.
+- **Reported result:** preliminary improvements up to 31% over compared initial/editing settings.
+- **Use here:** feedback can propose discrete candidates; keep generation, selection and final
+  confirmation separate, and record every candidate comparison.
+- **Limit:** the "gradient" is an analogy, not a differentiable skill objective or convergence
+  proof. The tasks and older models do not establish gains for current coding skills. No
+  beam-search infrastructure is necessary for a single justified semantic correction.
 
-```
-three-level loading                    metadata always, body on trigger, resources on demand
-the description is the trigger         it is the only text read before loading
-explain why, not heavy keywords        capitalised absolutes are a yellow flag
-generalise, do not fit the examples    a skill that works only on its test cases is useless
-read transcripts, not outputs          repeated work across runs is a signal to bundle a script
-context is a public good               only add what the model does not already have
-degrees of freedom                     match specificity to fragility, prose to script
-no skill without a failing test first  baseline before writing, the discipline borrowed from tests
-match the form to the failure          measured head to head, see below
-```
+### Requirements and qualitative inspection
 
-**The strongest single item, and it is measured:** in head-to-head wording tests
-on one collection's own guidance, the prohibition arm produced more of the
-unwanted content than the recipe arm, with fully separated distributions, and
-trended worse than the no-guidance control. Appending one nuance clause to the
-winning recipe degraded it from consistent to noisy.
+Sources: NASA, <https://www.nasa.gov/reference/appendix-c-how-to-write-a-good-requirement/>;
+Mayring (2000), <https://doi.org/10.17169/fqs-1.2.1089>.
 
-**Not established:** that the ranking transfers to another failure class, another
-model, or this collection. The source says to micro-test rather than assume.
+- **Type:** methods already inspected in the original textual audit, not new local experiments.
+- **Adaptation:** ask about necessity, clarity, consistency, assumptions and verifiability;
+  define analysis units and coding criteria, preserve context and search counterevidence.
+- **Limit:** a skill is not a NASA product requirement. The prior audit was single-model
+  expert inspection, not a validated qualitative study or independent human replication.
+  A fixed codebook reduces some discretion; it does not remove reviewer bias.
 
-### D and E, the method
+## Skills, tools and environment fidelity
 
-```
-D  what fails if this requirement disappears
-D  is a tight tolerance defendable and cost-effective
-D  clarity, consistency, traceability, necessity, assumptions, verifiability
-E  explicit analysis units, a category system fixed before reading
-E  context-sensitive interpretation, transparent coding rules
-```
+### Qwen Code: Agent Skills
 
-**Established:** a close reading can show that an instruction is contradictory,
-underspecified, or infeasible under its own assumptions. **Not established:** how
-often a model follows it, or that a rewrite improves anything.
+Source: <https://qwenlm.github.io/qwen-code-docs/en/users/features/skills/>
 
-### F, long context
+- **Type/conditions:** current Qwen Code harness documentation.
+- **Statement:** skills package instructions and optional resources; discovery uses metadata,
+  while explicit invocation is a separate user action. Descriptions explain what and when.
+- **Use here:** separate discovery from usefulness after loading, and test the actual harness's
+  exposure behaviour. Keep supporting material on demand.
+- **Limit:** Qwen-specific frontmatter and maintenance behaviour are not portable harness APIs.
+  Do not add fields to this collection assuming every runtime implements them.
 
-**Established:** a model near perfect on simple retrieval across a large window
-can degrade sharply when the same window requires several items, distractors,
-multi-hop tracing, or aggregation. Focused inputs beat large ones carrying
-irrelevant history.
+### Qwen-AgentWorld
 
-**Why it belongs here:** it is the laboratory version of the fear that motivates
-this whole skill. An eval can be correct and still measure a simplified version
-of the capability it is believed to protect.
+Source: <https://qwen.ai/blog?id=qwen-agentworld>;
+paper <https://arxiv.org/abs/2606.24597> (2026).
 
-## What this collection measured
+- **Type/conditions:** trained environment simulator and agent-training experiments across
+  text and GUI domains. Ground-truth observations come from real environments.
+- **Reported finding:** simulation fidelity and controlled perturbations matter; the MCP
+  examples include intermittent errors, pagination, incomplete results and partial batches.
+  The article explicitly treats simulation as complementary to real environments.
+- **Use here:** fixtures specify real initial state and API semantics; perturb relevant failure
+  schedules, then check important transitions in the actual runtime.
+- **Limit:** RL gains and simulator benchmark scores are not evidence that a prompt rewrite
+  helps. Do not substitute plausible generated tool responses for verified environment behaviour.
 
-```
-seven instrument defects in one day     each produced a plausible wrong number
-four text changes, all falsified        description twice, a rule inside an opened skill, a router gate row
-noise floor plus or minus one of three  demonstrated on two untouched skills between runs
-state announced in 32% of openings      a keyword did not move it detectably
-one trigger architecturally unreachable its condition arrives after routing, which is never revisited
-seven scenarios against an empty tree   the honest refusal scored as failure
-positives to negatives, 4.5 to 1        the imbalance the eval guidance warns about
-derived scenarios measure less          held twice, intervals overlapping
-structural suite saturated              350 of 350 and 231 of 231, so it cannot report capability
-```
+### NVIDIA NeMo Gym
 
-**The pattern under all seven instrument defects:** something that looked like
-data and was not. None was caught by the number looking wrong. Each was caught by
-an independent witness: reading the worst-scoring file, a second field
-disagreeing, a gate refusing a commit, a row passing for the reason another
-failed, a timestamp, and a planted transcript.
+Source: <https://github.com/NVIDIA-NeMo/Gym/blob/main/README.md>;
+<https://docs.nvidia.com/nemo/gym/main/about/>.
+README retrieved 2026-09-05, reporting v0.6.0 dated 2026-09-03 and skill evaluation/BLADE
+introduced in v0.4.0 dated 2026-07-01.
 
-## The textual audit of this collection
+- **Type/conditions:** environment infrastructure, not a causal result about local skill text.
+- **Statement:** an environment comprises tasks, agent harness, verifier and per-task state.
+  Supports repeated evaluation, stateful environments and stored rollout diagnostics.
+  The README says a script may suffice for stateless checks without scale/training needs.
+- **Use here:** define environment and verifier independently, preserve rollouts and choose
+  modest instrumentation for the concrete pilot rather than installing a platform by default.
+- **Limit:** BLADE or any diagnostic output still needs evidence for its attribution. The
+  repository warns its APIs/documentation are evolving; a framework name does not validate a grader.
 
-An independent close reading of all instruction files, using `D` and `E`, found
-patterns that no activation run can see.
+### Kimi: Dynamically Loaded Tools
 
-```
-endings erase exceptions       six skills ended with a check stricter than their body
-thresholds presented as laws   numeric limits with no population, model, or interval
-universal openings             an absolute first, its qualification several lines later
-causation from one observation a single before-and-after read as a general law
-```
+Source: <https://platform.kimi.ai/docs/guide/use-dynamic-tool-loading>
 
-**It also found four factual errors** that no structural gate could reach: a
-statistic whose percentile exceeded both its own peak and its cap, a claim about
-version-control default behaviour contradicted by the tool's documentation, an
-example that can leave a rejection unobserved, and a rule whose approved example
-does the thing a neighbouring rule forbids.
+- **Type/conditions:** current Kimi API protocol and supplier performance guidance.
+- **Statement:** load tool definitions on demand; append definitions to preserve existing
+  prefixes. Tool search is a backend-provided function, not a dedicated magic API.
+- **Use here:** separate tool inventory, context cost, selection opportunities and cache layout;
+  preserve the protocol when testing a content change.
+- **Limit:** reported accuracy/cost benefits are not a measured local effect. Other providers
+  may use different tool-discovery and caching protocols. Do not universalise "append".
 
-**What it could not establish, and said so:** any runtime behaviour at all.
+## Reasoning protocols are not interchangeable
 
-## Where the two methods converge
+### GLM / Z.ai: Thinking Mode
 
-Independent arrival is the strongest evidence available here.
+Source: <https://docs.z.ai/guides/capabilities/thinking-mode>
 
-```
-the chronology defect        found by reading the text, and separately by watching a run
-                             use the recovery path that licenses a first-run pass to
-                             justify tests chosen by which lines were uncovered
+- **Type/conditions:** interleaved, preserved and turn-level thinking documentation; examples
+  include GLM-4.7. Endpoint defaults differ between Coding Plan and standard API.
+- **Statement:** preserved thinking uses complete, unmodified historical reasoning content;
+  the documented control includes clear_thinking=false. Order matters.
+- **Use here:** identify a protocol/harness fault before editing skill prose.
+- **Limit:** continuity and performance claims remain provider-specific, not a rule to expose
+  or retain private reasoning in every application.
 
-held-out discipline          named by the textual audit, and by vendor eval guidance
-                             selecting on the held-out half makes it validation data
+### Google Gemma: Thinking mode
 
-outcome over route           recorded by this collection on its own, named by the
-                             authoring collections, and named by vendor eval guidance
-```
+Source: <https://ai.google.dev/gemma/docs/capabilities/thinking>
 
-## What none of them establishes
+- **Type/conditions:** current Gemma thinking conversation-format documentation.
+- **Statement:** strip previous-turn thoughts before the next user turn in standard multi-turn
+  use, but do not remove them between function calls within one model turn.
+- **Use here:** retain the distinction between user-turn boundaries and an ongoing tool loop.
+- **Limit:** this differs from preserved-thinking protocols. Neither source should be rewritten
+  into a cross-model rule to always preserve or always remove reasoning.
 
-- **That any repair improves task outcomes.** Every source that measured
-  anything measured a different corpus, a different model, or a structural
-  property.
-- **That shorter is better.** One source explicitly denies it.
-- **That a wording change moves behaviour in this collection.** Four attempts,
-  four falsifications. See `falsified.md`.
+### DeepSeek: Thinking Mode
+
+Source: <https://api-docs.deepseek.com/guides/thinking_mode>
+
+- **Type/conditions:** current API guide, including deepseek-v4-flash/pro examples.
+- **Statement:** with tools, historical reasoning_content must be passed back; without tools,
+  previous reasoning is ignored. Some sampling controls have no effect in thinking mode.
+- **Use here:** record effective controls, not only requested flags, and distinguish provider
+  message-protocol validity from instruction quality.
+- **Limit:** this verifies the documented protocol, not claims about a separate DeepSeek agent
+  harness or transfer to another vendor. No private reasoning collection is required here.
+
+### MiniMax: Text generation
+
+Source: <https://platform.minimax.io/docs/guides/text-generation>
+
+- **Type/conditions:** current model/API overview, naming MiniMax-M3 and historical M2 variants.
+- **Statement:** documents an Anthropic-compatible path supporting thinking blocks and
+  interleaved thinking, alongside other interfaces.
+- **Use here:** record the interface and model, not just the vendor label, in an experiment.
+- **Limit:** interface support and context capacity do not demonstrate instruction adherence
+  or a particular skill-optimisation technique. No local MiniMax comparison was performed.
+
+### Unsloth: Fine-tuning guide
+
+Source: <https://unsloth.ai/docs/get-started/fine-tuning-guide>
+
+- **Type/conditions:** SFT, LoRA/QLoRA and RL training guidance; not inference-only prompting.
+- **Statement:** dataset structure, validation and training choices affect learned behaviour;
+  automated evaluation may not align with the user's criteria.
+- **Use here:** distinguish training reward from the outcome actually wanted, and audit proxy
+  metrics for gaming. Preserve unrelated capabilities when optimising a target behaviour.
+- **Limit:** training changes weights/adapters. Those effects do not establish that adding or
+  removing a Markdown instruction has the same effect. Dataset proportions are not universal defaults.
+
+## Local evidence and unresolved claims
+
+The initial audit found textual contradictions and over-scoped requirements. It did not run
+these skills. The historical attempt record contains local failures and inconclusive comparisons;
+its small samples do not eliminate whole classes of wording interventions.
+
+The TypeScript pilot begins from the audited concurrent-promise example. Primary semantics:
+<https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function>.
+MDN explicitly shows that a concurrently started promise can reject before a later await
+wires it into the chain, even with an outer catch. Runtime reproduction establishes that
+example defect; a controlled coding comparison is needed to establish any guidance benefit.
+
+No source above proves this optimisation method universally effective. Apparent convergence
+is a reason to test a hypothesis, not a substitute for independent outcome evidence. Contradictory
+provider protocols stay visible rather than being averaged into one recommendation.

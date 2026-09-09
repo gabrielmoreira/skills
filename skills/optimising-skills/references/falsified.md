@@ -1,7 +1,7 @@
-# Falsified
+# Historical optimisation attempts
 
-Every change tried on this collection, its prediction, its result, and whether
-it stayed. A lever measured twice does not get a third run without a new reason.
+Original observations are preserved below. Reverting a candidate for failing a
+registered adoption rule does not prove its entire mechanism ineffective.
 
 ## The record
 
@@ -39,43 +39,42 @@ it stayed. A lever measured twice does not get a third run without a new reason.
 
 ## What the record establishes
 
-**Editing instruction text did not move behaviour in four attempts across three
-mechanisms.** A skill description, a rule inside a skill already open and being
-followed, and the router's own gate table. Two of the four cost something.
+**These attempts did not establish the intended improvements.** Some observations
+also show regressions. The comparison conditions and small samples limit what
+can be inferred; the rows are not evidence that instruction text cannot help.
 
-**The one change that stayed is not evidence against that.** It was kept because
-the owner asked for the behaviour and the measurement found no cost. The commit
-says so.
+**The retained change was preference-based.** No gain was established, and the
+reported measurement did not detect a cost. Absence of detected cost is not a
+general guarantee of non-inferiority.
 
 ## What each one ruled out
 
-- **Where an exclusion sits does not change what fires.** Attempt 1. The three
-  failing negatives were each named in the description's own exclusion clause,
-  and moving that test into the first clause of the trigger changed nothing.
-- **Naming the missing case does not admit it.** Attempt 2. The body already
-  covered the case in a sentence the run had read.
-- **A discriminator inside an opened skill does not repair compliance.** Attempt
-  3. The rules were read, the state was announced, and the forbidden thing
-  happened anyway.
-- **A gate row cannot fire at a moment the architecture never returns to.**
-  Attempt 4. The router is read once, at the start; the mode it was meant to
-  reach triggers during work already under way.
+- **Attempt 1:** moving this exclusion did not improve these negatives in this
+  comparison. The positive drop is a regression signal, not a universal law of placement.
+- **Attempt 2:** naming this case did not move three observed samples. That does
+  not establish that descriptions never influence selection.
+- **Attempt 3:** the change was declared inside the observed noise floor and
+  positives fell. This is insufficient evidence for adoption, not proof that
+  discriminators cannot repair compliance.
+- **Attempt 4:** the trace was interpreted as a routing opportunity absent from
+  this harness mode. Verify that architectural condition before applying the
+  explanation elsewhere; a zero score alone cannot establish unreachability.
 
 ## The candidates nobody has tried
 
-Ordered by what the record leaves standing.
+Hypotheses not evaluated by the comparisons above, not the only options remaining.
 
-- **The name.** Every failure above was on a skill whose name describes a purpose
-  rather than a moment. Untested, and a rename is expensive because references
-  break.
+- **The name.** Whether a more discriminating name helps remains untested. Name
+  changes also affect references and discovery, so the intervention is broader
+  than replacing one description sentence.
 - **Ownership.** Two skills competing for an unanchored question may need one of
   them to stop claiming it, which is a decision for the owner rather than a
   wording change.
 - **Accepting the behaviour.** A skill that opens on an adjacent case and then
   declines costs a load. That cost is measurable and may be smaller than the
   alternative.
-- **The architecture.** A trigger that fires mid-task needs something that
-  re-enters the routing decision. Nothing in a file can supply that.
+- **The architecture.** If a trigger requires a routing opportunity this harness
+  never supplies, another prose edit cannot create that runtime capability.
 
 ## How to add to this record
 

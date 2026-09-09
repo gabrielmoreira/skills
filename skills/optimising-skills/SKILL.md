@@ -1,146 +1,117 @@
 ---
 name: optimising-skills
 description: >-
-  Change a skill that already exists, when something says it underperforms and
-  you are about to act on that. Covers doubting the number before spending on
-  it, classifying which kind of failure this is, choosing the form of the fix
-  from the failure class, running the change as one registered experiment, and
-  reverting on the condition you wrote down first. Use when a skill fires on
-  work it excludes, misses work it claims, is read and then disobeyed, scores
-  badly on its own scenarios, or when you are about to cut instructions from it
-  because a newer model looks like it no longer needs them. Most changes of this
-  kind fail, and the ones that fail quietly are the ones that were never
-  predicted. Not for writing a skill that does not exist yet, not for splitting
-  or renaming one, and not for judging a change already made, which is a review.
+  Improve an existing skill when there is a concrete defect, an observed task
+  failure, unnecessary work, or a proposed behavioural change. Separate textual
+  correctness from effectiveness; check the task, environment and evaluator
+  before blaming instructions; choose an intervention, compare it against a
+  baseline, and decide with bounded evidence. Use for skill ablations, confusing
+  triggers, unreliable guidance, regressions, and evaluating whether a rewrite
+  helps. Not for creating a new skill, reviewing a completed change, or repairing
+  a runtime failure by adding prompt instructions.
 ---
 
 # Optimising Skills
 
-**Core principle.** A change to a skill is an experiment, and the number that motivated it is the first thing to doubt.
+**Improve the work the skill helps produce, not its score on its own rules.**
 
-- **This is the second half of a pair.** Writing a skill so it can be proved belongs to `authoring-verifiable-skills`. This owns what happens after: a skill exists, evidence says it underperforms, and something is about to change.
-- **The weight sits in *Is the number real* and *Match the form to the failure*.** Everything after them is bookkeeping; everything before them is guessing.
-- **You opened this in the middle of something.** Name the skill under change and the evidence that sent you here, then return to that work when this closes.
+A contradiction can be corrected by reasoning and reproduction. A claim of better
+agent behaviour needs a comparison. Neither a green checker nor following this
+procedure establishes that a skill helped.
 
-## Say which state you are in
+## Choose the depth the question needs
 
-**You MUST report it every time.** Each state licenses only what it names.
-
-| State | Means | Licenses |
-| --- | --- | --- |
-| `opt/UNVERIFIED` | a number says a skill underperforms and the instrument that produced it has not been checked | checking the instrument, reading answers, nothing that edits a skill |
-| `opt/MEASURED` | the instrument was watched refusing a planted case, and the number survived | classifying the failure |
-| `opt/CLASSIFIED` | the failure class is named from an observable, not from the score | choosing a form and writing a prediction |
-| `opt/PREDICTED` | the change, the expected direction, and the revert condition are written down before the run | applying one change and running it |
-| `opt/DECIDED` | the result is in and compared against what was predicted | keeping, reverting, or recording it unproven |
-| `opt/UNPROVEN` | the run finished inside the noise floor | saying so, and nothing that claims a gain |
-
-- **No state is reached by assumption.** Each names an observation you made.
-- **`opt/DECIDED` requires the prediction to have been written before the run**, not reconstructed after it.
-
-## Which phase applies
-
-**This table is a gate, not a checklist.** Match the left column against what you have.
-
-| If you see... | Go to |
+| What you have | Read |
 | --- | --- |
-| a score, a rate, or a pass count that has not been separated from the tool that produced it | §1 Is the number real |
-| a verified number and no named cause | §2 What kind of failure is this |
-| a named failure class and an urge to reword something | §3 Match the form to the failure |
-| a chosen change and no written prediction | §4 One variable, registered first |
-| a finished run | §5 Decide, and say which |
-| an intention to remove instructions because a newer model looks capable enough | §6 Subtraction, and what it costs to get wrong |
-| a suite that scores well and a suspicion that the work does not look like it | §7 What the real sessions say |
+| a contradictory rule, misleading example, or suspected cause of failure | [Diagnosis and intervention](references/diagnosis.md) |
+| a score, proposed eval, judge, or scenario whose validity is uncertain | [Evaluation design](references/evaluation.md) |
+| a justified candidate ready for comparison, ablation, or repeated improvement | [Experiments and decisions](references/experiments.md) |
+| a measurement tool, session trace, cost claim, or missing observation | [Instrument contracts](references/instruments.md) |
+| a recommendation attributed to a vendor, paper, or another collection | [Evidence and transfer](references/evidence.md) |
+| a claim that a wording approach has already been disproved | [Historical attempts](references/falsified.md) |
 
-## 1. Is the number real
+Read the applicable method, not every file by default. The table selects depth;
+it does not make every typo correction run an experiment.
 
-**A wrong check turns red. A wrong measure returns something plausible and it reaches a report.** `authoring-verifiable-skills/rules/prove-a-measure.md` owns the general obligation; this is where it gets spent.
+## Make the current state visible
 
-- **Feed the measure the thing it must not count, and watch it not count it.** A measure with no planted case is an opinion with a number attached.
-- **Read the answer the run produced, not only the verdict.** Every material finding in this collection's own history came from reading a transcript, and none came from the number looking wrong. `scripts/read-answers.mjs` prints them.
-- **Check the suite before trusting a green result from it.** A scenario whose prompt refers to work the workspace does not contain is unanswerable, and the honest refusal scores as failure. `scripts/coverage-audit.mjs` reports the axes.
-- **Balance is a precondition, not a nicety.** A suite that only tests when a skill should fire produces a skill that fires on everything, and the score will not say so.
-- **Name the noise floor before reading a delta.** Two untouched skills moving by one sample of three is what noise looks like here.
+Say the state when entering or changing a phase, with its evidence and next action.
+These are evidence boundaries, not a requirement to narrate every tool call.
 
-## 2. What kind of failure is this
-
-**Name the class from what the run did, not from the score.** The fix that repairs one class measurably damages another.
-
-| What the transcript shows | Class | Where the fix can live |
+| State | What is established | What it permits next |
 | --- | --- | --- |
-| the skill was never opened, and another was | routing | the router gate, the name, or the scenario's own territory |
-| the skill was opened and no rule of its own was entered | reach | the gate table inside the skill |
-| the skill was opened, its rules were read, and the forbidden thing happened anyway | compliance | the form of the instruction, and §3 decides which |
-| the answer did the right thing by a different route | scenario | the scenario asserts a path where its own criteria are about content |
-| the prompt names a state the workspace lacks | fixture | the scenario, not the skill |
-| the trigger fires at a moment the architecture never revisits | unreachable | nothing inside the skill repairs this |
+| `opt/UNVERIFIED` | A reported problem, not yet a checked cause | Inspect the observation and instrument |
+| `opt/MEASURED` | A checked observation or reproducible semantic contradiction | Distinguish competing explanations |
+| `opt/CLASSIFIED` | A bounded diagnosis, with alternatives and gaps | Choose a repair or behavioural hypothesis |
+| `opt/PREDICTED` | A frozen intervention, comparison and decision rule | Run the authorised comparison |
+| `opt/DECIDED` | Evidence supports a scoped keep, revise or revert decision | Apply within authority and record the limits |
+| `opt/UNPROVEN` | The intended benefit remains unsupported | Preserve nulls, acquire discriminating evidence or stop without a win claim |
 
-- **A scenario that does not route is not automatically a routing defect.** Read the prompt before accusing the skill.
-- **An unreachable trigger is a finding, not a bug to fix.** A condition that arrives after the routing decision has been made cannot be reached by any wording, and saying so is the result.
+An objective repair can move from a checked contradiction to `opt/DECIDED` without
+a behavioural experiment. A phase name never supplies missing evidence.
 
-## 3. Match the form to the failure
+## Begin with a decision, not a metric
 
-**The form is chosen from the class, and the wrong form is measurably worse than no guidance.**
+State the skill, the concrete problem, the user outcome at risk, and the evidence.
+If the only complaint is a word count or personal preference, do not present it as
+measured harm. A preference can still justify a change when its owner chooses it.
 
-| Failure being repaired | Form that fits | Form that backfires |
-| --- | --- | --- |
-| knows the rule, breaks it under pressure | prohibition, plus the rationalisations named and a red-flag list | soft preference wording |
-| complies, and the output has the wrong shape | a positive recipe stating what the output is, in order | a list of prohibitions |
-| omits an element from something already produced | a required slot in the structure being filled | a reminder in prose beside it |
-| behaviour should depend on a condition | a conditional keyed to an observable predicate | an unconditional rule with exemption clauses |
+Choose the appropriate path:
 
-- **A nuance clause reopens the negotiation.** Appending one to a recipe that worked degraded it from consistent to noisy. Express a real exception as its own conditional on something observable.
-- **An exemption does not scope.** A limit that says it excludes one part still suppresses that part. Restructure so the rule cannot reach it.
-- **Match the freedom to the fragility.** Prose where several routes are valid, a parameterised procedure where one pattern is preferred, an executable script where the sequence is fragile and a deviation is a defect.
-- **A final check that is stricter than the body erases the body.** Six skills in this collection ended that way. Carry the exception into the check, or narrow the rule until the check is true.
+- **Objective repair:** quote the incompatible conditions or reproduce the broken
+  example. Repair the source and affected references. Check the same failure no
+  longer occurs. Claim corrected semantics, not improved model performance.
+- **Behavioural hypothesis:** specify what should change in produced work, why,
+  what would count against it, and which other outcomes must not regress. Follow
+  the experimental path below.
+- **Fault outside the skill:** retain the evidence and hand the repair to the
+  owning layer. A missing dependency, truncated tool response or broken grader is
+  not repaired by a stronger MUST.
 
-## 4. One variable, registered first
+## The experimental path
 
-**Write the prediction where it can embarrass you.** A result read against a memory of what you expected is not a result.
+1. **Check the observation.** Inspect the task, initial state, actual output and
+   evaluator. Establish that the task is solvable and the failure is real.
+2. **Name competing explanations.** Routing, unavailable content, instruction
+   ambiguity, model capability, conflicting rules, harness, environment and judge
+   are hypotheses until discriminating evidence supports one.
+3. **Register a candidate.** Freeze the baseline, task families, relevant runtime
+   settings, intended benefit, regression limits and decision rule before results.
+4. **Compare on development cases.** Change a coherent mechanism, retain failures,
+   inspect produced artifacts, and investigate unexpected regressions. More trials
+   reduce sampling noise; more distinct tasks test breadth. They are not substitutes.
+5. **Lock and confirm.** Choose using development/selection evidence. Confirm the
+   frozen candidate on cases not used to choose it. If confirmation informs another
+   edit, it has become development data; do not reuse it as independent proof.
+6. **Decide and bound the claim.** Keep, revise, revert, or leave inconclusive.
+   Report task outcomes, effect, uncertainty, costs, regressions and tested scope.
+   Stop or change the question when further observations cannot inform the decision.
 
-- **One change per run.** Two changes and one number cannot be attributed, and the run buys nothing.
-- **State the revert condition in the same breath as the change.** Name the measure that would send it back, and the value that counts as sent back.
-- **Predict every measure the change could move, not only the target.** A gain on the target and a loss elsewhere is the common shape, and an unpredicted measure is the one nobody checks.
-- **Keep the before and the after on the same scenarios.** A sample that changed between runs makes the delta unreadable.
-- **Do not edit a skill while a run reads it.** The run loads the files live, and half the samples will see each version.
+No automatic revert, publication, data transfer, or spending beyond the authorised
+workflow is licensed by these steps. Preserve the baseline and ask where authority
+or an irreversible consequence is genuinely unresolved.
 
-## 5. Decide, and say which
+## What a useful result includes
 
-- **Falsified goes back.** The condition you wrote is the condition, and a reason found afterwards to keep it is the failure this whole procedure exists to prevent.
-- **Inside the noise floor is `opt/UNPROVEN`, not a small win.** Say the interval, say the sample, and leave it level with nothing.
-- **A null with no cost can still be kept on an owner's instruction.** Record that the reason is the instruction and that no gain was established, in the commit, where the next reader meets it.
-- **Record what was tried and failed.** `references/falsified.md` is that record here, and it is what stops the third attempt at a lever already measured twice.
+- A concrete artifact or observed task outcome, not a declaration of compliance.
+- A comparison with equivalent task inputs and explicit control of other changes.
+- Results by relevant failure category, including refusals and safety constraints.
+- The sample unit, missing/invalid trials, effect and uncertainty, not only a mean.
+- Total task cost where available; unknown billing is unknown, not zero.
+- The reason for the final decision and what observation would justify revisiting it.
 
-## 6. Subtraction, and what it costs to get wrong
+A safe textual correction may stand even if behavioural lift is undetected. A
+cheaper candidate may be useful if the relevant outcomes are preserved under a
+stated non-inferiority margin. Neither is a licence to call an inconclusive score a win.
 
-**Removing an instruction that a newer model no longer needs is a real gain, and the same move on a weak suite removes something load-bearing while the score stays green.**
+## Boundaries
 
-- **The suite is the precondition.** Subtract only against coverage you have a reason to trust, and §1 is that reason.
-- **Remove one group at a time and rerun the same scenarios.** A block removed wholesale cannot be attributed either.
-- **Minimal is not short.** The target is the smallest set of high-signal instructions that still produces the behaviour, which is a different quantity from the shortest file.
-- **A threshold is a diagnostic, not an acceptance criterion.** A measure written to score a rewrite gets satisfied by that rewrite, and the argument the prose carried is what pays.
-
-## 7. What the real sessions say
-
-**A suite is a distribution somebody wrote. A session store is the one that happened.** A skill can score well on every scenario and never be reached by the work, and no amount of rerunning the suite shows that. `scripts/session-extract.mjs` normalises the stores once; `scripts/session-signal.mjs` reads only what that wrote.
-
-- **Read it by week when the collection is being edited by week.** A rate that moved the week after a change is a lead; one that moved the week before it is not, and the same table separates them.
-- **An open is a read, a mention is a name, and an invocation is a person.** A skill named in prose and never opened is a routing lead. One a person had to invoke by name is a routing failure the score will not show, because the person fixed it.
-- **Count how often a skill is reached first, and how often inside a subagent.** One opened often and never first is a second hop, reached through something else; a trigger measured in isolation will not describe it.
-- **Suspect a column that is all one value.** Reading the wrong field produced 974 shell verbs here that were a single word, and every total stayed plausible while it did. The distribution shows it; the count never will.
-- **The window is part of the instrument.** Two sessions from one harness looked like a broken adapter and were the eight-week boundary: at ten weeks the same code found nineteen.
-- **A planted case that agrees with the code proves nothing about the store.** The case that invented that harness's format passed for as long as it existed.
-- **The store is not yours to publish.** Redact at the adapter, not before printing: names of skills, tools, and tasks are the vocabulary of somebody's work, and a program name cannot be told from a private one by shape.
-- **This cannot say whether an open helped.** It says where to look, and a person reading the transcript says the rest.
-
-## Where the evidence is
-
-- **`references/evidence.md`** carries the sources, what each one established, and what it did not.
-- **`references/falsified.md`** carries every change tried here, its prediction, its result, and whether it stayed.
-
-## Routing
-
-- **A skill that does not exist yet belongs to `authoring-verifiable-skills`.** So does splitting, renaming, or repairing one on structure alone.
-- **Judging a change that already exists belongs to `evidence-backed-review`.**
-- **Ground you cannot name yet belongs to `bound-the-unknown`.** Come back when there is a number to doubt.
-- **A direct instruction from the owner outranks anything here.**
+- Creating, splitting or renaming a skill belongs to `authoring-verifiable-skills`.
+- Reviewing an existing change belongs to `evidence-backed-review`.
+- Diagnosing an unknown runtime failure belongs to `debugging-by-evidence` or the
+  environment-blocker procedure, according to where the failure occurs.
+- Manual invocation is not inherently a routing defect. A late first read is not
+  proof that a router caused it. A flat skill need not open a separate rule file.
+- Source recommendations are conditional inputs. See the evidence register before
+  transferring instructions about context, tool loading or reasoning protocols.
+- A successful pilot supports its tested setting, not this method's universal efficacy.
