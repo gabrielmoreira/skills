@@ -1,124 +1,115 @@
 ---
 name: debugging-by-evidence
 description: >-
-  Find the cause of a failure and prove it before any fix. No hypothesis before a
-  command that already reproduces the symptom. Covers building a signal that
-  reproduces, ranking rival explanations with what would falsify each, probing
-  without fixing, putting the regression test where the bug actually occurs, and
-  reporting the causal chain at file:line. Use when the user says "this is
-  broken", "why is this failing", "tests fail after my change", "it only breaks
-  sometimes", when a check just run came back negative and nothing has named the
-  cause yet, or reports something throwing, hanging, or newly slow. Not for
-  judging a change that already exists, or for an error whose message already
-  names the file, line, and cause.
+  Investigate failures with evidence at the layer that can answer the question.
+  Form testable hypotheses from reports, logs and code; use reproduction, replay,
+  fault injection or tracing without requiring the whole incident to recur.
+  Separate observed triggers from conditional handling defects, protect affected
+  contracts, and stop when the evidence supports the scoped decision. Use for
+  broken, intermittent, hanging or newly slow behaviour whose cause is unknown.
+  Not for judging an existing change or fixing an unrelated environment blocker.
 ---
 
 # Debugging by Evidence
 
-**Core principle.** The loop is the skill. Everything after it is mechanical.
+**Core principle.** Test the claim needed for the decision, not every unknown in the incident.
 
-- **Without a loop the cause stays hidden.** No amount of reading the code will find it.
-- **The weight sits in the loop and in the five states.** Every rule below either sharpens the loop or spends it.
+- **A hypothesis chooses an experiment; it is not a confirmed cause.** Reports, logs and code can supply falsifiable hypotheses before a local reproduction.
+- **Use complementary layers of evidence.** An incident record shows occurrence; a controlled experiment can show defective handling without identifying the original trigger.
 - **You opened this in the middle of something.** This is how to do that work, not a replacement for it. Name what you were doing before you start, and return to it when this is done.
 
-## No hypothesis before a command that reproduces it
-- **The command MUST already have been run.** A command you wrote down and never ran is not a loop.
-- **Its output MUST show the symptom the user reported.** A different red line is a different bug.
-- **Reading code produces theories nothing can falsify.** A theory that cannot fail will survive every test you put it through.
-- **The loop is that command plus the state it needs.** Record both.
+## Choose a signal for the question
+- **Start with the reported failure and available evidence.** A local passing run does not erase a recorded incident.
+- **Choose reproduction, replay, controlled fault injection or tracing by what each can establish.** They are alternatives, not a mandatory ladder.
+- **Keep the handling under test real.** Inject a justified dependency outcome or schedule, then assert the caller-visible contract.
+- **Record the command, conditions and result.** Label injected conditions; do not report them as observed production events.
 
 ## What you may write, and when
-- **Until `debug/EXPLAINED` the only write you MAY make is instrumentation.** Every inserted line carries a unique tag, so removal is one search. A fix written earlier destroys the red signal that was going to explain it.
-- **Reverting your own change to re-observe the original failure is allowed here.** It is often the point. This skill runs experiments.
-- **The licence stops at the workspace boundary.** No commit. No branch move. No remote or deployment action. Every tag comes out before you close.
+- **Before a supported repair, writes are limited to authorised diagnostic tests and instrumentation.** Controlled changes to inputs, dependency outcomes or scheduling are experiments, not production fixes.
+- **Preserve the baseline.** Change the condition under investigation, not the handling whose correctness you are testing. Isolate substitutions and retain the original evidence.
+- **The licence stops at the workspace boundary.** No commit, branch move, remote action or deployment. Remove temporary instrumentation; retain useful regression tests.
 
 ## Establish before the first run
 - **Never ask what the environment answers.** Three things settle the setup, and the environment already holds two of them.
   - The symptom in the user's own words, quoted.
   - The command the project already declares for running that surface.
-  - Whether the failure is reported as constant or occasional, with a rate where it is occasional.
-- **A symptom you restated in your own words is already a hypothesis.** Keep the original beside it.
+  - Whether the failure is reported as constant or occasional, and which conditions or observations are available.
+- **Distinguish a reported rate from a measured one.** Measure frequency only when it informs the decision; label unknown frequency rather than requiring repeated failures before investigating.
 
 - **Say the budget out loud before the first probe.** How far you intend to go, in probes or in minutes, stated where I can see it. A bounded investigation I can interrupt is worth more than an unbounded one that arrives finished.
-- **A verification that came back negative is not an answer, it is the first signal.** Reporting that something does not work, without a cause, hands the diagnosis back to me. Carry it to a cause or say what the budget stopped.
+- **Each next probe needs a decision it can inform.** Stop, change the seam or hand back when another run cannot answer the remaining question within scope.
 
 ## Which rules to read
 **One rule per row.** Match the left column against the symptom or the state you are in.
 
-- **The match sets where to start.** The loop state sets what you are allowed to do next. Enter at the matched row, then follow the loop states in order.
-- **A rule belonging to a state you have not reached is read when you reach it.** Not now. Stopping applies from any state and outranks continuing.
+- **The match sets where to start.** Evidence determines what is justified next; the states are not a sequence every investigation must traverse.
+- **Read a rule when its decision is needed.** Stopping and authority limits apply from every state.
 - **Where two rows both look like the symptom, read both.** Under-reading costs a whole loop. Over-reading costs one file.
 - **Read every row, then act on the matches, hardest to undo first.** Reading a row costs nothing; the row you skipped is where the coverage went.
 
 | If you see... | Read |
 | --- | --- |
-| **nothing you have run yet shows the symptom**, or the loop is slow, noisy, or fails only some of the time | `rules/runnable-signal.md` |
-| a **red loop that drags in far more than the bug**: many files, a long sequence, a whole suite | `rules/minimising.md` |
+| **no local run shows the reported failure**, or a loop is slow, noisy, intermittent or unavailable | `rules/runnable-signal.md` |
+| a **failing experiment includes irrelevant setup** that obscures the claim | `rules/minimising.md` |
 | **one explanation already feels obvious**, or you are about to test the first thing that came to mind | `rules/rival-hypotheses.md` |
-| you are about to **add a log line, a breakpoint, or a temporary edit** to see what happens | `rules/probing.md` |
-| the failure **surfaces far from where it starts**: a bad value arriving from layers away, already wrong when it lands | `rules/fix-at-the-source.md` |
-| **the cause is explained** and a test must now hold it down | `rules/regression-seam.md` |
-| a **third fix attempt just exposed a fourth problem**, or the next step needs an observation you cannot make | `rules/stopping-and-escalating.md` |
+| choosing between **observation and a controlled change** to a dependency, input or schedule | `rules/probing.md` |
+| the failure **surfaces far from where it starts**, or a **valid dependency outcome leads to invalid caller behaviour** | `rules/fix-at-the-source.md` |
+| a **handling defect is demonstrated** and a test must protect it, even if the original trigger remains unknown | `rules/regression-seam.md` |
+| attempts **stop informing the decision**, regressions challenge the repair, or a required observation is unavailable | `rules/stopping-and-escalating.md` |
 
 **Discriminators.**
 
-- **Signal against minimising.** Signal owns a loop that does not reproduce or cannot be trusted. Minimising owns a loop that reproduces but proves too much.
-- **Hypotheses against probing.** Ranking comes before any run. A probe tests exactly one ranked prediction.
-- **Source against seam.** Source decides where the fix belongs. Seam decides where its test belongs. Both wait for `debug/EXPLAINED`.
+- **Signal against minimising.** Signal chooses a runnable observation or experiment. Minimising removes irrelevant setup once a useful signal exists.
+- **Hypotheses against probing.** Name the prediction before the probe. Independent questions may proceed at different layers; keep their evidence separate.
+- **Source against seam.** Source decides where a supported repair belongs. Seam decides which contract its test protects.
 
 **Default stance.**
 
-- **Get a command to reproduce it before explaining anything.**
-- **Name the state you are in**, and take only what that state licenses.
-- **Never assert a cause no run has supported.** An untested explanation is labelled as one.
+- **Use the cheapest adequate evidence**, not the cheapest check regardless of what it proves.
+- **Keep independent fronts bounded.** Source analysis, a handling test and environment observation need not wait for each other when their inputs are available. Do not mix overlapping experimental edits.
+- **Do not assert more than was tested.** A conditional handling defect can justify a scoped repair without establishing what triggered a past incident.
 
-## Say which loop state you are in
-**You MUST report it every time.** Each state licenses only what it names.
+## Say what the evidence permits
+**Report state when it changes**, with the established claim and remaining gap.
 
 | State | Means | Licenses |
 | --- | --- | --- |
-| `debug/NO-SIGNAL` | nothing run yet reproduces it | more attempts at a loop, nothing else |
-| `debug/RED` | a command reproduces the symptom, deterministically or at a stated rate | hypotheses, probes |
-| `debug/MINIMISED` | removing any remaining element makes it pass | naming a cause |
-| `debug/EXPLAINED` | one surviving hypothesis, each link observed | a fix |
-| `debug/RESOLVED` | the original loop passes unmodified, and the nearest path the fix also touches was run | closing |
+| `debug/NO-SIGNAL` | A reported failure, but no runnable check yet | Inspect records and code, form hypotheses, construct a controlled experiment |
+| `debug/RED` | A run violates a relevant contract under recorded conditions | Compare explanations and test the mechanism; label observed versus injected conditions |
+| `debug/MINIMISED` | Irrelevant setup has been removed from a useful failing check | An optional reduced experiment, not a prerequisite for every repair |
+| `debug/EXPLAINED` | Evidence supports the mechanism and the scope of a repair | Apply the authorised repair; keep unobserved incident triggers explicit |
+| `debug/RESOLVED` | The demonstrated defect is corrected and affected contracts checked | Close that defect with the tested scope; do not claim the historical trigger was identified unless it was |
 
-- **Skipping a state is the failure this skill exists to prevent.** You MAY spend as long as you need inside one state.
-- **You SHOULD stop building a loop after five attempts** and report `debug/NO-SIGNAL` instead. Keep going only where you can name what the sixth attempt does differently.
-- **`debug/NO-SIGNAL` for long enough is itself the report.** Say what you tried and what would produce a signal. Never proceed on theory.
-- **Know what an empty result means before you trust it.** A zero is evidence of absence only from a path that records this event. A path that records nothing, or records only failures, produces the same zero and proves nothing.
+- **Do not minimise for its own sake.** Stop reducing when the experiment is understandable and sufficient for the decision.
+- **A gap blocks only claims and actions that depend on it.** Investigate another independent layer when useful; do not keep chasing the same unavailable observation.
+- **A passing run has limited scope.** No event observed is not proof that an intermittent event cannot occur.
 
-## What makes a cause a cause
-**All four hold, or it is a hypothesis and is labelled one.**
+## Match the conclusion to the evidence
 
-- **A run at `debug/RED` or better produced it.** Not a reading of the code.
-- **Each link from trigger to symptom cites an exact `file:line`.**
-- **One prediction it made was tested and could have failed.**
-- **It explains the whole symptom.** That includes the part that seems incidental.
+- **Occurrence:** a reliable incident record or reproduction shows the failure happened in those conditions.
+- **Handling:** a controlled test shows how real code reacts to a specified condition. A dependency outcome must be compatible with its contract; an invented behaviour is not a reproduction.
+- **Historical cause:** identifying the trigger of the original incident needs evidence of that trigger, not just a test that forces it.
+- **Repair:** removing a defective dependency or branch needs a failing contract check and compatibility checks. It need not require a trigger-rate estimate.
+- **Tuning:** retries, backoff or timeout changes need evidence relevant to recovery, timing, load and side effects. A forced error alone does not justify the chosen values.
 
-**Three words carry their usual weight.**
-
-- **Confirmed.** A probe result you observed.
-- **Inference.** A hypothesis nothing has tested yet.
-- **Gap.** An observation you could not reach. Name what would close it.
-- **Say what the evidence does not establish.** A cause that explains the failure and nothing about its timing has one link missing, not zero.
+For each causal claim, cite the code or observed event, the discriminating result and what remains unknown. A plausible alternative need not be eliminated if it does not change the justified repair; record that boundary.
 
 ## When to stop instead of trying again
-- **Three attempted fixes that each reveal a new problem elsewhere are not a fourth attempt.** They are the finding.
-- **The shape is wrong.** The report says so, and those three attempts are its evidence.
-- **One thing you cannot observe stops the run the same way.** Name it. Name the observation that would settle it. Then stop, because debugging around an unknown produces a fix nobody can defend.
+- **Name what another run could change.** Repetition can estimate variability under stated conditions, but is not automatically progress toward the cause.
+- **Treat new regressions as evidence against the repair**, not automatic proof that the architecture is wrong.
+- **Stop when the scoped decision is supported**, an essential observation is inaccessible, the investigation limit is reached, or the next step needs new authority. Report unresolved questions without blocking unrelated supported work.
 
 ## Output contract
 
 ```
-Symptom      as reported, in the user's words, and the loop that shows it
-Loop state   one of the five, plus the reproduction rate where it is not 1
-Ruled out    each rejected hypothesis with the observation that killed it
-Cause        one line per causal link, each at file:line
-Not shown    what this evidence leaves open
-Fix          the change, and the seam the regression test sits in
-Proof        the original loop re-run unmodified, the nearest adjacent path
-             also run, and every probe tag removed
+Symptom      as reported, with the available incident evidence
+State        the established claim and the next justified action
+Experiments  conditions, real code exercised, observed or injected inputs, results
+Mechanism    supported causal links at file:line, including conditional claims
+Not shown    historical trigger, frequency or compatibility still unverified
+Fix          the scoped change and affected callers/contracts
+Proof        the failing contract check before and after, relevant adjacent checks,
+             and removal of temporary instrumentation
 ```
 
 - **Report what you observed, not what you avoided.**
@@ -126,7 +117,7 @@ Proof        the original loop re-run unmodified, the nearest adjacent path
 
 ## Do not skip this when
 - **The cause seems obvious.** That is the anchor this skill exists to break.
-- **Someone already told you what is broken.** That is a hypothesis, not a signal.
+- **Someone already reported the failure.** Use their evidence; do not demand a fresh local occurrence before reasoning about it.
 - **The fix is one line.** A one-line fix to the wrong line is still wrong.
 - **You are in a hurry.** Guessing is what produces the second and third attempt.
 

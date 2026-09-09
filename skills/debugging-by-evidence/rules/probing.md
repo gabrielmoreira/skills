@@ -8,49 +8,49 @@ references: [single-variable experiment, tracer tokens, instrumentation hygiene]
 
 # Probing
 
-Decision: One probe tests one named prediction and moves one variable. Its
-result then has one reading. Every probe carries a tag unique to the run, so
-removal is one search.
-
-- **You should see a tag count that matches the probes you placed.** You should not see instrumentation outliving its candidate.
-- **Owns instrumentation mechanics.** Producing and ranking the predictions a probe tests → `rules/rival-hypotheses.md`. Removing an element from the loop rather than adding an instrument to the code → `rules/minimising.md`.
+Decision: **Choose observation or controlled intervention deliberately.** Name
+the prediction and vary the condition needed to test it, without replacing the
+handling whose correctness is in question.
 
 Use when:
-
-- **You are about to add a log line, a breakpoint, or a temporary edit.**
-- **A probe already in the tree answers a question you no longer have.**
-- **You want to change an input and add an instrument in the same run.**
+- **Adding a log, breakpoint or temporary instrument.**
+- **A rare dependency outcome or ordering cannot be reproduced on demand.**
+- **Several changes in an experiment make its result hard to attribute.**
 
 Do:
+1. **State the prediction and what would count against it.** Choose the unit, adapter or integration boundary that can observe the relevant contract.
+2. **Distinguish two kinds of probe.**
+   - Observation records existing behaviour without intentionally changing it.
+   - Intervention controls an input, dependency result, clock or schedule. Label what was forced and why it is possible.
+3. **Keep the code under test real.** Use an existing substitution seam where possible. A fake error returned directly by the handler tests the fake, not error handling.
+4. **Keep the experiment attributable.** Vary one relevant condition when feasible; if a coupled schedule or input set must change together, report the bundle rather than crediting one part.
+5. **Isolate and restore experimental state.** Scope mocks and clocks to the test. Tag temporary instrumentation and remove it after preserving the evidence.
+6. **Inspect unexpected results before choosing a repair.** Revisit the dependency contract or add a new hypothesis when evidence warrants it.
 
-1. **Name the candidate and its prediction before writing the probe.** A probe with no prediction prints output nobody can score.
-2. **Tag every inserted line with one token unique to this run.** One search then returns all of them at removal time.
-3. **Print the value, its type, and object identity where sharing is in question.** A bare value hides aliasing.
-4. **Keep the probe read-only until the cause is `debug/EXPLAINED`.** A probe is the only write on the table, and one that alters behaviour has spent the signal it was placed to read.
-   - No changed return.
-   - No reordered call.
-   - No swallowed error.
-5. **Move one variable per run.** Changing the input and the instrument together makes the difference unattributable.
-6. **Remove a candidate's probes in the same run that kills the candidate.**
-
-- **Capture what a probe printed. Never recall it.** A remembered result is a hypothesis wearing an observation's clothes.
-- **Never route around a surprise.** Something unexpected is captured, noted, and then judged: it is either the cause or a second bug, and both matter.
+A dependency can fail before returning, reject later, or produce an uncertain
+result. Select conditions relevant to its real contract rather than generating
+arbitrary mock values. Returned values, errors and required effects are useful
+assertions; a count of mock calls alone rarely establishes the defect.
 
 Avoid:
+- **Changing the faulty branch while trying to demonstrate its defect.**
+- **Treating an injected schedule as proof of its production frequency.**
+- **Overlapping experimental writes from independent investigation fronts.**
+- **Keeping diagnostic logging merely because it might help later.**
 
-- **Keeping a probe because it might be useful later.**
-- **Printing inside an unbounded loop.** 10000 lines bury the one that matters.
-- **Reusing a tag from an earlier run**, which makes removal ambiguous.
+Exceptions:
+- **Instrumentation may perturb a race.** Record that limitation and use a controlled schedule or another observation point when appropriate.
 
 Example (one instance, not the set):
-
-```
-// PROBE-4f2a  candidate 2: discount read from a stale cache entry
-log("PROBE-4f2a", entry.value, typeof entry.value, entry === cached)
+```txt
+Prediction: an unknown metadata result makes the resolver keep an invalid path.
+Intervention: substitute only the metadata call's outcome.
+Real code: resolver and error propagation.
+Assertion: the returned path/selector obey the platform contract.
+Boundary: this tests the reaction, not which OS event caused the incident.
 ```
 
 Verify:
-
-- **Search the tree for the tag.** The count matches the probes you placed.
-- **Read each probe against the candidate it names.** An unnamed probe is a fishing trip.
-- **Check the diff for one variable moved per recorded run.**
+- **Identify what was observed, what was forced and what stayed real.**
+- **Check the result could contradict the prediction**, not merely echo the mock.
+- **Confirm temporary changes were removed or retained as isolated regression tests.**

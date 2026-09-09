@@ -17,7 +17,7 @@ Use when:
 - **Guidance is coming from memory or from chat** rather than an observed record.
 
 Do:
-- **Stop and hand back when the mechanism is still unknown after the budget you declared.**
+- **Hand back when evidence essential to the next decision remains unavailable within the agreed scope.** An unknown historical trigger need not block a separately demonstrated handling repair.
 - **Stop when the next attempt would need a secret printed, transmitted, or pasted anywhere.**
 - **Stop when the replacement carries broader permissions than what it replaces.** A wider credential that works is a worse outcome than a narrow one that does not.
 - **Stop when one tool authenticates and its neighbour does not.** That asymmetry names the boundary, and guessing past it widens the blast radius.
@@ -27,13 +27,13 @@ Do:
 - **Say which condition fired**, and what would unblock it.
 
 Avoid:
-- **Retrying the same command unchanged.** The second run fails for the reason the first one already gave.
+- **Repeating an unchanged command without a question it can answer.** Another run may measure variability or recover from a transient, but a pass alone does not establish a fix.
 - **Counting attempts as the rule.** Name the state instead.
 - **Widening permissions, weakening a check, or disabling a protection** to get past it.
 - **Continuing because you are nearly there.** Nearly there is where the budget quietly disappears.
 
 Exceptions:
-- **A transient network failure MAY be retried once**, and the retry is recorded.
+- **A transient failure MAY justify bounded retries.** Record their purpose and conditions; do not weaken protections or choose retry counts and delays from a forced failure alone.
 
 A fix that moved the error rather than removing it:
 

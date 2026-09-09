@@ -1,0 +1,105 @@
+// Two incident-derived development cases and two authored counterexamples.
+// Domains are synthetic; sourceNote distinguishes derivation from invention.
+// These assess proposed decisions; passing them alone does not prove runtime fixes
+// or normal discovery. Alternative adequate experiments remain acceptable.
+const scenarios = [
+  {
+    id: "incident-record-with-no-local-occurrence",
+    bundle: "debugging-by-evidence",
+    rule: "runnable-signal",
+    tier: "P0",
+    mode: "apply",
+    skillMode: "debugging-by-evidence",
+    difficulty: "hard",
+    source: "incident",
+    sourceNote: "Public incident: https://github.com/can1357/oh-my-pi/issues/11284; controlled reproduction: #issuecomment-5588673519 (2026-09-08). A forced unknown metadata outcome exposed faulty handling while local replays passed. Domain changed from path resolution to object import; the overwrite and storage contract are synthetic, not observed incident facts.",
+    prompt: "the importer sometimes overwrites an existing object. the incident log and request are preserved, but the same request succeeds locally. the storage adapter documents present, absent and unknown; the importer appears to treat anything except present as absent. we have the source and a dependency substitution seam but cannot access the original machine. what should we do next, and what would it establish?",
+    expectedPrimary: "rules/runnable-signal.md",
+    expectedSecondary: ["rules/probing.md", "rules/rival-hypotheses.md"],
+    activation: { layer: "internal-route", target: "debugging-by-evidence", shouldActivate: true, forbiddenRoutes: [] },
+    must: [
+      "Uses the recorded incident as occurrence evidence without requiring it to recur locally",
+      "Proposes a discriminating check of real import handling under a contract-valid unknown storage outcome, or an equally adequate experiment",
+      "Keeps the original storage outcome and production frequency unconfirmed",
+    ],
+    mustNot: [
+      "Requires a minimum local failure rate before considering the handling hypothesis",
+      "Calls a passing local run proof that the recorded incident did not happen",
+    ],
+    tags: ["development", "synthetic", "intermittent", "layered-evidence"],
+  },
+  {
+    id: "conditional-defect-with-unobserved-historical-trigger",
+    bundle: "debugging-by-evidence",
+    rule: "regression-seam",
+    tier: "P0",
+    mode: "apply",
+    skillMode: "debugging-by-evidence",
+    difficulty: "hard",
+    source: "incident",
+    sourceNote: "Public incident: https://github.com/can1357/oh-my-pi/issues/11284, comments #issuecomment-5588673519 and #issuecomment-5588744481 (2026-09-08), reporting the controlled reproduction and fix in PR #11288 with neighbouring platform behaviour preserved. Historical trigger identification remains separate. Inventory outcomes and the stated before-and-after checks are constructed scenario premises, not measurements from that incident.",
+    prompt: "we forced a documented unknown inventory result at the adapter seam and ran the real reservation handler. before the patch it confirmed stock that was not established; after the patch it returns the required unavailable result. the independent confirmed-stock and missing-stock contracts still pass through the handler. the old incident did not record the inventory response. can we keep this scoped repair, and what can we say about the incident?",
+    expectedPrimary: "rules/regression-seam.md",
+    expectedSecondary: ["rules/stopping-and-escalating.md"],
+    activation: { layer: "internal-route", target: "debugging-by-evidence", shouldActivate: true, forbiddenRoutes: [] },
+    must: [
+      "Accepts the before-and-after handling evidence for the scoped repair without demanding a historical trigger capture",
+      "Retains the regression and distinguishes the conditional defect from the unknown original inventory response",
+    ],
+    mustNot: [
+      "Claims the injected inventory response definitely caused the original incident",
+      "Requires reconstructing the original machine before any supported repair can be kept",
+    ],
+    tags: ["development", "synthetic", "conditional-proof", "regression-seam"],
+  },
+  {
+    id: "actual-trigger-question-still-needs-observation",
+    bundle: "debugging-by-evidence",
+    rule: "runnable-signal",
+    tier: "P0",
+    mode: "exception",
+    skillMode: "debugging-by-evidence",
+    difficulty: "hard",
+    source: "invented",
+    sourceNote: "Authored counterexample to overgeneralising the incident lesson: two forced conditions share an observable symptom, but the decision requires identifying the real event. The restart, callbacks and available capture are synthetic; no matching incident is claimed.",
+    prompt: "a service restarts occasionally. forcing either a shutdown callback or an out-of-memory callback reproduces its final log line. the actual question is which one happens on this host before we change its memory limits. neither event is in the retained logs. bounded read-only event capture is available. does either forced callback settle the question, and what should we do next?",
+    expectedPrimary: "rules/runnable-signal.md",
+    expectedSecondary: ["rules/probing.md"],
+    activation: { layer: "internal-route", target: "debugging-by-evidence", shouldActivate: true, forbiddenRoutes: [] },
+    must: [
+      "Rejects either forced callback as identification of the real historical trigger",
+      "Proposes discriminating event capture or another observation of the real cause, bounded to the question",
+    ],
+    mustNot: [
+      "Always prefers fault injection even though the question requires identifying the real event",
+      "Tunes memory limits based only on an injected callback",
+    ],
+    tags: ["development", "synthetic", "tracing", "negative-control"],
+  },
+  {
+    id: "impossible-fake-and-untested-neighbour",
+    bundle: "debugging-by-evidence",
+    rule: "probing",
+    tier: "P0",
+    mode: "exception",
+    skillMode: "debugging-by-evidence",
+    difficulty: "hard",
+    source: "invented",
+    sourceNote: "Authored counterexample combining an unsupported test-double outcome with an unverified consumer contract. The lookup API and consumer are synthetic; this is a validity control, not a reported incident.",
+    prompt: "my test made the lookup dependency return null and the handler crashed. the documented lookup contract is a tagged found-or-missing result, and the real adapter has not been tested. i changed every non-found result to missing and the unit test passes. another consumer must distinguish an unavailable lookup from a missing item. is this enough evidence to ship the change?",
+    expectedPrimary: "rules/probing.md",
+    expectedSecondary: ["rules/regression-seam.md", "rules/fix-at-the-source.md"],
+    activation: { layer: "internal-route", target: "debugging-by-evidence", shouldActivate: true, forbiddenRoutes: [] },
+    must: [
+      "Questions whether the injected null can occur and checks the adapter contract instead of treating the fake as production evidence",
+      "Flags the unresolved unavailable-versus-missing contract and affected consumer before accepting the repair",
+    ],
+    mustNot: [
+      "Treats any red-then-green mock test as sufficient evidence regardless of dependency semantics",
+      "Claims one passing unit test establishes adapter and consumer compatibility",
+    ],
+    tags: ["development", "synthetic", "invalid-fake", "adjacent-contract"],
+  },
+];
+
+export default scenarios;

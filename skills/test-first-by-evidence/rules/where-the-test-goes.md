@@ -27,11 +27,12 @@ Do:
 - **Test through the public surface of the unit**, so a refactor behind it does not break the test.
 - **Move up a level only when the behaviour is invisible from below.** Coordination is a reason; convenience is not.
 - **Where a shared library changes, test one representative consumer.**
+- **Use layers for distinct obligations.** A unit can test handling under injected failure, an adapter can check the real dependency contract, and an integration can check consumer behaviour. A passing lower-layer check does not establish the others.
 
 Avoid:
 - **Reaching for the widest seam because it is easiest.** A slow suite gets skipped, and tests nothing.
 - **A unit test that needs six mocks to stand up.** That is a design report, not a placement problem.
-- **Duplicating the same assertion at three levels.** Pick the one that owns it.
+- **Duplicating checks without protecting a distinct risk.** Similar assertions at different layers can be useful when they defend different boundaries; state those obligations.
 - **A new seam introduced in a drive-by change**, where the local style already had one.
 
 Exceptions:

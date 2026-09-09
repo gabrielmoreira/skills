@@ -107,8 +107,9 @@ manual path with no CLI at all.
 
 **Something is wrong and the cause is not established.**
 
-No hypothesis before a command that reproduces the symptom. Rival explanations
-get ranked and separated by evidence rather than by which was thought of first.
+Testable hypotheses from reports, logs and code guide reproduction, replay,
+fault injection or tracing. Evidence at the relevant layer supports a scoped
+repair without requiring perfect reconstruction of the whole incident.
 
 ### [`bound-the-unknown`](skills/bound-the-unknown/SKILL.md)
 

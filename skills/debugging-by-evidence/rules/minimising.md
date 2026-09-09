@@ -8,55 +8,45 @@ references: [delta debugging, test case reduction, one-factor-at-a-time]
 
 # Minimising
 
-Decision: Cut one element from a red loop and re-run. Keep the cut only while
-the loop stays red. A loop that fails for four reasons at once names none of
-them. One cut per run is what makes each result attributable.
-
-- **You should see a survivor set where removing any one element turns the run green.** You should not see a batch of cuts scored by a single run.
-- **Owns shrinking a loop that already reproduces.** A loop that does not reproduce or cannot be trusted → `rules/runnable-signal.md`. Moving one variable inside the code rather than removing one from the loop → `rules/probing.md`.
+Decision: **Remove setup that obscures the demonstrated defect, and stop when
+the experiment is clear enough to support the decision.** An irreducible example
+is useful when needed, not a prerequisite for every repair.
 
 Use when:
-
-- **The red loop spans more than 3 files**, or runs a whole suite to show one failure.
-- **A long setup sequence precedes the failure** and no step is known to matter.
-- **Two independent assertions go red in the same run.**
+- **A failing check includes unrelated files or setup.**
+- **A long sequence hides which conditions matter.**
+- **Several failures prevent interpreting the result.**
 
 Do:
+1. **State the contract violation the reduced experiment must retain.**
+2. **Remove a likely irrelevant element and run again.** Keep the reduction only if the same defect remains, not merely another red result.
+3. **Preserve relevant ordering and dependency semantics.** A smaller setup with an impossible input is not the same experiment.
+4. **Replace a collaborator only when the stand-in preserves the needed contract.** Label controlled outcomes; keep the faulty handling real.
+5. **Stop when further reduction would not change the diagnosis or repair.** Keep a larger understandable test if shrinking it costs more than it teaches.
 
-1. **List the loop's elements.**
-   - Each setup step.
-   - Each input field.
-   - Each collaborator.
-   - Each assertion.
-2. **Remove the element furthest from the symptom, then re-run.** Still red → leave it out. Green → put it back and mark it required.
-3. **Repeat until every survivor is marked required.** The loop is minimal when removing any one of them makes the run pass.
-4. **Replace a required collaborator with the smallest stand-in that keeps the run red.** Then resume cutting against the stand-in.
-5. **Count the elements before and after, and state both.** 34 steps down to 3 is the result you report.
+For an intermittent check, a pass after removing an element does not by itself
+prove that element was required. Control the schedule or gather comparable
+observations before drawing that conclusion. Signal selection belongs to
+`rules/runnable-signal.md`.
 
 Avoid:
-
-- **Removing two elements in one run.** A still-red result tells you nothing about either.
-- **Deleting an assertion to shrink the loop.** The assertion is the symptom.
-- **Declaring a loop minimal because it looks smaller**, without testing each survivor.
+- **Deleting the assertion that observes the defect.**
+- **Shrinking away the boundary or ordering that causes it.**
+- **Delaying a supported repair until every remaining element is proven necessary.**
 
 Exceptions:
-
-- **A failure that appears only under the full sequence is a finding about ordering.** Keep the sequence and name the two steps that must stay adjacent.
+- **A long sequence may itself be the relevant condition.** Keep it and explain what it exercises.
 
 Example (one instance, not the set):
-
-```
-34 elements at the start. One cut per run.
-  drop <seed-fixture>          still red   out
-  drop <auth-middleware>       still red   out
-  drop <currency-preference>   green       required, put back
-  swap <payment-client> for a 3-line stand-in, still red   out
-3 elements left: <currency-preference>, one input row, one assertion.
-Removing any one of the three turns the run green.
+```txt
+Start: a request fixture, a real resolver and filesystem metadata.
+Reduce: unrelated request fields and service setup.
+Control: supply a contract-valid unknown metadata outcome.
+Keep: the real resolver and its caller-visible path assertion.
+Stop: the handling defect and affected contract are now clear.
 ```
 
 Verify:
-
-- **Remove each surviving element once more.** Every one of those runs goes green.
-- **Compare the before and after element counts** in the report.
-- **Read the run history** for one cut per run and no batched cuts.
+- **Confirm the reduced check still demonstrates the relevant defect.**
+- **State what was controlled and what remains unverified.**
+- **Do not claim minimality unless it was actually established.**

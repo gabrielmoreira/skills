@@ -17,7 +17,7 @@ Use when:
 - **You are about to reinstall, delete, or downgrade** something on the strength of an exit code alone.
 
 Do:
-- **Run the narrowest command that exercises only the piece you care about**, and read its own output.
+- **Use the narrowest available evidence for the component you care about.** A targeted command, preserved incident record or controlled dependency test can answer different questions; state which one you used.
 - **Read the failing line, not the summary.** An exit code is the worst line of a transcript to reason from.
 - **Name which component failed** before naming a cause.
 - **Where an unrelated tool caused the exit, say so and continue with the original goal.** That tool is a separate finding, at most.
@@ -26,7 +26,7 @@ Do:
 Avoid:
 - **Deleting or reinstalling a working tool** because something else in the same command failed.
 - **Reading a cached, skipped, or deprecated warning as an error.** Deprecation notices and skipped optional dependencies print loudly and exit zero.
-- **Attributing the failure to the last thing you changed** without running the narrow command.
+- **Attributing the failure to the last change without discriminating evidence.**
 - **Treating a non-zero exit as one fact.** It summarises several, and the interesting one is further up.
 
 The exit code is the last line and the least informative one:
@@ -45,6 +45,6 @@ native addon's toolchain could not find an interpreter. Reinstalling the
 package manager here removes a working tool and leaves the cause in place.
 
 Verify:
-- **Quote the narrow command and its output.**
-- **Name the component that actually failed**, and the one that did not.
-- **Confirm nothing was removed or reinstalled** before that narrow run happened.
+- **Quote the evidence for the component-level claim**, distinguishing observed and injected conditions.
+- **Name which component is shown to fail and which remains unverified.**
+- **Confirm nothing was removed or reinstalled merely to force progress.**

@@ -8,39 +8,37 @@ references: [root cause analysis, fault propagation, defensive programming limit
 
 # Fix at the Source
 
-Decision: Trace backward from the symptom to the line that produced the wrong
-value. Fix there, not where it surfaced. A fix at the surfacing site leaves the
-producer untouched. It sends the same value down the next path instead.
+Decision: Trace backward from the symptom to the first violated contract.
+Fix the code responsible for that violation, not merely the place its effects
+surface. A valid dependency failure can expose defective handling in its caller.
 
-- **You should see a hop chain ending at a producer.** You should not see a guard at the crash site.
+- **You should see a causal chain ending at a contract violation.** A guard is a fix when it enforces that contract, not when it merely hides the symptom.
 - **Owns where the change goes.** Where its test goes → `rules/regression-seam.md`. A third fix that exposed a fourth problem → `rules/stopping-and-escalating.md`.
 
 Use when:
 
 - **The value is already wrong when it arrives** at the line that fails.
+- **A documented dependency failure or unknown result leads to invalid caller behaviour.**
 - **The candidate fix is a null check, a clamp, a retry, or a default.**
 - **This symptom has been patched before** at a different call site.
 
 Do:
 
-1. **Walk backward one hop at a time from the symptom.** Record `file:line` at every hop. Stop at the line that produced the value rather than passing it on.
-2. **Fix at that line.** State the hop count from trigger to symptom.
-3. **Fix at the boundary where the value enters** for a trigger you do not own. Label the change containment, and name the real source.
-   - A library.
-   - A remote service.
-   - A data feed.
-4. **Search for the trigger's other call sites.** List what else it feeds. Fix it once there, not once per consumer.
-5. **Delete the intermediate guards the old symptom motivated, once a run shows them unreachable.** They now hide the next wrong value.
+1. **Walk backward from the symptom.** Record the relevant `file:line` links and the contract each boundary promises. Distinguish an invalid dependency result from valid input handled incorrectly.
+2. **Fix the code that first violates its contract.** Correcting our handling of a legitimate dependency failure is a source fix, even if the failure's historical trigger remains unknown.
+3. **Label a boundary change containment when it only limits the effects of an unresolved upstream defect.** Name that defect and its source. An external trigger alone does not make a repair containment.
+4. **Find the changed code's callers before applying the repair.** For each affected contract, record changed, unaffected with a reason, or unverified. Do not assume a fix for one platform or consumer is safe for the others.
+5. **Remove intermediate guards only when their protected contract is obsolete.** A newly passing path does not prove every consumer no longer needs them.
 
 Avoid:
 
 - **Guarding against a bad value** without asking where the bad value came from.
 - **Widening a type or loosening a check** so the wrong value becomes legal.
-- **Calling a symptom-site fix the fix** when the source sits inside the repository.
+- **Calling symptom suppression a source fix** while the demonstrated contract violation remains.
 
 Exceptions:
 
-- **A live incident may take containment first.** The source fix then stays open as a named follow-up carrying its `file:line`.
+- **A live incident may take containment first.** Keep the unresolved defect as a named follow-up, with its location when known.
 
 Example (one instance, not the set):
 
@@ -55,5 +53,5 @@ also fed by <parser>:52 -> <invoice>:31, <export>:19
 Verify:
 
 - **Read the backward chain.** Each hop cites `file:line` and explains the next.
-- **Search for other call sites of the fixed trigger.** Confirm the report lists them.
-- **Confirm any containment label names the source** outside the repository.
+- **Check affected callers and platform contracts have a disposition**, including what remains unverified.
+- **Confirm any containment label names the unresolved defect**, rather than merely an external dependency or unknown historical trigger.

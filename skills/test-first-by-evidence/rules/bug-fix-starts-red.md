@@ -18,7 +18,7 @@ Use when:
 
 Do:
 - **Write the failing test first, however small the fix looks.** A one-line fix to the wrong line is still wrong, and only a red proves you found the right one.
-- **Confirm the failure is the reported symptom.** A different red line is a different bug.
+- **Confirm the failure exposes the relevant contract violation.** A controlled dependency failure or schedule may demonstrate faulty handling without recreating the whole incident or printing its exact error text. Keep the handling real and justify the injected condition.
 - **Where the fix is already written, make it prove itself.** Remove it, watch the test go red, put it back. That is the only way to earn the red you skipped.
 - **Keep the test after the fix lands.** It is the entire return on this work.
 - **Where the cause is not established, stop and establish it.** A fix without a cause is a guess that happened to go green.
@@ -26,11 +26,11 @@ Do:
 Avoid:
 - **Fixing first and adding a test after.** It passes on its first run and has never shown it can catch anything.
 - **Asserting the buggy output** so the suite goes green without anything being fixed.
-- **A test that reproduces a symptom you cannot explain.** You may be pinning a coincidence.
+- **Claiming a forced condition identifies the historical trigger.** The test can prove defective handling while that trigger remains unknown.
 - **Deleting the test once the fix is merged.**
 
 Exceptions:
-- **A defect that cannot be reproduced in a test is reported as such**, with what would be needed to reproduce it, rather than fixed blind.
+- **When the original incident cannot recur locally, test a justified narrower contract.** If even that cannot be exercised, state the missing evidence rather than treating speculation as a red run.
 - **An urgent production fix MAY ship before its test**, provided the test follows in the same change and the gap is stated.
 
 Example (one instance, not the set):
@@ -50,5 +50,5 @@ Already fixed? Remove the check, watch the test go red, restore it.
 
 Verify:
 - **Quote the red run that reproduced the defect**, with the fix absent.
-- **Check the failure matched the reported symptom**, not merely something red.
+- **Check the failure demonstrates the relevant defect**, not a setup error, a copied implementation or an impossible dependency outcome.
 - **Check the test survives into the merged change.**

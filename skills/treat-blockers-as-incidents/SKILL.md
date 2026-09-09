@@ -27,7 +27,7 @@ description: >-
 - **A test failing because the behaviour is missing is your task.** That is `test-first-by-evidence`.
 - **A defect in the code you are changing is your task.** That is `debugging-by-evidence`.
 - **A tool, runtime, credential, network path, or environment that will not do its job is not your task.** It is this.
-- **Where you cannot tell, run the same command in a directory the task does not touch.** Still broken means it is not yours.
+- **Where you cannot tell, use records and a narrow check to distinguish the layers.** A failed tool call can be real even if a later invocation passes.
 
 ## Bound it before you start
 
@@ -44,14 +44,16 @@ description: >-
 
 | State | Means | Licenses |
 | --- | --- | --- |
-| `blocker/BLOCKED` | a command failed for a reason that is not the task | one reproduction, and reading |
-| `blocker/REPRODUCED` | the failure reproduces and its trigger is named | probes, documentation, source |
-| `blocker/EXPLAINED` | the mechanism is observed, not inferred | proposing a fix |
-| `blocker/CLEARED` | the fix is applied and the original command runs | returning to the task |
+| `blocker/BLOCKED` | A failure outside the task is reported or observed | Read evidence, form hypotheses and choose a bounded observation or experiment |
+| `blocker/REPRODUCED` | A relevant failure occurs naturally or under recorded controlled conditions | Investigate the mechanism; distinguish injected conditions from the historical trigger |
+| `blocker/EXPLAINED` | Evidence supports a scoped mechanism or handling defect | Propose a repair with its limits; no need to establish unrelated incident details |
+| `blocker/CLEARED` | The scoped repair is verified and the original operation runs | Return to the task; disclose any broader incident questions still open |
 | `blocker/HANDED BACK` | the ceiling was reached, or the fix is not trivial | nothing further without a decision |
 
 - **No state is reached by assumption.** Each names an observation you made.
 - **`blocker/CLEARED` requires the original command to run**, not a substitute you found instead.
+- **A successful retry alone does not prove an intermittent defect is repaired.** If the original operation cannot be exercised, report that remaining blocker even when a narrower handling repair is demonstrated.
+- **Use independent layers where helpful.** Source analysis or an isolated handling test need not wait for capture of a transient. [Runnable Signal](../debugging-by-evidence/rules/runnable-signal.md) owns experiment selection; this skill retains the scope and authority limits.
 
 ## Which rules to read
 
@@ -72,15 +74,15 @@ description: >-
 
 **Default stance.**
 
-- **Reproduce once, name the trigger, then stop and decide** whether this is worth a bounded investigation or a handback now.
-- **Prefer the primary source over another attempt.** The tool's own documentation and its source answer what a fifth retry will not.
+- **Use the available failure evidence to choose the next bounded step.** Do not require the whole incident to recur before investigating a supported hypothesis.
+- **Choose the source, experiment or trace that answers the missing question.** Avoid repeated attempts or environment escalation when a narrower contract test suffices; retain tracing when the real trigger is what must be identified.
 - **Hand back anything whose fix is not obviously clean.** The decision is the developer's, and an unclean fix bought quietly is worse than a blocker reported loudly.
 
 ## What you may claim
 
 **Four words, and each one names how you know.**
 
-- **Confirmed.** Observed directly, with the command and its output quoted.
+- **Confirmed.** Supported by a directly inspected observation, with the relevant incident record or experiment conditions and output cited. State the claim it supports; a controlled result confirms handling under the injected condition, not that the condition occurred in the historical incident.
 - **Inference.** Reasoned from something Confirmed, and labelled so.
 - **Gap.** Not established. State the next concrete observation that would close it.
 - **Recommendation.** Never proof.

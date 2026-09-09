@@ -1,10 +1,9 @@
 /**
  * Activation and routing scenarios for treat-blockers-as-incidents.
  *
- * Every positive here is drawn from a real incident record rather than
- * invented: a runtime manager whose install fails for an unrelated reason, a
- * first blocker that hides a second, a fix that begins by deleting working
- * state, and a detour nobody would write in a setup guide.
+ * The original positives are drawn from incident records. Added development
+ * scenarios are labelled synthetic and preserve a mechanism rather than private
+ * source data. They exercise decision boundaries, not proof of general efficacy.
  *
  * The negatives are the boundary that matters most. This skill sits beside two
  * others that also fire on the word "fails", and taking their work would make
@@ -25,8 +24,8 @@ const scenarios = [
     expectedSecondary: ["rules/stop-conditions.md"],
     activation: { layer: "public-skill", target: "treat-blockers-as-incidents", shouldActivate: true, forbiddenRoutes: [] },
     must: [
-      "Runs the narrowest command that exercises only the runtime, and reads its own output",
-      "Names which component failed and which did not",
+      "Uses a targeted command or preserved component-level evidence to locate the failing layer",
+      "Names which component is shown to fail and which remains unverified",
       "Does not reinstall or delete the runtime on the strength of the exit code",
     ],
     mustNot: ["Treats the wrapper's exit code as one fact", "Removes a working tool named in the output"],
@@ -134,6 +133,30 @@ const scenarios = [
       "Claims a resolution the evidence does not support",
     ],
     tags: ["activation", "positive", "learning"],
+  },
+
+  {
+    id: "tool-failure-passes-on-retry",
+    bundle: "treat-blockers-as-incidents",
+    rule: "stop-conditions",
+    tier: "P0",
+    mode: "apply",
+    skillMode: "review",
+    difficulty: "hard",
+    prompt: "the archive tool failed once with a preserved error, then the same command passed. we are meant to be changing application code, not debugging this tool all day. its source has a suspicious timeout handler we can test in isolation. can we proceed without claiming the tool is fixed?",
+    expectedPrimary: "rules/stop-conditions.md",
+    expectedSecondary: ["rules/record-the-learning.md"],
+    activation: { layer: "public-skill", target: "treat-blockers-as-incidents", shouldActivate: true, forbiddenRoutes: [] },
+    must: [
+      "Preserves the tool incident and distinguishes restored task progress from a repaired intermittent defect",
+      "Bounds any tool investigation and considers a justified isolated handling test without requiring another live failure",
+      "Keeps the original application task separate and resumes it when safe within authority",
+    ],
+    mustNot: [
+      "Calls the successful retry proof that the tool defect is fixed",
+      "Expands into tracing or configuration changes without a decision they would inform and the required authority",
+    ],
+    tags: ["development", "synthetic", "intermittent", "scope-boundary"],
   },
 
   // ---------------------------------------------------------------- negative

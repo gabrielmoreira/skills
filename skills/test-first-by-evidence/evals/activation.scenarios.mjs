@@ -94,7 +94,7 @@ const scenarios = [
     must: [
       "Writes a test that reproduces the defect and fails for that reason before touching the code",
       "Places the test where the defect originates rather than where it surfaced",
-      "Confirms the failure matches the reported symptom",
+      "Confirms the failure exposes the relevant contract violation rather than merely matching an error message",
       "Keeps the test after the fix as the regression guard",
     ],
     mustNot: [
@@ -281,7 +281,7 @@ const scenarios = [
       "A failing test is on screen, so the vocabulary matches. But nothing is being implemented: the ask is to establish the cause of an intermittent failure, which is the debugging skill's subject. This skill only takes over once a fix is being written.",
     activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: false, forbiddenRoutes: ["rules/watch-it-fail.md"] },
     must: ["Hands off to the debugging skill"],
-    mustNot: ["Writes a new test before the cause of the flake is established"],
+    mustNot: ["Starts implementing an unsupported fix; diagnostic tests may still be appropriate within the debugging investigation"],
     tags: ["activation", "negative", "collision", "debugging"],
   },
   {

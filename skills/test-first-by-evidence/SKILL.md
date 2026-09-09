@@ -17,7 +17,7 @@ description: >-
 
 **Core principle.** A test you did not watch fail proves nothing. It might test the wrong thing, and you would never know.
 
-- **This is `debugging-by-evidence` pointed forward.** One says no hypothesis before a command that reproduces. This one says no implementation before a test that failed.
+- **Keep hypotheses and proof separate.** Debugging may use recorded incidents and controlled experiments before a local occurrence. Implementation starts from a test that exposes the relevant defect or missing behaviour, not necessarily the whole incident.
 - **The weight sits in *Watch it fail*.** Everything else is what to do once the red is real.
 - **You opened this in the middle of something.** This is how to do that work, not a replacement for it. Name what you were doing before you start, and return to it when this is done.
 

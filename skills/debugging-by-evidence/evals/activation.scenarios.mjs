@@ -14,10 +14,10 @@
  * Pointers use the skill's own relative notation (`rules/<rule>.md`), which is
  * the notation SKILL.md and INDEX.md already use, not an absolute URI scheme.
  *
- * `forbiddenRoutes` stays empty on every positive. This skill is entered at the
- * matched index row and then follows the loop states in order, so a sibling rule
- * is not forbidden, it is simply read later, when its state is reached. The
- * claim under test is which rule is entered first, not which rules stay unread.
+ * `forbiddenRoutes` stays empty on every positive. The matched question selects
+ * an entry rule; independent questions may need other rules at different layers.
+ * The claim under test is the initial route, not a mandatory sequence of states
+ * or a requirement to leave every other rule unread.
  * Forbidden routes appear only on the negatives that collide with a specific
  * rule, where the claim is that the rule must not be reached at all.
  *
@@ -51,14 +51,14 @@ const scenarios = [
       forbiddenRoutes: [],
     },
     must: [
-      "Runs the project's declared test command itself and quotes the output line that shows the failure before offering any explanation",
-      "Counts a set of runs and reports how many went red as a fraction, instead of repeating 'sometimes'",
-      "Treats pinning the clock, the seed, and the run's own directory or port as work separate from having a failing run at all",
-      "Says which stage of the investigation it is in and that nothing yet permits naming a cause",
+      "Uses the reported failure and available records to select a relevant reproduction or controlled experiment",
+      "Distinguishes a reported intermittent failure from a measured rate, without demanding a fixed run count",
+      "Explains which input, dependency outcome or schedule the next check would control and what result would matter",
+      "Keeps proposed hypotheses separate from causes established by evidence",
     ],
     mustNot: [
-      "Proposes a fix, or edits code, before a command it ran has printed the failure",
-      "Calls the failure intermittent with no counted rate attached",
+      "Applies an unsupported production fix instead of testing the relevant handling or obtaining missing evidence",
+      "Treats a local passing run as proof the reported failure did not occur",
     ],
     tags: ["activation", "positive", "intermittent", "signal"],
   },
@@ -81,14 +81,14 @@ const scenarios = [
       forbiddenRoutes: [],
     },
     must: [
-      "States plainly that nothing it has run shows the symptom yet, and treats that as the current status rather than a preamble",
-      "Spends its effort on getting one command to go red, narrowing to the failing surface and feeding it the input shape the failed requests carry",
+      "Keeps the recorded customer failures separate from the local passing runs",
+      "Uses the failed inputs and source to choose replay or a justified controlled experiment at a useful layer",
       "Keeps the symptom in the user's own words beside any restatement of it",
-      "If it still cannot get a failing run, reports what it tried and what observation would produce one",
+      "If the needed observation is inaccessible, names the gap without forbidding independent supported investigation",
     ],
     mustNot: [
-      "Names a cause from having read the handler",
-      "Proposes a fix while no command has produced the failure",
+      "Claims a historical cause merely because reading the handler suggested it",
+      "Requires reproducing the entire customer environment before testing a justified handling hypothesis",
     ],
     tags: ["activation", "positive", "no-signal", "environment-gap"],
   },
@@ -111,10 +111,10 @@ const scenarios = [
       forbiddenRoutes: [],
     },
     must: [
-      "Lists the setup steps, inputs, collaborators and assertions as separate elements before cutting anything",
-      "Removes one element per run, re-runs, and keeps the cut only while the run stays red",
-      "Puts back anything whose removal turns the run green and marks it required",
-      "States the element count before and after",
+      "Identifies setup that may be irrelevant to the demonstrated defect",
+      "Keeps a reduction only while the same relevant contract violation remains",
+      "Preserves required ordering and distinguishes evidence from an intermittent pass",
+      "Stops reducing when the check is clear enough to support the decision",
     ],
     mustNot: [
       "Drops several elements in one run and reads a still-red result as evidence about all of them",
@@ -141,14 +141,14 @@ const scenarios = [
       forbiddenRoutes: [],
     },
     must: [
-      "Writes three to five competing explanations spread across the changed code, its inputs, its dependencies, the environment, and the failing run itself",
-      "Attaches to each explanation the observation that would kill it",
-      "Checks first the one whose killing observation is cheapest to make, not the one the user named",
-      "Discards any explanation nothing could disprove, and says which one it discarded and why",
+      "Names plausible explanations that could change the decision without filling a fixed quota",
+      "Attaches a discriminating observation to each explanation",
+      "Chooses an experiment for relevance, discriminating power and cost rather than the user's confidence",
+      "Labels unsupported claims and revises candidates when new evidence warrants it",
     ],
     mustNot: [
       "Goes straight at the cache because the user named it",
-      "Flushes anything or edits code before a command it ran has shown the short total",
+      "Flushes state or applies a repair without evidence and authority for that action",
     ],
     tags: ["activation", "positive", "anchoring", "candidates"],
   },
@@ -172,12 +172,12 @@ const scenarios = [
     },
     must: [
       "Keeps the leak theory as one candidate among several rather than as the starting point",
-      "Splits the candidates so a single observation can separate them, instead of listing several wordings of one idea",
-      "Orders the candidates by how cheaply each can be disproved and says which order it picked",
-      "Points out that 'restarting helps' fits more than one candidate and narrows nothing on its own",
+      "Identifies observations that distinguish candidates while allowing several causes to coexist",
+      "Chooses a useful next observation by relevance, discriminating power and cost",
+      "Recognises that restarting helps does not identify a leak by itself",
     ],
     mustNot: [
-      "Starts measuring memory because the user said leak",
+      "Treats the user's leak theory or one memory measurement as an established cause",
       "Keeps a candidate that no result could contradict",
     ],
     tags: ["activation", "positive", "slow-degradation", "candidates"],
@@ -201,14 +201,14 @@ const scenarios = [
       forbiddenRoutes: [],
     },
     must: [
-      "Asks which prediction the output is meant to test, and names the explanation it belongs to, before writing any line",
-      "Gives every inserted line one token unique to this run so a single search finds them all again",
-      "Prints the value together with its type, and its identity where sharing could matter",
-      "Changes one thing per run, the input or the instrument, never both at once",
+      "Names the prediction and the information needed to test it before placing instrumentation",
+      "Makes temporary instrumentation identifiable and removes it after preserving its evidence",
+      "Records the values or identities needed for the prediction rather than logging indiscriminately",
+      "Keeps observation separate from a labelled controlled intervention and avoids confounded changes",
     ],
     mustNot: [
       "Leaves an inserted line in the tree once the question it answered is settled",
-      "Writes a line that alters a return value, reorders a call, or swallows an error",
+      "Silently changes production handling while claiming to be observing it",
     ],
     tags: ["activation", "positive", "instrumentation"],
   },
@@ -231,14 +231,14 @@ const scenarios = [
       forbiddenRoutes: [],
     },
     must: [
-      "Walks backward one hop at a time from the failing line, citing file and line at each hop, until it reaches the line that first produced the zero",
-      "Puts the change where the wrong value is produced and states the hop count from there to the symptom",
-      "Asks what else that same producer feeds, and lists the other consumers it found",
-      "Removes the guards the old symptom motivated once they can no longer be reached",
+      "Traces the zero through the relevant boundaries and checks their contracts before deciding whether it is invalid input or valid input handled incorrectly",
+      "Locates the first supported contract violation and proposes the repair there without inventing code locations absent from the supplied evidence",
+      "Finds affected consumers and records their changed, unaffected or unverified contracts",
+      "Removes old guards only when the contracts they protect are shown to be obsolete",
     ],
     mustNot: [
-      "Adds the guard at the failing line and calls that the fix while the producer sits inside this repository",
-      "Loosens a type or a check so that zero becomes a legal value",
+      "Adds a guard and calls the problem fixed without establishing whether it corrects the violated contract or merely suppresses the symptom",
+      "Loosens a contract merely to make the failing value acceptable",
     ],
     tags: ["activation", "positive", "propagation", "guard-temptation"],
   },
@@ -261,14 +261,14 @@ const scenarios = [
       forbiddenRoutes: [],
     },
     must: [
-      "Reads the two earlier patches as evidence the change was made where the symptom showed rather than where the value is made",
-      "Traces back to the single line that produces the wrong date, recording each hop at file and line",
-      "Changes it once at that line instead of once per screen, and names the other consumers downstream of it",
-      "Labels a change made where the value enters from outside as containment, and names the outside source",
+      "Uses the earlier patches to investigate a shared cause without treating repeated symptoms alone as proof of where the defect lies",
+      "Traces the date through relevant boundaries to locate the first supported contract violation",
+      "Proposes the repair at the responsible code and checks affected consumers rather than patching each screen",
+      "Distinguishes correcting owned handling of valid external input from containment that leaves an upstream defect unresolved",
     ],
     mustNot: [
       "Adds a third patch on the third screen",
-      "Names the producing line from reading alone, with no run that shows the wrong date",
+      "Claims the producing line is the cause without evidence supporting that mechanism",
     ],
     tags: ["activation", "positive", "repeat-symptom", "propagation"],
   },
@@ -291,13 +291,13 @@ const scenarios = [
       forbiddenRoutes: [],
     },
     must: [
-      "Names the call site the bug happens at with file and line, and picks the closest test point that actually runs it",
-      "Asserts what the caller sees, the value returned, the row written, the message emitted, not an internal call count or a log line",
-      "Carries the inputs from the shrunken failing run into the test",
-      "Takes the fix back out, runs the new test, records the failure output, restores the fix and runs it again",
+      "Names the violated contract and chooses the narrowest test point that exercises its real handling",
+      "Asserts what that layer's caller observes, not a mock echo or an incidental call count",
+      "Preserves relevant conditions, including justified injected failures or schedules",
+      "Observes the defect without the fix and its correction with the fix, preserving existing work",
     ],
     mustNot: [
-      "Tests the private helper because the real path is inconvenient to set up",
+      "Uses an implementation detail or impossible input and claims it proves the real caller's behaviour",
       "Claims the test holds the bug down without having watched it fail with the fix removed",
     ],
     tags: ["activation", "positive", "test-placement"],
@@ -321,13 +321,13 @@ const scenarios = [
       forbiddenRoutes: [],
     },
     must: [
-      "Stops writing fixes and presents the three attempts as the result",
-      "Records each attempt as three fields: the change at file and line, the check that went red, and what that pairing says about the structure",
-      "Names the structural change the three attempts point at, the boundary in the wrong place, or two jobs living in one unit",
-      "Keeps the count where it is rather than resetting it because an attempt was reverted",
+      "Pauses unsupported patching and examines which contracts the attempts broke",
+      "Preserves the attempts and their observed regressions",
+      "Separates evidence against the repairs from an unproven architectural explanation",
+      "Names the observation that could inform another approach or justify stopping",
     ],
     mustNot: [
-      "Tries the fourth idea",
+      "Tries another unsupported fix or treats the attempt count alone as proof the architecture is wrong",
       "Presents the stop as having failed to find anything instead of as a finding",
     ],
     tags: ["activation", "positive", "attempt-budget"],
@@ -351,10 +351,10 @@ const scenarios = [
       forbiddenRoutes: [],
     },
     must: [
-      "Names the missing observation plainly, the one action that would produce it, and who or what could take that action",
-      "Stops there instead of continuing the chain past the point it cannot observe",
-      "Marks everything downstream of that point as not established by the evidence it has",
-      "Keeps what the surviving rows do show separate from what they do not",
+      "Names which historical observations are missing and whether any surviving evidence could answer the question",
+      "Stops historical attribution at the evidence gap while allowing independently justified contract checks",
+      "Does not turn assumptions about the missing writer into confirmed causal links",
+      "Keeps what the surviving rows show separate from what they cannot establish",
     ],
     mustNot: [
       "Substitutes a plausible assumption for the missing observation and carries on to a cause",
@@ -482,7 +482,7 @@ const scenarios = [
     prompt:
       "the payments module has basically no tests. can you add some? nothing's broken, i just don't trust it and i want cover before we touch it again",
     nearMiss:
-      "Choosing a test point that exercises the real call site rather than a convenient helper is precisely the seam question. But that question only opens once a cause has been explained and a fix written, and the user says outright that nothing is failing.",
+      "Choosing a test seam is relevant, but no defect is under investigation. This is coverage of existing behaviour, not a regression investigation; the user says outright that nothing is failing.",
     activation: {
       layer: "public-skill",
       target: "debugging-by-evidence",
