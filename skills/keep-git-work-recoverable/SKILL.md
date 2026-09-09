@@ -41,7 +41,7 @@ description: >-
   - Removing a workspace holding tracked edits.
   - Rewriting history.
   - Forcing anything at a remote.
-- **You MAY read state freely.** You MAY create a workspace or a branch when the task needs one.
+- **You MAY read state freely.** You MAY create a workspace or a branch when the task needs one, once you can say which branch this work lands on. That answer comes from an instruction in force or from what is checked out here, never from the name the work happens to have.
 - **Everything that destroys is proposed with what would be lost named.** It stops there.
 - **Where the human approves a history rewrite, record the tree hash of the original tip first.**
   Compare it after.

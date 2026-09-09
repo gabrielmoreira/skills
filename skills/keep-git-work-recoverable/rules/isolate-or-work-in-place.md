@@ -22,6 +22,9 @@ Use when:
 
 Do:
 
+- **Name the branch this work lands on before creating anywhere to put it.** Take it from an
+  instruction in force or from what is checked out here. Where neither answers, ask. A branch
+  opened to hold a summary or a tidier name is one nobody asked for.
 - **List the isolation that already exists before creating any.** Use what you find.
   - An already-isolated checkout.
   - A mechanism the harness provides.
@@ -35,13 +38,13 @@ Do:
 - **Reuse the workspace already dedicated to a branch rather than adding a second.** A branch is
   checked out in at most one place.
 - **Record every workspace you create in the report.** Give its path and why it exists. An
-  unrecorded workspace is one nobody can later remove safely. Forgetting it is the whole cost of
-  creating it.
+  unrecorded workspace is one nobody can later remove safely.
 
 Avoid:
 
 - **Creating a workspace inside the workspace a harness already handed you.**
 - **Switching the branch of a checkout you did not create** to dodge the cost of a new one.
+- **Creating a branch because the work acquired a name.**
 - **Omitting a created workspace from the report because the task succeeded.**
 
 Exceptions:
@@ -63,5 +66,6 @@ Report: <workspace-c>, created for <second-branch>, mine to remove.
 Verify:
 
 - **List the workspaces.** Every one present is either pre-existing or named in the report.
+- **Confirm the landing branch was named before anything was created**, and from which source.
 - **Confirm the report says which isolation was used** and whether it was found or created.
 - **Confirm no branch appears checked out in two places.**
