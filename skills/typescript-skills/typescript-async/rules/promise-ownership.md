@@ -17,10 +17,10 @@ Use when:
 - **A `.catch()` is attached and its result is dropped.**
 
 Do:
-- **Await it, return it, or collect it.** A promise held in a named variable and awaited later is owned.
+- **Await it, return it, or attach it to an observed aggregate before yielding.** A variable names pending work; it does not observe rejection. Concurrent branches need handlers even if another branch fails before their later await.
 - **Mark deliberate detachment.** `void` the call and attach a handler that reports the failure. The marker is what separates intent from oversight.
 - **Give an async callback only to an API that awaits it.** `for...of` with `await`, or `Promise.all(map(...))`. Not `forEach`.
-- **Make `async` earn itself.** A function with no `await` returns a promise callers must now own for nothing.
+- **Make `async` earn its contract.** No `await` is needed when `async` deliberately converts synchronous throws into rejections or keeps every return path promise-based. Do not add a cosmetic await.
 - **Await inside the `try` whose `catch` is meant to see the rejection.** Returning the promise hands the rejection past the handler.
 
 Avoid:
@@ -31,7 +31,7 @@ Avoid:
 
 Exceptions:
 - **Detached work MAY be correct** for telemetry, a cache warm, or a fire-and-forget notification, provided `void` and a failure handler are both present.
-- **A promise MAY be created before it is awaited**, where a named variable makes the pending ownership visible.
+- **A promise MAY be created before its value is awaited**, provided its rejection is observed promptly and every early exit accounts for the started work. A named variable alone is insufficient.
 
 Example (one instance, not the set):
 
@@ -44,6 +44,6 @@ for (const id of ids) await publish(id);
 ```
 
 Verify:
-- **Check every call to an async function used as a statement** is awaited, returned, or voided with a handler.
+- **Check every started promise has a result owner and timely rejection observation**, including concurrent branches whose later await may be skipped.
 - **Check each `async` function contains an `await`**, or state why it returns a promise.
 - **Check no callback given to a non-awaiting iterator is `async`.**

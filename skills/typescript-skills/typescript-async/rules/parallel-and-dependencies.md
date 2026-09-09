@@ -8,7 +8,7 @@ references: [Vercel React Best Practices (async-parallel, async-defer-await, asy
 
 # Parallel and Dependencies
 
-Decision: **A sequential `await` is correct only where one operation needs the previous one's result.** Independent work runs together, partial dependencies start as early as possible, and unbounded input gets bounded concurrency.
+Decision: **Run work concurrently only where data dependencies, required effects, permissions, resource limits, and failure semantics permit it.** Sequential awaits can be correct without a returned value flowing between them. Observe all started branches before waiting on one.
 
 Use when:
 - **Several `await` lines run back to back with no value flowing between them.**
@@ -18,11 +18,11 @@ Use when:
 - **A batch uses `Promise.all`** where partial failure must not abort the rest.
 
 Do:
-- **Read each `await` and ask whether the next line consumes it.** If not, the wait is hiding parallelism.
-- **Group independent operations with `Promise.all`.**
-- **For partial dependencies, start every independent promise immediately** and await each only where its value is needed.
-- **Use bounded concurrency for unbounded, paginated, or rate-limited input.** A concurrency limiter, or a batch-of-N loop.
-- **Defer the await into the branch that uses the value**, so an early return pays nothing.
+- **Read each wait and identify its dependency or constraint.** No value flow is a reason to investigate overlap, not proof that ordering is unnecessary.
+- **Group independent operations with `Promise.all` when fail-fast aggregation fits the contract.** It observes each input but does not cancel unfinished siblings.
+- **For partial dependencies, build the dependency chains and attach all branches to their result owner before the first await.** A sibling may reject while another branch remains pending or fails.
+- **Bound active work and admission separately.** A limiter over a finite moderate array bounds active calls; streaming or unbounded input also needs bounded queues, pagination, or backpressure.
+- **Defer starting optional work until its branch is selected.** Moving only its await does not undo already-started work or its cost.
 - **Use `Promise.allSettled` where partial failure must not sink the batch.**
 - **Share one promise between consumers that need the same data.**
 - **Pass the abort signal through**, so cancelling the parent cancels the children.
@@ -51,13 +51,14 @@ const profile = await fetchProfile(user.id);
 // Independent, so run together:
 const [posts, comments] = await Promise.all([fetchPosts(id), fetchComments(id)]);
 
-// Partial dependency: start both now, await each where it is needed.
-const sessionP = auth();
-const configP = fetchConfig();
-const session = await sessionP;
-const [config, data] = await Promise.all([configP, fetchData(session.user.id)]);
+// Partial dependency: data needs auth, but not config.
+// Deferred calls also turn a synchronous API throw into an observed rejection.
+const dataP = Promise.resolve().then(() => auth())
+  .then(session => fetchData(session.user.id));
+const configP = Promise.resolve().then(() => fetchConfig());
+const [data, config] = await Promise.all([dataP, configP]);
 
-// Unbounded input: bound the concurrency instead of one burst.
+// Finite moderate input: bound active calls, not the number of queued tasks.
 const limit = pLimit(5);
 await Promise.all(ids.map((id) => limit(() => fetchProfile(id))));
 
@@ -66,7 +67,7 @@ const results = await Promise.allSettled(jobs.map(process));
 ```
 
 Verify:
-- **Check each back-to-back await consumes the previous result.**
+- **Check each sequential wait has a data, effect, permission, resource, or failure-semantics reason.**
 - **Check `Promise.all` is used only over bounded input.**
-- **Check independent fetches start before the first await.**
+- **Check permitted independent work overlaps and every started branch is observed**, including early rejection and early return paths.
 - **Check shared data reuses one promise** rather than repeating the fetch.

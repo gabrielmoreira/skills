@@ -28,7 +28,7 @@ Pressure signals that motivated the bundle remain relevant:
 Resolved: canonical guidance now lives in `typescript-async`.
 
 Canonical rules:
-- `parallel-and-dependencies.md`, sequential await only when values depend on previous results; independent work runs in parallel; unbounded/rate-limited work uses bounded concurrency.
+- `parallel-and-dependencies.md`, preserve data, effect, permission, resource and failure-semantics constraints; overlap permitted independent work while observing every started branch; bound active work and admission where needed.
 - `cancellation-and-abort.md`, pass `AbortSignal` as a cancellation capability and propagate it through fetches, waits, effects, and composed operations.
 - `cleanup-and-teardown.md`, release acquired resources deterministically with `finally`, dispose protocols, or `using`/`await using` when runtime support is verified.
 - `process-lifecycle.md`, handle SIGTERM/SIGINT with readiness flip, drain, ordered shutdown, hard deadline, and observability flush.
