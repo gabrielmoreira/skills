@@ -67,7 +67,7 @@ decide  <what> --over <no>  record against the current item
 brief   [--line]            render: the whole state, or the one line for this turn
 ```
 
-- **The per-turn line comes from the record.** Opening a turn with the objective and what is parked is how the line is produced, so reading is not a discipline anyone has to remember.
+- **The per-turn line comes from the record.** Opening a turn with the objective, what is parked, and the constraints still in force is how the line is produced, so reading is not a discipline anyone has to remember. A constraint absent from that line is one nothing is checking the next action against.
 - **Prune by rendering, never by deleting.** Decisions from closed items move to a settled section and the rendering shows the most recent few. Nothing leaves the log.
 - **Resolve where it lives rather than declaring it.** What the request named, then what the instruction file declares, then a directory that already exists. Report the path chosen.
 
@@ -85,6 +85,7 @@ brief   [--line]            render: the whole state, or the one line for this tu
 - **A fact with its evidence** belongs wherever the host already keeps them. Two homes for one fact is how they start disagreeing.
 - **A durable record a later reader needs** is a documentation decision, not this. This holds what is in flight; some of it graduates, most of it does not.
 - **The transcript.** Messages average many times the length of the entry that distils them, and a buffer of recent messages is what several collections already keep and why it does not help them.
+- **A task list.** It holds the work, and an item closes when the work does. A constraint filed as a task closes with it, while its scope was closed by nobody, and the tracker will not say that the rule outlived the errand.
 
 ## Routing
 
