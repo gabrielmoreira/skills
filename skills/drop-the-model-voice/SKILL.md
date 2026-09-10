@@ -3,13 +3,14 @@ name: drop-the-model-voice
 description: >-
   Write the prose a software team reads so it sounds like the engineer who did
   the work: a review comment, a pull request description, an incident write-up,
-  a status update, a release note, a wiki page, a design proposal, or an
-  announcement to the team. Covers claims the evidence does not carry, sales
-  language where a report belongs, a missing actor, a run-up before the point,
+  a status update, a release note, a wiki page, a user story, a specification, a
+  design proposal, or an announcement to the team. Covers claims the evidence
+  does not carry, sales language where a report belongs, a coined term that
+  compresses a decision into a noun, a missing actor, a run-up before the point,
   a defence against an objection nobody raised, decorative formatting, and the
   shape each kind of message arrives in. Use when the user says "this sounds
-  like AI", "too corporate", "make it sound human", "rewrite this comment",
-  "write the update", "draft the incident report", or "post this to the team".
+  like AI", "too corporate", "too formal", "write this in plainer english",
+  "make it sound human", "rewrite this comment", or "draft the incident report".
   Not for whether the document should exist or is true, and not for making a
   dense answer easier to enter. Prose that reads as generated is discounted
   before it is judged, and in a review comment or an incident report being
@@ -60,8 +61,10 @@ praise      seamless  robust  powerful  elegant  comprehensive  delightful
 - **Cut a trailing participle that carries the meaning.** "...ensuring reliability", "...enabling faster delivery". More than one in a paragraph is the pattern.
 - **Cut the third item added to round out a group of three**, and cut "not only X but also Y" where X and Y are one point. A real list of three stays three.
 - **Finish clipped negatives.** "Without forcing the user to guess", not "no guessing".
+- **Cut a term coined in the draft**, where two or three abstract nouns are fused into a label and nobody outside the drafting session could say what would violate it. "Requests must not begin before an authoritative readiness decision" is a rule nobody can check. "Only Shield decides whether the session is valid, and no request starts before it answers" is.
+- **Replace such a term with the behaviour, never with a milder adjective.** Safe, clear, proper, appropriate: that is how a simplification drops the requirement the term was carrying. Name the hazard rather than the remedy, because the reader needs to know what to be safe against.
+- **Keep domain vocabulary**, which is the term the domain already used before this draft, or one defined where the reader will look. A robust estimator, an idempotent handler, a bounded queue.
 - **Write the specific claim a saying stands in for**, and the literal action an idiom stands in for. "Symmetric layouts feel predictable", not "symmetry is the language of trust". "I will read the failing test", not "circle back".
-- **Keep domain vocabulary.** A robust estimator, an elegant proof.
 
 ## The missing actor
 
@@ -111,11 +114,10 @@ fake option     a tempting approach would be / one might be tempted to
 **Every mark encodes something true about the content, or it comes off.**
 
 - **No em dash or en dash**, and no spaced hyphen or double hyphen standing in for one. Use a comma, a colon, parentheses, or two sentences.
-- **Sentence case in headings**, and straight quotes where the file, the code, or the surrounding text uses them.
+- **Sentence case in headings**, straight quotes where the file, the code, or the surrounding text uses them, and no hyphen after the noun: the report is high quality.
 - **Cut a bold label that repeats the sentence after it.** Three bold headings over three restatements is one paragraph.
 - **Bold only what a scanning reader must not miss.** Read the bold words alone: they should form the summary.
 - **Cut emoji used as decoration.** A status marker with an agreed team meaning is content.
-- **Drop the hyphen after the noun.** "The report is high quality", not "high-quality".
 - **A house style, an agreed emoji convention, or a bold-label list whose labels are the index all outrank this section.**
 
 ## The shape each kind arrives in
@@ -132,6 +134,7 @@ fake option     a tempting approach would be / one might be tempted to
 | team announcement | the decision, who it affects, what to do, where to ask | under a screen, links carry the depth |
 | design proposal | the problem, the options with tradeoffs, the choice, what it costs | as long as the options need |
 | FAQ answer | the question in one line, the answer in two, the source | a pair per question |
+| user story or spec | who it is for, what they can then do, how it is verified, what is out of scope | a paragraph, then a checkable list |
 
 - **Match the team's existing format** where one exists. This table is the fallback.
 - **A status update reports the period, not the backlog.** What shipped, what is next, what is blocking.
@@ -159,12 +162,12 @@ fake option     a tempting approach would be / one might be tempted to
 - **Read the last sentence alone.** If it survives deletion, delete it.
 - **Search for the dash characters** and remove each one no writing sample licenses.
 - **Check nothing was added.** A rewrite that gained a number, a date, a name, or a citation invented it.
-- **Check nothing was lost.** Sounding less like a brochure must not mean saying less.
+- **Check nothing was lost.** Sounding less like a brochure must not mean saying less, and each term you replaced either named nothing checkable or its constraint is a sentence now.
 
 ## Routing
 
 - **Whether the document should exist, is true, or belongs in this file is settled elsewhere.** This skill owns how it reads once those are answered.
-- **Making a dense answer easier to enter is a different job**, and pacing, ordering, and paragraph size belong to it. This skill owns voice and shape.
+- **Making a dense answer easier to enter is a different job**, and pacing, ordering, and paragraph size belong to it. This skill owns voice and shape, including a coined term, because that is word choice rather than pace.
 - **A tone the user states outranks every line here, as does any direct instruction.** Formal, playful, blunt, ceremonial, or a house template. Match it for the rest of the thread, including the habits a section above would otherwise remove.
 - **A sample beats a stated tone.** Where the user pastes text and says write like this, take sentence length, punctuation, paragraph openings and repeated phrases from the sample rather than from here. A sample that uses a mark this skill removes sets the rate for that mark, unless the project forbids it outright.
 - **Say which rule lost, in one line.** A voice the user asked for that comes back flattened and reported as cleaned up is the worst outcome this skill can produce.

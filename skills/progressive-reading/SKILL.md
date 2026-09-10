@@ -63,10 +63,11 @@ description: >-
 
 - **Cut filler. Never cut substance.**
 - **Keep these exactly as written**, unless the user asked for them to change.
-  - Technical terms and identifiers.
+  - Technical terms and identifiers the domain already uses.
   - Code, commands, and paths.
   - API names.
   - Quoted error strings.
+  - A term coined in the draft to compress a decision is voice, not a term, and belongs to the skill that owns voice.
 - **Preserve what a shorter version would quietly drop.**
   - Nuance.
   - Risks and tradeoffs.

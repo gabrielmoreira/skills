@@ -118,6 +118,26 @@ const scenarios = [
     mustNot: ["Invents a second measurement to support the debt claim"],
     tags: ["activation", "positive", "pull-request"],
   },
+  {
+    id: "story-written-in-invented-terms",
+    bundle: "drop-the-model-voice",
+    rule: "trigger-boundary",
+    tier: "P0",
+    mode: "router",
+    difficulty: "mixed",
+    prompt:
+      "the story in the tracker is unreadable. it says requests must not start before an authoritative readiness decision and that the polling has to be lifecycle-safe. two devs have asked me what that means. can you write it in plainer english",
+    activation: { layer: "public-skill", target: "drop-the-model-voice", shouldActivate: true },
+    must: [
+      "Replaces each coined term with the behaviour it stood for",
+      "Keeps the constraint the term carried, written as a sentence",
+    ],
+    mustNot: [
+      "Swaps a coined term for a milder adjective such as safe or clear",
+      "Rewrites an identifier, a link, or the work item number",
+    ],
+    tags: ["activation", "positive", "user-story"],
+  },
 
   // ---------------------------------------------------------------- negative
   {
