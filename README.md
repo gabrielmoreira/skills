@@ -1,281 +1,291 @@
-# My agent skills
+# gabrielmoreira/skills
 
-Personal skills for coding agents, which I use at work and on my own projects and
-change whenever something goes wrong often enough to be worth writing down.
+For coding agents. Written for my own work, published in case they help with
+yours.
 
-Each one covers a moment you already recognise: a feature about to be written, a
-branch to review, a bug with no reproduction, a git command that refuses, docs
-that went stale.
+**This is a personal lab.** Expect rough edges, opinionated defaults, and a file
+that changes the moment it stops earning its place.
 
-**Not a product.** No stability commitment, no versioning policy, no promise
-about token cost. What there is instead is an attempt at a balance I can live
-with between what comes back and what it costs to get it. They will be good in
-some situations and bad in others, and I find out which by using them and reading
-back what happened.
+**It can go backwards.** Some changes here have made a skill worse. That is why
+every edit runs the check suite described below, which prints its numbers whether
+or not they flatter the change.
 
-[Where this is at](docs/where-this-is-at.md) says what I have not settled, which
-is more than I would normally put in a README. Prior work these are built on is
-credited in [CREDITS.md](CREDITS.md).
-
-**Each skill opens only the parts that apply.** A three-line change does not pay
-for a nine-hundred-line review.
-
-## Install
-
-Everything, for every agent you have, available in all your projects:
+**No versions, no promises.** When a skill costs more than it gives back, I cut
+it instead of deprecating it.
 
 ```bash
 npx skills@latest add gabrielmoreira/skills --skill '*' --global -y
 ```
 
-**That is it.** It detects your agents, puts one copy under `~/.agents/skills/`,
-and symlinks it into each agent's own directory. Editing a skill once changes it
-everywhere.
+## Install
 
-**It will print eight lines about PromptScript.** They are harmless: PromptScript
-only supports project-level skills, and the CLI adds it to every global install
-whether you have it or not. To silence them, name your agents instead:
+The command above does everything. The CLI finds your agents, keeps one copy
+under `~/.agents/skills/`, and links it into each agent's own folder, so editing
+a skill once changes it everywhere.
+
+**To install without the noise, name your agents.** PromptScript only takes
+project-level skills, so the CLI reports that one install as a failure every
+time, whether or not you have it:
 
 ```bash
 npx skills@latest add gabrielmoreira/skills --skill '*' --global -y \
   -a claude-code -a codex -a cursor
 ```
 
-**Repeat `-a` for each one.** A comma-separated list is read as a single name and
-rejected, with an error that lists back the exact names you passed.
+Repeat `-a` for each agent. A comma-separated list is read as one name and
+rejected, and the error prints back exactly what you passed.
 
-## Then set up your AGENTS.md
+## Point your agent at it
 
-**Installing is only half of it.** Without a routing table, an agent has to guess
-from descriptions alone, and on a machine carrying hundreds of skills that is a
-coin flip. This is the step that makes them fire.
+Installing is half of it. Without a routing table the agent guesses from
+descriptions alone, and on a machine carrying hundreds of skills that guess is
+close to a coin flip.
 
-**Copy the `## Skills` section from [`AGENTS.md`](AGENTS.md) in this repository**
-into your own `AGENTS.md`, at the root of your project or at `~/.agents/AGENTS.md`
-for a personal one that follows you everywhere. It is one table, one row per
-skill, and a check in this repository fails if it ever stops matching what is
-installed here.
+Copy the `## Skills` section from [`AGENTS.md`](AGENTS.md) into your own
+`AGENTS.md`, at the root of your project or at `~/.agents/AGENTS.md` for one that
+follows you everywhere. **Keep only the rows for skills you installed**; a row
+pointing at a skill you do not have is worse than no row.
 
-**Trim the rows to what you installed.** A row pointing at a skill that is not
-there is worse than no row.
+A check here fails when that table stops matching what is installed, so the two
+cannot drift apart.
 
-**A skill in here also does this job, and measurably.** Across 57 recorded runs
-with the collection loaded, the agent opened `using-gabrielmoreira-skills` in all
-57 and opened it first in 56. It works as a master router in practice, not just
-by intention.
-
-**It is still not a drop-in replacement for that table.** Alongside the routing
-it carries one person's configuration: where generated files go, which agent is
-primary, what must never be committed, which style is wanted. It is named after
-him so nobody adopts it by accident. Read it, take the routing table out of it if
-you want that mechanism, and leave the rest.
-
-### Claude Code reads CLAUDE.md, not AGENTS.md
-
-Rather than keeping two files in sync, make one a redirect. A line starting with
-`@` imports another file, so this is the entire contents of `CLAUDE.md`:
+**Claude Code reads CLAUDE.md.** Point one file at the other instead of keeping
+both in sync:
 
 ```md
 @AGENTS.md
 ```
 
-For a personal setup, the global `~/.claude/CLAUDE.md` can point outside any
-project:
+For a personal setup that reads outside the project:
 
 ```md
 @~/.agents/AGENTS.md
 ```
 
-Now every agent reads the same instructions and there is one file to edit.
-
-### Going further
-
-[`AGENTS.md`](AGENTS.md) here is a complete working example of the rest of an
-agent instruction file. [`docs/agents-md.md`](docs/agents-md.md) walks through it
-block by block and says which parts are worth copying and which are one person's
-taste.
-
-[`docs/install.md`](docs/install.md) has the rest: project-level installs, one
-skill at a time, interactive mode, real files instead of symlinks, and the
-manual path with no CLI at all.
+Full walkthroughs: [`docs/agents-md.md`](docs/agents-md.md) for the instruction
+file, [`docs/install.md`](docs/install.md) for project-level installs, single
+skills, interactive mode, real files instead of symlinks, and the manual path
+with no CLI.
 
 ## The skills
 
+| skill | what you get |
+| --- | --- |
+| using-gabrielmoreira-skills | work routed to the right skill, plus my own settings |
+| debugging-by-evidence | a cause you can defend, not a guess |
+| bound-the-unknown | a bounded probe that stops when the shape appears |
+| test-first-by-evidence | a test that was seen failing |
+| maintainable-code | where code goes, and which way it points |
+| typescript-skills | nine topics, forty-four rules, one opened at a time |
+| evidence-backed-review | findings at file and line, plus what was never opened |
+| treat-blockers-as-incidents | a blocker that gets a name and a record |
+| keep-git-work-recoverable | where you are, before anything destructive runs |
+| make-the-docs-trustworthy | one home per fact |
+| progressive-reading | easier to enter, never shallower |
+| drop-the-model-voice | prose that reads like an engineer wrote it |
+| keep-the-thread-across-boundaries | decisions that survive the boundary |
+| authoring-verifiable-skills | a skill that fires when it should, and can be proved |
+| optimising-skills | a change tested against a baseline, not a hunch |
+
+## Start here
+
+### [`using-gabrielmoreira-skills`](skills/using-gabrielmoreira-skills/SKILL.md)
+
+**Use it when** every session starts, and again after a compaction, a model
+change, a resume, or a handoff.
+
+**You get** the work routed to the skill that owns it, plus one person's
+settings: where generated files go, which agent is primary, what must never be
+committed, which style is wanted. It has no row in the routing tables, because a
+router does not route to itself.
+
+**It is not a drop-in replacement for the table above.** It carries my setup, so
+read it, take the routing part if you want it, and leave the rest.
+
 ## Finding out what is true
+
+Facts before repairs. Both skills here exist to stop a fix aimed at the wrong
+layer.
 
 ### [`debugging-by-evidence`](skills/debugging-by-evidence/SKILL.md)
 
-**Something is wrong and the cause is not established.**
+**Use it when** something is broken, flaky, hanging, or newly slow, and the cause
+is not established yet.
 
-Testable hypotheses from reports, logs and code guide reproduction, replay,
-fault injection or tracing. Evidence at the relevant layer supports a scoped
-repair without requiring perfect reconstruction of the whole incident.
+**You get** testable hypotheses built from reports, logs and code, evidence from
+the layer that can actually answer, and a fix scoped to the real cause instead of
+the symptom. You do not have to rebuild the whole incident to repair one part of
+it.
 
 ### [`bound-the-unknown`](skills/bound-the-unknown/SKILL.md)
 
-**Ground you cannot name yet.** Two probes in with no finding, or a script about
-to be written to find something out.
+**Use it when** you are two probes in with no finding, or about to write a script
+just to find out what you are dealing with.
 
-A budget stated before the probing starts, and a stop when the shape appears
-rather than when patience runs out.
+**You get** a budget stated before the probing starts, and a stop when the shape
+of the problem appears, rather than when your patience runs out.
 
 ## Changing code
 
+Writing the change, placing it, and judging it before it lands.
+
 ### [`test-first-by-evidence`](skills/test-first-by-evidence/SKILL.md)
 
-**A feature or a bugfix about to be written**, or a test written after the code.
+**Use it when** a feature or a bugfix is about to be written, or a test was
+written after the code.
 
-The test comes first and has to be seen failing. A test that has never failed has
-not been shown to test anything.
+**You get** a test you watched fail first. A test that has never failed has not
+been shown to test anything yet.
 
 ### [`maintainable-code`](skills/maintainable-code/SKILL.md)
 
-**Where code goes and which way it points.** Whether a module belongs here,
-whether a dependency may flow that way, whether an abstraction has been earned.
+**Use it when** a new module needs a home, a file is doing too much, or you are
+about to add a second way to do something this codebase already does.
 
-Language neutral. It closes by asking the question its own sections cannot: can
-somebody who did not write this find the important behaviour.
+**You get** a decision about where code lives and which way it points, and the
+compromise written down when the existing structure forces one. It ends on the
+question its own rules cannot answer: can somebody who did not write this find
+the part that matters?
 
 ### [`typescript-skills`](skills/typescript-skills/SKILL.md)
 
-**A decision inside TypeScript or JavaScript.** What a value may be and what
-happens when it is absent, what a failure means and who handles it, what crosses
-a boundary, what runs concurrently, what a test proves.
+**Use it when** a decision has to be made inside TypeScript or JavaScript: what a
+value may be and what happens when it is absent, what a failure means and who
+handles it, what crosses a boundary, what runs at the same time.
 
-Nine topics, forty-four rules, and the router opens the one that applies.
+**You get** one of nine topics opened, with forty-four rules that each carry a
+decision, the conditions that trigger it, and a check.
 
 ### [`evidence-backed-review`](skills/evidence-backed-review/SKILL.md)
 
-**A change you want judged before it lands.** Uncommitted work you just made, a
+**Use it when** a change needs judging before it lands: work you just made, a
 diff, a branch, a pull request.
 
-It says what it did not look at, instead of calling something clean because it
-never opened it. Every finding carries a file and a line, and it edits nothing.
+**You get** findings with a file and a line, an explicit list of what was not
+inspected, and no edits at all. It names what it never opened instead of calling
+the change clean because it stayed shut.
 
-## When the tooling gets in the way
+## Tooling
+
+When the problem is the environment or the repository, not the code.
 
 ### [`treat-blockers-as-incidents`](skills/treat-blockers-as-incidents/SKILL.md)
 
-**A command failed for a reason that is not the change you were asked to make.**
-A tool that will not install, a runtime the shell cannot find, an expired
-credential.
+**Use it when** a command fails for a reason that is not the change you were
+asked to make. A tool that will not install, a runtime the shell cannot find, a
+credential that expired, a network that is down.
 
-The blocker gets its own name and its own record. A workaround is reported as a
-finding, not as a fix.
+**You get** the blocker named, bounded, and recorded, and any workaround reported
+as a finding instead of passed off as a fix.
 
 ### [`keep-git-work-recoverable`](skills/keep-git-work-recoverable/SKILL.md)
 
-**A repository operation refused, or the state is unclear**, and something might
-be lost.
+**Use it when** a git command refused, a branch will not switch, the state is
+unclear, or work might be lost.
 
-Establish where you are before doing anything. Nothing that destroys work runs
-until the work is recoverable.
+**You get** where you are and what is safe, before anything destructive runs.
+Nothing uncommitted is discarded and nothing is removed without evidence that it
+landed somewhere else.
 
-## What gets written and read
+## What survives the session
+
+The material you write, and the decisions a context window forgets.
 
 ### [`make-the-docs-trustworthy`](skills/make-the-docs-trustworthy/SKILL.md)
 
-**Written material to correct, create, place, or remove.**
+**Use it when** written material needs creating, correcting, moving, or removing,
+or a decision is worth recording so it stops being argued.
 
-Look for the fact before writing it, because a second copy of a fact is the one
-that will disagree later. Write only what cannot be found by looking.
+**You get** a search before the write, so the second copy that would disagree
+later never gets made. What a command already prints becomes a pointer instead of
+a paragraph.
 
 ### [`progressive-reading`](skills/progressive-reading/SKILL.md)
 
-**An answer that is correct and hard to get into.** Too dense to start, the useful
+**Use it when** an answer is correct but hard to enter: too dense, the useful
 part buried, or a summary that dropped the caveat that mattered.
 
-Easier to read, never shallower. Ranking a long list rather than truncating it,
-because a cap loses findings.
+**You get** an answer that is easier to read without becoming shallower. A long
+list is ranked rather than truncated, because a cap loses findings.
 
 ### [`drop-the-model-voice`](skills/drop-the-model-voice/SKILL.md)
 
-**Prose that leaves the session and gets read by somebody else.** A review
+**Use it when** prose leaves the session and other people read it: a review
 comment, an incident write-up, a status update, a release note, an announcement.
 
-It removes claims the evidence does not carry, sales language where a report
-belongs, and the run-up before the point. A tone you ask for outranks all of it.
-
-## Across turns
+**You get** no claims the evidence does not carry, no sales language where a
+report belongs, and no wind-up before the point.
 
 ### [`keep-the-thread-across-boundaries`](skills/keep-the-thread-across-boundaries/SKILL.md)
 
-**A decision, a constraint, an approval, or a second request arriving before the
-first one closes.**
+**Use it when** a decision, a constraint, or an approval is made, or a second
+request arrives before the first one closes.
 
-What was settled survives a compaction, a model change, a resume, or a handoff.
-Every decision keeps the alternative it rejected, so it is not re-argued from
-nothing.
+**You get** what was settled surviving a compaction, a resume, and a handoff,
+with the rejected alternative kept so nobody argues it again from nothing.
 
 ## Making your own
 
+The two skills that build and improve the others.
+
 ### [`authoring-verifiable-skills`](skills/authoring-verifiable-skills/SKILL.md)
 
-**A skill to write, split, rename, or repair**, or one that never fires.
+**Use it when** writing, splitting, renaming, or repairing a skill, or one that
+never fires.
 
-A skill has to be provable rather than believed. This is the one that made the
-checks in this repository exist.
+**You get** a skill that activates when it should and can be proved rather than
+believed. It is the skill that made the checks in this repo exist.
 
-## Checking what you installed
+### [`optimising-skills`](skills/optimising-skills/SKILL.md)
+
+**Use it when** a skill already exists and there is evidence it underperforms. It
+fires on work it excludes, misses work it claims, or gets read and then ignored.
+
+**You get** the change treated as an experiment, the number that motivated it
+doubted first, and what already failed here carried forward so the same idea is
+not tested a third time.
+
+## Checking it yourself
 
 ```bash
 node tools/check-all.mjs --report
 ```
 
-Bare node, no install. It prints structural invariants, mutation results, page
-shape, frontmatter validity, whether the routing tables agree, how much of the
-scenario set describes a situation somebody was actually in, and how many
-scenarios a router with no understanding already solves.
-[`docs/how-this-is-built.md`](docs/how-this-is-built.md) explains what each check
+Node and nothing else. Per skill, it prints the structural checks, the mutation
+results, the page shape, the frontmatter, whether the routing tables agree, how
+many scenarios come from a real situation, and how many a router with no
+understanding already solves.
+[`docs/how-this-is-built.md`](docs/how-this-is-built.md) says what each check
 protects.
 
-The suite reports the behaviour numbers but does not produce them, because a
-behaviour run costs minutes and a network. To produce them:
+The suite reports behaviour numbers but does not produce them, because a run
+takes minutes and needs the network:
 
 ```bash
 node tools/run-activation.mjs --backend omp --skill test-first-by-evidence --write-baseline
 ```
 
-That drives a real agent, with its own system prompt and its real tools, and
+That run drives a real agent, with its own system prompt and its real tools, and
 watches which files it opens. Every scenario runs twice: once with this
-collection loaded, once with no skills at all. The difference between the two is
-what the skills are worth, and a scenario that passes both ways is reported
-separately because the agent would have done it anyway.
+collection loaded, and once with no skills at all. The difference is what the
+skills are worth. A scenario that passes both ways is reported on its own,
+because the agent would have done it anyway.
 
-Skills are loaded from this working tree, never from an installed copy, so a run
-always measures what you just edited. Start with `--dry-run`, which assembles
-every call and sends nothing.
+Runs load from this working tree, never from an installed copy, so a measurement
+always describes what you just edited. Start with `--dry-run`, which builds every
+call and sends nothing.
 
 ## What is not proved
 
-**Most scenarios have still never been run.** The baseline covers what has been
-measured and the suite prints its age. Everything outside it is a claim.
-
-**The measured rate separates from its control and not much more.** The suite
-prints both arms with their intervals. The gap is real; the interval is wide
-enough that a single edit moving it a few points would be invisible. It is
-evidence the skills do something, not a regression detector.
-
-**Some routed scenarios are giveaways.** The suite reports how many a
-bag-of-words router solves with no understanding at all. Those pass for reasons
-that have nothing to do with the skill.
-
-**A behaviour run measures one agent on one day.** It says nothing about a
-different harness, a different model, or the same model next month, which is
-why the baseline records all three.
+| | |
+| --- | --- |
+| Most scenarios have never been run | the baseline covers what was measured, and the suite prints its age; everything outside it is a claim |
+| The measured rate separates from its control, and not much more | the gap is real, and the interval is wide enough that one edit moving a few points would be invisible; this is not a regression detector |
+| Some routed scenarios are giveaways | the suite prints how many a bag-of-words router solves with no understanding, and those pass for reasons that have nothing to do with the skill |
+| A behaviour run measures one agent on one day | it says nothing about another harness, another model, or the same model next month, so the baseline records all three |
 
 The current state is always what the suite prints, never what this file claims.
 
 ## License
 
 MIT. See [LICENSE](LICENSE).
-
-
-### [`optimising-skills`](skills/optimising-skills/SKILL.md)
-
-**A skill that already exists, and evidence that it underperforms.** It fires on
-work it excludes, misses work it claims, or is read and then disobeyed.
-
-Treats the change as an experiment and the number that motivated it as the first
-thing to doubt. Carries what has already been tried here and failed, so the same
-lever is not measured a third time.
