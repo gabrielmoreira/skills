@@ -36,10 +36,11 @@ what I remember happening.
 
 ## What I run this on
 
-**omp is my main coding agent, about 95 percent of the time**, and it is well
-ahead for me. Claude is second. I also use antigravity, codex and copilot
-occasionally, for specific reasons or because of which subscription is available.
-I like all of them, some more than others.
+**omp is my main coding agent by a wide margin.** Copilot, Claude, Codex, Pi and
+Opencode come after it, roughly in that order, picked for the task at hand or for
+whichever subscription is available. The current list, and the models I run on
+them, live in the [README](../README.md#what-i-run-it-on). I like all of them,
+some more than others.
 
 On models: I would use the best available all the time if I could. I cannot. The
 cost is prohibitive. At work there is a little more flexibility, within a fixed

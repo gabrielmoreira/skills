@@ -3,6 +3,10 @@
 For coding agents. Written for my own work, published in case they help with
 yours.
 
+**A combination, not an invention.** It is an attempt to take the best of the
+skill collections I use day to day and turn them into one set that fits how I
+work. The credits are at the bottom, and in [CREDITS.md](CREDITS.md).
+
 **This is a personal lab.** Expect rough edges, opinionated defaults, and a file
 that changes the moment it stops earning its place.
 
@@ -285,6 +289,46 @@ call and sends nothing.
 | A behaviour run measures one agent on one day | it says nothing about another harness, another model, or the same model next month, so the baseline records all three |
 
 The current state is always what the suite prints, never what this file claims.
+
+**Several skills are still verbose**, and could say the same thing in fewer
+tokens. Cutting them is not free. Proving a shorter version did not lose quality
+takes eval scenarios covering both versions, and building those costs more than
+the cut saves. The cuts wait for a run that can settle them.
+
+## What I run it on
+
+**omp is my main agent, by a wide margin.** Copilot, Claude, Codex, Pi and
+Opencode come after it, roughly in that order. Where something here is tuned to
+one harness, that harness is omp.
+
+**Day to day the models are OpenAI's Sol, Terra and Luna generation and
+Anthropic's Opus and Sonnet.** Improving the skills themselves, rather than
+shipping code with them, is what Astra and Fable get used for. They are better at
+it, and too expensive to drive every day.
+
+## Credits
+
+This collection combines what already worked elsewhere. Where a technique here
+looks like one of these, they had it first:
+
+- [superpowers](https://github.com/obra/superpowers), an agentic skills framework
+  and development methodology
+- [Ring](https://github.com/LerianStudio/ring), engineering practice enforced as
+  skills and agents
+- [everything-claude-code](https://github.com/WorldFlowAI/everything-claude-code),
+  agents, commands, skills, rules and hooks as one toolkit
+- [mattpocock/skills](https://github.com/mattpocock/skills), skills taken from
+  another engineer's own agent directory
+- [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills),
+  engineering skills for coding agents
+- [caveman](https://github.com/JuliusBrussee/caveman), the terse register this
+  collection's own result-first style comes from
+- [anthropics/skills](https://github.com/anthropics/skills), the reference
+  catalog from the team that defined the format
+- [openai/skills](https://github.com/openai/skills), the skills catalog for Codex
+
+[CREDITS.md](CREDITS.md) is the long version: what each contributed, the
+unpublished work behind some rules, and the public ideas the rules assume.
 
 ## License
 

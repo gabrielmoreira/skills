@@ -67,12 +67,15 @@ they got there first.
   Production-grade engineering skills for AI coding agents.
 - [**WorldFlowAI/everything-claude-code**](https://github.com/WorldFlowAI/everything-claude-code).
   Agents, commands, skills, rules and hooks as one toolkit.
-
-**Two more belong here and are not linked yet.** A collection referred to as
-*Ring*, and the *caveman* terse-answer skill, which is where this collection's
-own result-first register comes from. Searching turned up several candidates for
-caveman and nothing conclusive for Ring, and a citation guessed at is worse than
-a gap that says so. Both get a link when the right repository is confirmed.
+- [**LerianStudio/ring**](https://github.com/LerianStudio/ring). Engineering
+  practice enforced as skills and agents, distributed as a plugin marketplace.
+- [**JuliusBrussee/caveman**](https://github.com/JuliusBrussee/caveman). Terse
+  answers as a skill, which is where this collection's own result-first register
+  comes from.
+- [**anthropics/skills**](https://github.com/anthropics/skills). The reference
+  catalog, from the team that defined the format.
+- [**openai/skills**](https://github.com/openai/skills). The skills catalog for
+  Codex.
 
 ## The ideas the rules stand on
 
