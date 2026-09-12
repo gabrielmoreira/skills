@@ -1,5 +1,7 @@
 # gabrielmoreira/skills
 
+[![skills.sh](https://skills.sh/b/gabrielmoreira/skills)](https://skills.sh/gabrielmoreira/skills)
+
 For coding agents. Written for my own work, published in case they help with
 yours.
 
