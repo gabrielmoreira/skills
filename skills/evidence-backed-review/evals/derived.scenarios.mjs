@@ -11,7 +11,7 @@ const scenarios = [
   {
     id: "green-on-a-package-that-has-no-tests",
     bundle: "evidence-backed-review",
-    rule: "correctness-in-the-diff",
+    rule: "defects-in-the-change",
     tier: "P0",
     mode: "router",
     difficulty: "hard",
@@ -20,15 +20,15 @@ const scenarios = [
       "Measured across 43 packages in four repositories: 4 of 19 in the service monorepo carry no test file at all, and nothing is configured to hide it, so a green suite says nothing about them. Domain changed from a financial service monorepo to a notification package inside an unnamed repository.",
     prompt:
       "reviewing src/notify before it merges and ci is green. only three files changed: src/notify/send.ts, src/notify/format.ts, src/notify/index.ts. i cannot run it here, the sandbox has no outbound network and i am not getting one today. do not ask for a rewrite, this has to go out friday. what would you want to see before approving?",
-    expectedPrimary: "rules/correctness-in-the-diff.md",
-    expectedSecondary: ["rules/execution-and-pipeline.md"],
-    skillMode: "review",
+    expectedPrimary: "rules/defects-in-the-change.md",
+    expectedSecondary: ["rules/claims-and-proof.md"],
+    skillMode: "standard",
     activation: { layer: "public-skill", target: "evidence-backed-review", shouldActivate: true, forbiddenRoutes: [] },
     must: [
       "Asks what the green run actually executed for these three files",
       "Distinguishes a suite that passed from a suite that covered the change",
       "Names what it would accept instead, given that running it locally is ruled out",
-      "Stays inside the three changed files",
+      "Keeps findings connected to the three-file change while reading dependencies needed to judge it",
     ],
     mustNot: [
       "Reports the green pipeline as evidence the change works",

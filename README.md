@@ -83,7 +83,7 @@ with no CLI.
 | test-first-by-evidence | a test that was seen failing |
 | maintainable-code | where code goes, and which way it points |
 | typescript-skills | nine topics, forty-four rules, one opened at a time |
-| evidence-backed-review | findings at file and line, plus what was never opened |
+| evidence-backed-review | code and noncode changes judged against intent, impact and evidence |
 | treat-blockers-as-incidents | a blocker that gets a name and a record |
 | keep-git-work-recoverable | where you are, before anything destructive runs |
 | make-the-docs-trustworthy | one home per fact |
@@ -164,12 +164,18 @@ decision, the conditions that trigger it, and a check.
 
 ### [`evidence-backed-review`](skills/evidence-backed-review/SKILL.md)
 
-**Use it when** a change needs judging before it lands: work you just made, a
-diff, a branch, a pull request.
+**Use it when** a proposed change needs review: a PR, branch, diff, or local work.
+Code, pipelines, infrastructure, documentation, policies and agent skills all count.
 
-**You get** findings with a file and a line, an explicit list of what was not
-inspected, and no edits at all. It names what it never opened instead of calling
-the change clean because it stayed shut.
+**You get** located findings, the requirement or impact behind them, and explicit
+coverage gaps, without edits or publication. It reads the PR and linked work-item
+context rather than judging the diff alone.
+
+It starts from where the change's effect lands, with overlays such as shared platform
+or security-sensitive deciding what is read first. **Standard** then selects relevant
+categories. **Complete** (or “full”) reads all five.
+An explicit focus limits the subject, not the number of categories it can use.
+The revised coverage has not yet been validated by behavioral model comparisons.
 
 ## Tooling
 

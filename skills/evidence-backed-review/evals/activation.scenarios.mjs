@@ -12,7 +12,7 @@
  *     that makes the prompt look like a match, plus the correct behaviour.
  *
  * Pointers use the skill's own relative notation (`rules/<rule>.md`), which is
- * the notation SKILL.md and INDEX.md already use, not an absolute URI scheme.
+ * the notation used by SKILL.md, not an absolute URI scheme.
  *
  * Prompts are written in English, the way a developer actually types one:
  * lowercase, contracted, sometimes unfinished, and naming no skill, topic, or
@@ -28,50 +28,48 @@ const scenarios = [
   {
     id: "review-pr-second-convention-beside-documented-one",
     bundle: "evidence-backed-review",
-    rule: "standards-conformance",
+    rule: "claims-and-proof",
     tier: "P0",
     mode: "router",
-    skillMode: "review",
+    skillMode: "standard",
     difficulty: "mixed",
     prompt:
       "take a look at this PR before I ask for approval, it's around 12 files. the repo has a conventions doc at the root and I got the impression a second way of handling errors showed up somewhere along the way",
-    expectedPrimary: "rules/standards-conformance.md",
-    expectedSecondary: ["rules/spec-conformance.md"],
+    expectedPrimary: "rules/claims-and-proof.md",
+    expectedSecondary: [],
     activation: {
       layer: "internal-route",
       target: "evidence-backed-review",
       shouldActivate: true,
-      // `review` is a full mode: every applicable axis is inspected, so no
-      // sibling rule can be forbidden here. The claim under test is which rule
-      // is primary, not which rules stay unread. Forbidden routes belong to
-      // `focused` scenarios, where scope really does stop at one rule.
+      // A whole-change standard review may open any applicable category.
+      // The primary route is an entry point, not an exclusive scope.
       forbiddenRoutes: [],
     },
     must: [
       "Reads the repository's own written standard first and cites its file plus rule for any hard violation",
-      "Labels an undocumented smell as a judgement call, phrased as 'possible X', not as a violation",
-      "Names the second convention beside the existing one as itself the defect",
+      "Separates an undocumented preference from a concrete maintenance defect",
+      "Checks whether the second convention has a justified purpose and reports its actual consequence",
       "Keeps the convention verdict and the requirement verdict separate, neither ranked against the other",
       "Closes with a single run status and the assertion that nothing was mutated",
     ],
     mustNot: [
       "Cites 'best practice' where a repository file and rule should be",
-      "Re-reports what the repository's declared lint, format, or type-check command already enforces",
+      "Uses a formatting or lint result as a substitute for reviewing the change",
     ],
     tags: ["activation", "positive", "review-mode", "standards"],
   },
   {
     id: "review-branch-against-base-did-i-build-the-ask",
     bundle: "evidence-backed-review",
-    rule: "spec-conformance",
+    rule: "claims-and-proof",
     tier: "P0",
     mode: "router",
-    skillMode: "review",
+    skillMode: "standard",
     difficulty: "mixed",
     prompt:
       "review my branch against the release base please. the card describes three behaviours and I want to know if I delivered all three or if I ended up inventing extra stuff along the way",
-    expectedPrimary: "rules/spec-conformance.md",
-    expectedSecondary: ["rules/motivation-and-necessity.md"],
+    expectedPrimary: "rules/claims-and-proof.md",
+    expectedSecondary: [],
     activation: {
       layer: "internal-route",
       target: "evidence-backed-review",
@@ -79,10 +77,10 @@ const scenarios = [
       forbiddenRoutes: [],
     },
     must: [
-      "Resolves the named base and reads the range with a three-dot diff against the merge-base before reviewing anything",
-      "Confirms the ref resolves and the diff is non-empty before any further work",
-      "Reports missing-or-partial, unasked-for, and implemented-wrongly as three separate buckets",
-      "Quotes the requirement line for every finding",
+      "Resolves the named release base and the head revision and inspects the merge-base diff",
+      "Reads the linked card and any relevant parent criteria rather than deriving intent from the diff",
+      "Separates missing delivery, extra scope and incorrect implementation without stopping the other review angles",
+      "Cites the applicable requirement for each conformance finding",
     ],
     mustNot: [
       "Reads acceptance criteria off the diff or off the change's own tests",
@@ -93,15 +91,15 @@ const scenarios = [
   {
     id: "review-safe-to-merge-irreversible-migration",
     bundle: "evidence-backed-review",
-    rule: "contracts-and-consumers",
+    rule: "contracts-and-rollout",
     tier: "P0",
     mode: "router",
-    skillMode: "review",
+    skillMode: "standard",
     difficulty: "hard",
     prompt:
       "is this safe to merge? there's a migration that doesn't run backwards and the consuming service only deploys after. pipeline's green",
-    expectedPrimary: "rules/contracts-and-consumers.md",
-    expectedSecondary: ["rules/docs-and-skills-freshness.md"],
+    expectedPrimary: "rules/contracts-and-rollout.md",
+    expectedSecondary: ["rules/claims-and-proof.md"],
     activation: {
       layer: "internal-route",
       target: "evidence-backed-review",
@@ -109,11 +107,11 @@ const scenarios = [
       forbiddenRoutes: [],
     },
     must: [
-      "Labels every availability claim with the evidence layer it actually reached, L1 through L4",
-      "Records each unreached layer as a Gap naming the next concrete observation that would close it",
+      "Distinguishes source intent, check results, deployed state and observed consumer behavior",
+      "Names which unavailable evidence prevents a readiness conclusion",
       "Checks rollout order between producer and consumer",
-      "Judges recoverability separately from reachability, and calls a recovery needing a manual data edit first a Gap rather than a rollback path",
-      "Reports the axis it could not inspect as incomplete rather than as a clean pass",
+      "Judges recoverability separately and examines restore or roll-forward options for the irreversible migration",
+      "Reports missing in-scope evidence as incomplete while preserving other findings",
     ],
     mustNot: [
       "Treats the green pipeline as proof the consumer route is reachable",
@@ -124,15 +122,15 @@ const scenarios = [
   {
     id: "review-removed-event-field-outside-callers",
     bundle: "evidence-backed-review",
-    rule: "dependent-teams",
+    rule: "contracts-and-rollout",
     tier: "P0",
     mode: "router",
-    skillMode: "review",
+    skillMode: "standard",
     difficulty: "mixed",
     prompt:
       "this merge request drops a field from the event payload and I know there are consumers outside our package. tell me what needs to happen before this ships",
-    expectedPrimary: "rules/dependent-teams.md",
-    expectedSecondary: ["rules/contracts-and-consumers.md"],
+    expectedPrimary: "rules/contracts-and-rollout.md",
+    expectedSecondary: [],
     activation: {
       layer: "internal-route",
       target: "evidence-backed-review",
@@ -141,30 +139,30 @@ const scenarios = [
     },
     must: [
       "Splits recipients into needs-to-act and needs-to-be-aware, with different content for each",
-      "Gives every recipient exactly one of before merge, before release, or after release",
-      "Resolves recipients from ownership the repository records, and reports a Gap for a surface with no recorded owner",
-      "Writes each message in four parts: what changed, when it takes effect, what breaks if ignored, what they must do",
+      "States when each external action is needed, distinguishing merge from release where relevant",
+      "Resolves recipients from recorded ownership, or names the missing owner evidence",
+      "Explains what changed, when, what breaks if ignored and the required action",
       "States the list is identified only and that nothing was sent",
     ],
     mustNot: [
       "Sends, posts, comments, opens a work item, or notifies anyone",
       "Names a plausible-sounding team the repository never records",
-      "Answers whether the boundary change is safe instead of who outside must act",
+      "Drops the explicitly requested external actions while discussing only local correctness",
     ],
     tags: ["activation", "positive", "review-mode", "notification-scope"],
   },
   {
     id: "review-inherited-change-with-no-linked-requirement",
     bundle: "evidence-backed-review",
-    rule: "motivation-and-necessity",
+    rule: "claims-and-proof",
     tier: "P0",
     mode: "router",
-    skillMode: "review",
+    skillMode: "standard",
     difficulty: "hard",
     prompt:
       "I inherited this PR from someone who left the team. it adds a caching layer and there's no issue, no card, nothing linked. worth reviewing anyway or do I hand it back?",
-    expectedPrimary: "rules/motivation-and-necessity.md",
-    expectedSecondary: ["rules/spec-conformance.md"],
+    expectedPrimary: "rules/claims-and-proof.md",
+    expectedSecondary: [],
     activation: {
       layer: "internal-route",
       target: "evidence-backed-review",
@@ -172,10 +170,10 @@ const scenarios = [
       forbiddenRoutes: [],
     },
     must: [
-      "Writes the claim as one sentence of the form 'this change does X so that Y'",
-      "Goes looking for Y's source itself and records a Gap when no source exists",
-      "Asks in bounded numbered rounds, each question carrying a recommended answer, escalating at three unresolved rounds",
-      "Requires measured numbers or a stated requirement before accepting a structural claim",
+      "Separates the stated implementation claim from its unverified motivation",
+      "Looks for available scope decisions and records the missing requirement evidence",
+      "Continues examining caching correctness, invalidation and operating cost",
+      "Names the decision or evidence needed instead of inventing a reason for the change",
     ],
     mustNot: [
       "Supplies the missing requirement itself, for example 'so that we can scale later'",
@@ -186,14 +184,14 @@ const scenarios = [
   {
     id: "review-diff-mixes-refactor-and-new-behaviour",
     bundle: "evidence-backed-review",
-    rule: "scope-and-slicing",
+    rule: "defects-in-the-change",
     tier: "P1",
     mode: "router",
-    skillMode: "review",
+    skillMode: "standard",
     difficulty: "obvious",
     prompt:
       "this diff is around 900 lines: half of it is reshuffling the date helpers and the other half is a new scheduling endpoint. can I review this in one go?",
-    expectedPrimary: "rules/scope-and-slicing.md",
+    expectedPrimary: "rules/defects-in-the-change.md",
     expectedSecondary: [],
     activation: {
       layer: "internal-route",
@@ -202,10 +200,10 @@ const scenarios = [
       forbiddenRoutes: [],
     },
     must: [
-      "Names the change as two subjects and asks for a split, landing the restructuring first",
-      "Picks the split by dependency shape and says which shape it picked",
-      "Treats one structural problem as outranking a pile of small remarks",
-      "Lists non-self-contained improvements as noticed-but-not-touching, with file and reason",
+      "Examines restructuring and new behavior as distinct concerns",
+      "Checks moved code in its new context and the new endpoint's dependencies",
+      "Reports reviewability or coupling costs when concrete, without requiring a split before continuing",
+      "Keeps unrelated historical debt separate from change-related findings",
     ],
     mustNot: [
       "Accepts moving code into new files as a reduction when the concept count is unchanged",
@@ -216,14 +214,14 @@ const scenarios = [
   {
     id: "review-changed-default-leaves-written-guidance-lying",
     bundle: "evidence-backed-review",
-    rule: "docs-and-skills-freshness",
+    rule: "claims-and-proof",
     tier: "P1",
     mode: "apply",
-    skillMode: "review",
+    skillMode: "standard",
     difficulty: "mixed",
     prompt:
       "the diff switches the client timeout default from 30s to 5s. onboarding docs and the setup guide say it defaults to 30 seconds. do we make them update the markdown in this pull request, or approve and let them fix the guide later?",
-    expectedPrimary: "rules/docs-and-skills-freshness.md",
+    expectedPrimary: "rules/claims-and-proof.md",
     expectedSecondary: [],
     activation: {
       layer: "internal-route",
@@ -232,29 +230,28 @@ const scenarios = [
       forbiddenRoutes: [],
     },
     must: [
-      "Treats the repository-local instruction or convention file as the highest-value check here",
-      "Requires that convention file updated inside the same change",
-      "Reports each stale assertion with two exact file:line, the claim and the code disproving it",
-      "Searches the changed identifiers, flags, and defaults across the repository's written guidance",
+      "Checks the intended new default against requirements before deciding whether code or guidance is wrong",
+      "Reports misleading guidance with the affected caller or reader consequence",
+      "Cites the stale claim and the configuration or code establishing the actual default",
+      "Searches affected identifiers, flags and defaults across relevant written guidance",
     ],
     mustNot: [
-      "Accepts a follow-up change for a convention file read on every session",
-      "Reports staleness citing only the document's line with no code line proving it stale",
-      "Frames the new code as the side that deviated, when the change is right and the prose is what went stale",
+      "Approves materially misleading guidance merely because it is Markdown",
+      "Assumes the new code is authoritative when requirements might make it the erroneous side",
     ],
     tags: ["activation", "positive", "review-mode", "docs-freshness"],
   },
   {
     id: "pre-commit-about-to-commit-look-first",
     bundle: "evidence-backed-review",
-    rule: "pre-commit-self-review",
+    rule: "defects-in-the-change",
     tier: "P0",
     mode: "router",
-    skillMode: "pre-commit",
+    skillMode: "standard",
     difficulty: "obvious",
     prompt:
       "before I commit, check whether everything is right. be thorough, I'd rather find it now than in review",
-    expectedPrimary: "rules/pre-commit-self-review.md",
+    expectedPrimary: "rules/defects-in-the-change.md",
     expectedSecondary: [],
     activation: {
       layer: "internal-route",
@@ -264,28 +261,28 @@ const scenarios = [
     },
     must: [
       "Compares the working tree and index against the current commit rather than a pushed range",
-      "Works in the author's order: shape, contained opportunism, why, convention and the ask, test evidence, then written guidance",
-      "Runs the repository's declared test and build commands fresh and complete before any claim is written",
-      "Produces an action list ordered by the step that raised each item, blocking first",
+      "Separates staged content from unstaged edits and states which candidate was reviewed",
+      "Uses safe relevant check evidence and identifies what was actually exercised",
+      "Reports material findings and missing evidence without changing the candidate",
     ],
     mustNot: [
       "Mutates the working tree, the index, the current commit, or any branch",
-      "Writes 'should work' or 'looks good' with no command output attached",
+      "Treats absent command output as a reason to ignore a defect demonstrable from source",
     ],
-    tags: ["activation", "positive", "pre-commit-mode", "order"],
+    tags: ["activation", "positive", "uncommitted-work", "order"],
   },
   {
     id: "pre-commit-check-my-work-before-i-open-it",
     bundle: "evidence-backed-review",
-    rule: "pre-commit-self-review",
+    rule: "defects-in-the-change",
     tier: "P1",
     mode: "apply",
-    skillMode: "pre-commit",
+    skillMode: "standard",
     difficulty: "mixed",
     prompt:
       "before I open the PR, can you go over what I did? I'd like to walk away with the description ready to paste",
-    expectedPrimary: "rules/pre-commit-self-review.md",
-    expectedSecondary: ["rules/dependent-teams.md"],
+    expectedPrimary: "rules/defects-in-the-change.md",
+    expectedSecondary: ["rules/contracts-and-rollout.md"],
     activation: {
       layer: "internal-route",
       target: "evidence-backed-review",
@@ -294,7 +291,7 @@ const scenarios = [
     },
     must: [
       "Produces a draft description carrying the claim, the source of the requirement, the alternative rejected, and what is deliberately out of scope",
-      "Rejects a first line reading like 'fix bug', 'phase 1', or 'moving code from A to B'",
+      "Keeps the draft faithful to the observed change and its available requirement source",
       "Names who must be told once it is published and states they were identified, not contacted",
       "Orders the output as blocking-first actions for the author, who edits next",
     ],
@@ -302,20 +299,20 @@ const scenarios = [
       "Opens the change, comments on it, or notifies anyone",
       "Applies the fixes it found instead of reporting them",
     ],
-    tags: ["activation", "positive", "pre-commit-mode", "draft-description"],
+    tags: ["activation", "positive", "uncommitted-work", "draft-description"],
   },
   {
     id: "pre-commit-opportunistic-tidying-mixed-into-dirty-tree",
     bundle: "evidence-backed-review",
-    rule: "pre-commit-self-review",
+    rule: "defects-in-the-change",
     tier: "P0",
     mode: "complexity",
-    skillMode: "pre-commit",
+    skillMode: "standard",
     difficulty: "hard",
     prompt:
       "I've got a bunch of uncommitted stuff: the fix I actually wanted, plus I tidied up imports in a few files I didn't really touch. can I send it all together?",
-    expectedPrimary: "rules/pre-commit-self-review.md",
-    expectedSecondary: ["rules/scope-and-slicing.md"],
+    expectedPrimary: "rules/defects-in-the-change.md",
+    expectedSecondary: [],
     activation: {
       layer: "internal-route",
       target: "evidence-backed-review",
@@ -323,30 +320,30 @@ const scenarios = [
       forbiddenRoutes: [],
     },
     must: [
-      "Reshapes the change before running verification, so the run is not invalidated afterwards",
-      "Keeps an opportunistic edit only when it is in a file the change already modifies and alters no behaviour",
-      "Removes the tidying done in files the change only reads, now rather than later",
-      "Records what it dropped on a noticed-but-not-touching list with file and reason",
+      "Assesses whether the import tidying obscures the intended fix or changes behavior",
+      "Recommends separating unrelated changes only with a concrete review or delivery reason",
+      "Leaves the index and working tree untouched",
+      "Continues reviewing the fix even if it recommends a smaller PR",
     ],
     mustNot: [
-      "Accepts 'tidier while I'm here' as a reason to keep an edit that is not self-contained",
-      "Verifies first and reshapes the change afterwards",
+      "Removes or reshapes the user's edits during review",
+      "Blocks all review until the user splits the change",
     ],
-    tags: ["activation", "positive", "pre-commit-mode", "opportunism"],
+    tags: ["activation", "positive", "uncommitted-work", "opportunism"],
   },
 
   {
     id: "review-clean-cut-or-backward-compatible-on-existing-api",
     bundle: "evidence-backed-review",
-    rule: "contracts-and-consumers",
+    rule: "contracts-and-rollout",
     tier: "P0",
     mode: "router",
-    skillMode: "review",
+    skillMode: "standard",
     difficulty: "hard",
     prompt:
       "this renames two fields on an endpoint that's been on main for a while. I don't know if anything outside our stack calls it. can I just change it and fix the callers, or does it need to stay compatible?",
-    expectedPrimary: "rules/contracts-and-consumers.md",
-    expectedSecondary: ["rules/dependent-teams.md"],
+    expectedPrimary: "rules/contracts-and-rollout.md",
+    expectedSecondary: [],
     activation: {
       layer: "internal-route",
       target: "evidence-backed-review",
@@ -355,8 +352,8 @@ const scenarios = [
     },
     must: [
       "Settles clean cut versus backward compatible before judging whether the change is safe",
-      "States the two facts it used: whether the surface pre-exists on the trunk, and whether a consumer can live outside this repository",
-      "Asks rather than assuming, because the second fact is unknown here",
+      "Checks whether the surface is already released or on the target branch and which consumers depend on it",
+      "Searches available consumer evidence before asking about unresolved compatibility decisions",
       "Treats a search that found no external caller as unenumerable, not as none",
     ],
     mustNot: [
@@ -369,22 +366,19 @@ const scenarios = [
   {
     id: "review-branch-against-a-standard-this-repo-never-states",
     bundle: "evidence-backed-review",
-    rule: "external-sources",
+    rule: "claims-and-proof",
     tier: "P0",
     mode: "router",
-    skillMode: "review",
+    skillMode: "standard",
     difficulty: "hard",
     prompt:
       "review this branch before I open it. it changes how our service calls the payments one, mutual auth, timeouts, retries. none of that is written down in this repo, but I keep a folder of clones with the platform standards and the two services that call us, so grep there",
-    expectedPrimary: "rules/external-sources.md",
-    expectedSecondary: ["rules/contracts-and-consumers.md", "rules/dependent-teams.md"],
+    expectedPrimary: "rules/claims-and-proof.md",
+    expectedSecondary: ["rules/contracts-and-rollout.md"],
     activation: {
       layer: "internal-route",
       target: "evidence-backed-review",
       shouldActivate: true,
-      // Full mode: every applicable axis is still inspected. The claim under
-      // test is that an authority absent from this repository is reached rather
-      // than downgraded to a judgement call.
       forbiddenRoutes: [],
     },
     must: [
@@ -407,18 +401,16 @@ const scenarios = [
     rule: "security-and-abuse-paths",
     tier: "P0",
     mode: "router",
-    skillMode: "review",
+    skillMode: "standard",
     difficulty: "mixed",
     prompt:
       "look this over before it goes out. it adds an endpoint that returns a user's invoices by id, and there's a file upload in there too. login is already handled by the middleware so that part's fine",
     expectedPrimary: "rules/security-and-abuse-paths.md",
-    expectedSecondary: ["rules/spec-conformance.md", "rules/contracts-and-consumers.md"],
+    expectedSecondary: ["rules/claims-and-proof.md", "rules/contracts-and-rollout.md"],
     activation: {
       layer: "internal-route",
       target: "evidence-backed-review",
       shouldActivate: true,
-      // Full mode: the gate opens the rows whose signal is present, and the
-      // request carries three of them. Nothing is forbidden.
       forbiddenRoutes: [],
     },
     must: [
@@ -438,15 +430,15 @@ const scenarios = [
   {
     id: "review-changed-conditions-and-validation-that-was-doing-nothing",
     bundle: "evidence-backed-review",
-    rule: "correctness-in-the-diff",
+    rule: "defects-in-the-change",
     tier: "P0",
     mode: "router",
-    skillMode: "review",
+    skillMode: "standard",
     difficulty: "mixed",
     prompt:
       "take a look before I push. mostly small edits to the checkout handler, changed a couple of conditions, and I dropped some validation that wasn't doing anything",
-    expectedPrimary: "rules/correctness-in-the-diff.md",
-    expectedSecondary: ["rules/security-and-abuse-paths.md", "rules/spec-conformance.md"],
+    expectedPrimary: "rules/defects-in-the-change.md",
+    expectedSecondary: ["rules/security-and-abuse-paths.md", "rules/claims-and-proof.md"],
     activation: {
       layer: "internal-route",
       target: "evidence-backed-review",
@@ -458,7 +450,7 @@ const scenarios = [
       "Names the invariant each deleted line enforced, then looks for where the new code re-establishes it",
       "Treats the author's claim that the validation did nothing as the thing to check, not as a finding already settled",
       "Reads the whole enclosing function, not only the hunks",
-      "Labels a defect it can reason a path to but cannot run here as a plausible mechanism, with the state that would produce it",
+      "Distinguishes a confirmed path from a plausible mechanism and names the trigger where execution evidence is unavailable",
     ],
     mustNot: [
       "Accepts 'it wasn't doing anything' without finding what the removed check covered",
@@ -467,140 +459,113 @@ const scenarios = [
     ],
     tags: ["activation", "positive", "correctness", "removed-behaviour"],
   },
-  // ----------------------------------------------------------------- focused
-  // The skill was not asked for. Another task surfaced one owned risk, so scope
-  // stops at the rule that owns it, this is the only mode where a sibling
-  // route is legitimately forbidden.
+  // Implementation requests remain implementation requests. These historical
+  // prompts once activated a one-rule focused mode; they now check that review
+  // guidance does not take over another task.
   {
     id: "focused-contract-change-surfaced-mid-implementation",
     bundle: "evidence-backed-review",
-    rule: "contracts-and-consumers",
+    rule: "contracts-and-rollout",
     tier: "P0",
     mode: "router",
-    skillMode: "focused",
+    skillMode: "none",
     difficulty: "hard",
     prompt:
       "I'm implementing the shipping cost calculation and to do it I had to drop an optional field from the quote endpoint response. carry on from there",
-    expectedPrimary: "rules/contracts-and-consumers.md",
-    expectedSecondary: [],
+    nearMiss: "An implementation change exposes a compatibility concern, but no review was requested.",
     activation: {
       layer: "internal-route",
       target: "evidence-backed-review",
-      shouldActivate: true,
-      forbiddenRoutes: [
-        "rules/scope-and-slicing.md",
-        "rules/spec-conformance.md",
-        "rules/standards-conformance.md",
-        "rules/motivation-and-necessity.md",
-      ],
+      shouldActivate: false,
     },
     must: [
-      "Raises the boundary risk without being asked for a review, and says which risk it is",
-      "Inspects only the boundary axis and names the axes it did not inspect",
-      "Emits no overall run status",
-      "Returns to the implementation task the user actually asked for",
+      "Continues the authorized implementation while considering the compatibility constraint",
+      "Keeps any review reasoning subordinate to the task rather than issuing a PR verdict",
     ],
     mustNot: [
-      "Reports PASS, ISSUES_FOUND, or INCOMPLETE",
-      "Walks the remaining index rows as though a review had been requested",
-      "Implies the change is clear because the one axis it read found nothing",
+      "Starts an unsolicited whole-change review",
+      "Treats a review-only guard as authority to refuse the requested implementation",
     ],
-    tags: ["activation", "positive", "focused-mode", "contracts"],
+    tags: ["activation", "negative", "implementation", "contracts"],
   },
   {
     id: "focused-written-guidance-contradicted-while-editing",
     bundle: "evidence-backed-review",
-    rule: "docs-and-skills-freshness",
+    rule: "claims-and-proof",
     tier: "P1",
     mode: "router",
-    skillMode: "focused",
+    skillMode: "none",
     difficulty: "mixed",
     prompt:
       "changed the retry to three attempts with backoff. keep going, I want to finish this today",
-    expectedPrimary: "rules/docs-and-skills-freshness.md",
-    expectedSecondary: [],
+    nearMiss: "A changed retry may affect guidance, but the request is to continue implementation.",
     activation: {
       layer: "internal-route",
       target: "evidence-backed-review",
-      shouldActivate: true,
-      forbiddenRoutes: [
-        "rules/scope-and-slicing.md",
-        "rules/contracts-and-consumers.md",
-        "rules/dependent-teams.md",
-      ],
+      shouldActivate: false,
     },
     must: [
-      "Names the written guidance that now describes behaviour the change removed, with file:line on both sides",
-      "Checks whether a repository-local instruction file encodes the same convention",
-      "Names the axes left uninspected and emits no overall status",
+      "Continues the implementation and handles affected guidance within that task",
+      "Does not replace the work with a review report",
     ],
     mustNot: [
-      "Rewrites the guidance itself",
-      "Turns a single stale document into a full review of the change",
+      "Invokes a read-only review to block authorized implementation changes",
+      "Starts a full change review without being asked",
     ],
-    tags: ["activation", "positive", "focused-mode", "stale-guidance"],
+    tags: ["activation", "negative", "implementation", "stale-guidance"],
   },
   {
     id: "focused-second-convention-noticed-while-adding-code",
     bundle: "evidence-backed-review",
-    rule: "standards-conformance",
+    rule: "claims-and-proof",
     tier: "P1",
     mode: "router",
-    skillMode: "focused",
+    skillMode: "none",
     difficulty: "hard",
     prompt:
       "add the new handler following what's already in the module. I noticed there are two different ways of building errors in that file, but go ahead",
-    expectedPrimary: "rules/standards-conformance.md",
-    expectedSecondary: [],
+    nearMiss: "A convention question occurs during implementation, not a requested change review.",
     activation: {
       layer: "internal-route",
       target: "evidence-backed-review",
-      shouldActivate: true,
-      forbiddenRoutes: [
-        "rules/spec-conformance.md",
-        "rules/pre-commit-self-review.md",
-        "rules/dependent-teams.md",
-      ],
+      shouldActivate: false,
     },
     must: [
       "Reads the repository's written standard before calling either shape wrong",
       "Says which of the two the new handler should follow, and why that one",
-      "Emits no overall status and keeps going with the handler the user asked for",
+      "Keeps going with the handler rather than replacing implementation with a review",
     ],
     mustNot: [
       "Blocks the requested work on the convention split",
       "Labels an undocumented preference a violation",
     ],
-    tags: ["activation", "positive", "focused-mode", "standards"],
+    tags: ["activation", "negative", "implementation", "standards"],
   },
   {
     id: "focused-multiple-risks-escalate-to-full-review",
     bundle: "evidence-backed-review",
-    rule: "contracts-and-consumers",
+    rule: "contracts-and-rollout",
     tier: "P0",
     mode: "complexity",
-    skillMode: "focused",
+    skillMode: "none",
     difficulty: "hard",
     prompt:
       "finish this off: I dropped the field from the payload, changed the timeout default, and while I was in there I reorganised the error module. I'll open the PR after",
-    expectedPrimary: "rules/contracts-and-consumers.md",
-    expectedSecondary: ["rules/scope-and-slicing.md", "rules/docs-and-skills-freshness.md"],
+    nearMiss: "Several changed surfaces still do not turn a request to finish implementation into a review request.",
     activation: {
       layer: "internal-route",
       target: "evidence-backed-review",
-      shouldActivate: true,
-      forbiddenRoutes: [],
+      shouldActivate: false,
     },
     must: [
-      "Names more than one owned risk in the same change",
-      "Says a single axis cannot clear it, and offers a full mode instead of reporting per-axis",
-      "Still emits no overall status while it remains focused",
+      "Continues the authorized task and considers its connected risks",
+      "Does not infer authority for a separate full review from the number of risks",
     ],
     mustNot: [
-      "Reports PASS after reading one axis",
-      "Silently expands into a full review without saying it changed mode",
+      "Reports an overall PR approval from an implementation request",
+      "Silently expands into a full review",
     ],
-    tags: ["activation", "positive", "focused-mode", "escalation"],
+    tags: ["activation", "negative", "implementation", "scope"],
   },
 
   // ---------------------------------------------------------------- negative
@@ -635,7 +600,7 @@ const scenarios = [
     difficulty: "hard",
     prompt: "run the linter and the test suite here and tell me if everything passed",
     nearMiss:
-      "Running the repository's declared test and build commands is literally a step the pre-commit path performs, so the vocabulary overlaps; but the user asked for the command run and its result, not for a judgement on a change.",
+      "A review may use these results, but the user asked only for commands and their output.",
     activation: {
       layer: "public-skill",
       target: "evidence-backed-review",
@@ -757,12 +722,12 @@ const scenarios = [
     prompt:
       "go over the README text and fix the wording and clarity. don't touch code or behaviour, it's a copyedit",
     nearMiss:
-      "Written guidance plus the verb 'revisar' is the strongest pull the staleness axis has; but that axis fires when altered behaviour leaves guidance lying, and here behaviour is explicitly untouched, so there is nothing for the guidance to contradict.",
+      "A document change can deserve review, but this request explicitly asks to edit its wording, not to judge a proposed change.",
     activation: {
       layer: "public-skill",
       target: "evidence-backed-review",
       shouldActivate: false,
-      forbiddenRoutes: ["rules/docs-and-skills-freshness.md"],
+      forbiddenRoutes: ["rules/claims-and-proof.md"],
     },
     must: ["Copyedits the prose for language and clarity as asked"],
     mustNot: ["Hunts for guidance made stale by code changes that this request does not contain"],
@@ -783,12 +748,12 @@ const scenarios = [
       layer: "public-skill",
       target: "evidence-backed-review",
       shouldActivate: false,
-      forbiddenRoutes: ["rules/dependent-teams.md"],
+      forbiddenRoutes: ["rules/contracts-and-rollout.md"],
     },
     must: [
-      "Says plainly that sending is a separate act it does not perform, and hands the drafted notice back to the user",
+      "Treats notification as a separate action governed by its actual authorization, not as a review",
     ],
-    mustNot: ["Sends a message, posts a comment, or opens a work item on the user's behalf"],
+    mustNot: ["Activates a read-only review as a reason to refuse an otherwise authorized notification task"],
     tags: ["activation", "negative", "authority-boundary", "collision"],
   },
   {
@@ -802,15 +767,15 @@ const scenarios = [
     prompt:
       "can you review this proposal doc I wrote? it's about four pages, I want to know if the argument holds and whether it's convincing",
     nearMiss:
-      "'Revisa' is the single highest-precision trigger word this frame has, and the user does want judgement; but there is no code and no range, so the first gate, a base point that resolves and a non-empty range, cannot be satisfied at all.",
+      "This asks for critique of an argument, not the readiness or consequences of a proposed artifact change.",
     activation: {
       layer: "public-skill",
       target: "evidence-backed-review",
       shouldActivate: false,
     },
     must: ["Reads the document and critiques the argument directly"],
-    mustNot: ["Attempts to resolve a base point, or reports findings anchored to file and line"],
-    tags: ["activation", "negative", "not-code"],
+    mustNot: ["Demands a Git base for a prose argument critique"],
+    tags: ["activation", "negative", "argument-critique"],
   },
   {
     id: "skip-refresh-the-clone-folder-before-anything-else",
@@ -844,15 +809,15 @@ const scenarios = [
   {
     id: "whole-pr-including-the-pipeline",
     bundle: "evidence-backed-review",
-    rule: "execution-and-pipeline",
+    rule: "claims-and-proof",
     tier: "P0",
     mode: "router",
-    skillMode: "review",
+    skillMode: "complete",
     difficulty: "mixed",
     prompt:
       "do a full review of this pr, the description, the changes, the code, the tests, the execution and the pipelines",
-    expectedPrimary: "rules/execution-and-pipeline.md",
-    expectedAll: ["rules/execution-and-pipeline.md", "rules/correctness-in-the-diff.md"],
+    expectedPrimary: "rules/claims-and-proof.md",
+    expectedAll: ["rules/claims-and-proof.md", "rules/defects-in-the-change.md", "rules/contracts-and-rollout.md", "rules/security-and-abuse-paths.md", "rules/runtime-and-resources.md"],
     activation: {
       layer: "public-skill",
       target: "evidence-backed-review",
@@ -873,15 +838,46 @@ const scenarios = [
     tags: ["activation", "positive", "pipeline", "scope-from-request"],
   },
   {
+    id: "review-balance-read-then-written-two-lines-later",
+    bundle: "evidence-backed-review",
+    rule: "runtime-and-resources",
+    tier: "P0",
+    mode: "router",
+    skillMode: "standard",
+    difficulty: "mixed",
+    prompt:
+      "is this ok to merge? small change on the checkout path, it reads the balance and writes the new one a couple of lines later",
+    expectedPrimary: "rules/runtime-and-resources.md",
+    expectedSecondary: ["rules/defects-in-the-change.md"],
+    activation: {
+      layer: "public-skill",
+      target: "evidence-backed-review",
+      shouldActivate: true,
+      forbiddenRoutes: [],
+    },
+    must: [
+      "Names the window between the read and the write, and what a second caller entering it produces",
+      "Says whether the write is atomic, or reports that nothing makes it so",
+      "Cites both lines at file:line rather than describing the pattern",
+      "Reports the established interleaving and distinguishes code-path evidence from an unverified hypothesis",
+    ],
+    mustNot: [
+      "Accepts the code because it reads correctly in a single pass",
+      "Recommends a lock without reading what an existing one covers",
+      "Edits the file or applies the fix itself",
+    ],
+    tags: ["activation", "positive", "concurrency", "integrity"],
+  },
+  {
     id: "green-checks-nobody-opened",
     bundle: "evidence-backed-review",
-    rule: "execution-and-pipeline",
+    rule: "claims-and-proof",
     tier: "P1",
     mode: "apply",
-    skillMode: "review",
+    skillMode: "standard",
     difficulty: "mixed",
     prompt: "ci is green on this branch so it should be fine to merge right",
-    expectedPrimary: "rules/execution-and-pipeline.md",
+    expectedPrimary: "rules/claims-and-proof.md",
     activation: {
       layer: "public-skill",
       target: "evidence-backed-review",

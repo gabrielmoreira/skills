@@ -8,6 +8,9 @@
 //
 // Layer 1 of the two-layer eval contract. Layer 2 is evals/activation.scenarios.mjs,
 // which this script validates structurally but does not grade.
+// Wording-pinning checks INV-14..17 and INV-19..20 were removed: matching a
+// phrase did not verify safe behavior. Their concerns live in scenario outcomes
+// for human or model evaluation, which this script does not execute.
 
 import { readFile, readdir, stat } from "node:fs/promises";
 import { basename, dirname, join, resolve } from "node:path";
@@ -124,8 +127,15 @@ function decisionBlock(text) {
   return end < 0 ? rest : rest.slice(0, end);
 }
 
+// A bare `rules/<x>.md` addresses this skill. A pointer led by a skill name
+// addresses a neighbour in the collection, which is routing rather than a local
+// reference, and INV-05 resolves the two against different roots.
 function rulePointers(text) {
-  return [...new Set([...text.matchAll(/rules\/([a-z0-9-]+)\.md/g)].map((m) => m[1]))];
+  return [...new Set([...text.matchAll(/(?:([a-z0-9-]+)\/)?rules\/([a-z0-9-]+)\.md/g)].filter((m) => !m[1]).map((m) => m[2]))];
+}
+
+function foreignPointers(text) {
+  return [...new Set([...text.matchAll(/([a-z0-9-]+)\/rules\/([a-z0-9-]+)\.md/g)].map((m) => `${m[1]}/rules/${m[2]}.md`))];
 }
 
 // --- discovery -------------------------------------------------------------
@@ -266,16 +276,34 @@ const scannedDocs = [
 // INV-05 every cross-reference inside a rule resolves
 // ---------------------------------------------------------------------------
 {
+  // A pointer into a neighbouring skill can only be resolved where the
+  // collection is. This suite also runs against a lone copy of the skill: the
+  // mutation harness copies one unit into a temp tree, and an installed skill
+  // may sit alone. A missing sibling there is the copy talking, not a broken
+  // reference, so the resolution is skipped and the skip is reported. A sibling
+  // is a directory carrying its own SKILL.md, never merely an entry beside this
+  // one, or a stray temp file would turn the skip into false failures.
+  const collectionRoot = join(SKILL_DIR, "..");
+  const neighbours = (await readdir(collectionRoot).catch(() => [])).filter((n) => n !== basename(SKILL_DIR));
+  let inCollection = false;
+  for (const n of neighbours) if (await exists(join(collectionRoot, n, "SKILL.md"))) { inCollection = true; break; }
   const bad = [];
   let total = 0;
+  let foreign = 0;
   for (const name of ruleNames) {
-    for (const target of rulePointers(ruleText.get(name))) {
+    const body = ruleText.get(name);
+    for (const target of rulePointers(body)) {
       total++;
       if (!(await exists(join(rulesDir, `${target}.md`)))) bad.push(`rules/${name}.md points at rules/${target}.md which does not exist`);
     }
+    for (const target of foreignPointers(body)) {
+      foreign++;
+      if (inCollection && !(await exists(join(collectionRoot, target)))) bad.push(`rules/${name}.md points at ${target}, which is not in this collection`);
+    }
   }
+  const across = inCollection ? `${foreign} across the collection` : `${foreign} across the collection unchecked, no siblings here`;
   if (bad.length) fail("INV-05 every cross-reference inside a rule resolves", bad.join("\n        "));
-  else pass("INV-05 every cross-reference inside a rule resolves", `${total} pointers`);
+  else pass("INV-05 every cross-reference inside a rule resolves", `${total} local, ${across}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -442,6 +470,11 @@ let negativeCount = 0;
             bad.push(`${s.id}: expectedSecondary "${secondary}" is not a rule in this skill`);
           }
         }
+      for (const expected of s.expectedAll ?? []) {
+        if (!ruleNames.includes(expected.replace(/^rules\//, "").replace(/\.md$/, ""))) {
+          bad.push(`${s.id}: expectedAll "${expected}" is not a rule in this skill`);
+        }
+      }
       } else {
         negativeCount++;
         if (!s.nearMiss) bad.push(`${s.id}: negative scenario does not state why it is a near miss`);
@@ -485,7 +518,7 @@ let negativeCount = 0;
   for (const file of scenarioFiles) {
     const mod = await import(pathToFileURL(file).href);
     for (const s of mod.default ?? []) {
-      const expected = [s.expectedPrimary, ...(s.expectedSecondary ?? [])].filter(Boolean);
+      const expected = [...new Set([s.expectedPrimary, ...(s.expectedSecondary ?? []), ...(s.expectedAll ?? [])].filter(Boolean))];
       const forbidden = s.activation?.forbiddenRoutes ?? [];
       const clash = expected.filter((e) => forbidden.includes(e));
       if (clash.length) bad.push(`${s.id}: ${clash.join(", ")} is both expected and forbidden`);
@@ -495,90 +528,14 @@ let negativeCount = 0;
   else pass("INV-13 expected and forbidden routes are disjoint", "no scenario claims a route twice");
 }
 
-// ---------------------------------------------------------------------------
-// INV-14 commit-derived evidence is always qualified by mode
-// pre-commit has no commit yet, so an unqualified "read the commit messages"
-// is an instruction the author cannot follow.
-// ---------------------------------------------------------------------------
-{
-  const bad = [];
-  // SKILL.md carries the same hazard: pre-commit has no commit for the new work,
-  // so an unqualified "read the commit summary" is unfollowable there too.
-  const targets = [...ruleNames.map((n) => [`rules/${n}.md`, ruleText.get(n)]), ["SKILL.md", skillText]];
-  for (const [label, body] of targets) {
-    const lines = body.split(/\r?\n/);
-    // frontmatter carries citations, not instructions, start after it closes
-    const start = lines[0]?.trim() === "---" ? lines.indexOf("---", 1) + 1 : 0;
-    let fenced = false;
-    for (let i = start; i < lines.length; i++) {
-      const l = lines[i];
-      // inside a fence the mode is carried by the block's own labelling, not by
-      // the sentence, so a line-based check cannot judge it
-      if (/^\s*```/.test(l)) { fenced = !fenced; continue; }
-      if (fenced) continue;
-      if (!/commit (message|messages|summary)/i.test(l)) continue;
-      if (/`?pre-commit`?/i.test(l) || /where commits exist/i.test(l)) continue;
-      bad.push(`${label}:${i + 1} cites commit-derived evidence without qualifying it by mode`);
-    }
-  }
-  if (bad.length) fail("INV-14 commit-derived evidence is mode-qualified", bad.join("\n        "));
-  else pass("INV-14 commit-derived evidence is mode-qualified", "pre-commit needs no new commit");
-}
 
 // ---------------------------------------------------------------------------
-// INV-15 no rule instructs a workspace mutation
+// INV-18 manifest depth and scope are independent.
+// This checks the declared scenario contract, not what a model would do.
+// A complete pass must expect every category even with a limited subject.
 // ---------------------------------------------------------------------------
 {
-  const MUTATION = /\b(revert the|restore it|undo the|stash|reset --hard|checkout -|apply the fix|amend)\b/i;
-  const NEGATED = /\b(do not|don't|never|without|rather than|instead of|no rule|reports, it does not)\b/i;
-  const bad = [];
-  for (const name of ruleNames) {
-    for (const [i, l] of ruleText.get(name).split(/\r?\n/).entries()) {
-      if (MUTATION.test(l) && !NEGATED.test(l)) bad.push(`rules/${name}.md:${i + 1} reads as a mutation instruction`);
-    }
-  }
-  if (bad.length) fail("INV-15 no rule instructs a workspace mutation", bad.join("\n        "));
-  else pass("INV-15 no rule instructs a workspace mutation", "report-only holds across all rules");
-}
-
-// ---------------------------------------------------------------------------
-// INV-16 a partial run cannot claim a clean bill of health
-// ---------------------------------------------------------------------------
-{
-  const bad = [];
-  if (!/focused/i.test(skillText)) bad.push("SKILL.md never names the focused mode");
-  else if (!/focused[^.]*\b(no overall status|emits no overall|never .{0,20}PASS|cannot .{0,20}clear)/i.test(skillText))
-    bad.push("SKILL.md names focused but does not deny it an overall status");
-  if (!/focused/i.test(indexText)) bad.push("INDEX.md does not say how far focused reads");
-  for (const name of ruleNames) {
-    if (/\bPASS\b/.test(ruleText.get(name))) bad.push(`rules/${name}.md claims a run status; status is owned by SKILL.md`);
-  }
-  if (bad.length) fail("INV-16 a focused run claims no overall status", bad.join("\n        "));
-  else pass("INV-16 a focused run claims no overall status", "partial scope reports partial truth");
-}
-
-// ---------------------------------------------------------------------------
-// INV-17 availability and recoverability are judged independently
-// ---------------------------------------------------------------------------
-{
-  const bad = [];
-  const boundary = ruleText.get("contracts-and-consumers") ?? "";
-  if (/\*\*L5\*\*/.test(boundary)) bad.push("rules/contracts-and-consumers.md still ranks rollback as a layer");
-  if (!/recoverability/i.test(boundary)) bad.push("rules/contracts-and-consumers.md never names recoverability");
-  else if (!/recoverability[^.]*\b(own verdict|not a fifth|independent)/i.test(boundary))
-    bad.push("rules/contracts-and-consumers.md names recoverability but not as a separate verdict");
-  if (bad.length) fail("INV-17 availability and recoverability judged independently", bad.join("\n        "));
-  else pass("INV-17 availability and recoverability judged independently", "the ladder stops at L4");
-}
-
-// ---------------------------------------------------------------------------
-// INV-18 scenario coverage matches the declared modes
-// A full mode inspects every applicable axis, so only `focused` may forbid a
-// sibling route. Every declared mode must own at least one scenario, or the
-// suite silently stops testing a mode the skill still offers.
-// ---------------------------------------------------------------------------
-{
-  const DECLARED = ["review", "pre-commit", "focused"];
+  const DECLARED = ["standard", "complete"];
   const seen = new Map(DECLARED.map((m) => [m, 0]));
   const bad = [];
   for (const file of scenarioFiles) {
@@ -588,75 +545,24 @@ let negativeCount = 0;
       if (s.activation?.shouldActivate === true) {
         if (!DECLARED.includes(mode)) { bad.push(`${s.id}: activates but skillMode is ${JSON.stringify(mode)}`); continue; }
         seen.set(mode, seen.get(mode) + 1);
+        const scope = s.reviewScope ?? "whole";
+        if (!["whole", "limited"].includes(scope)) bad.push(`${s.id}: invalid reviewScope ${JSON.stringify(scope)}`);
         const forbidden = s.activation?.forbiddenRoutes ?? [];
-        if (mode !== "focused" && forbidden.length) bad.push(`${s.id}: ${mode} is a full mode and cannot forbid ${forbidden.join(", ")}`);
+        if (mode === "complete") {
+          if (forbidden.length) bad.push(`${s.id}: complete depth cannot forbid a category`);
+          const expected = new Set(s.expectedAll ?? []);
+          for (const name of ruleNames) {
+            if (!expected.has(`rules/${name}.md`)) bad.push(`${s.id}: complete depth omits rules/${name}.md from expectedAll`);
+          }
+        }
       } else if (mode !== "none") {
         bad.push(`${s.id}: does not activate, so skillMode must be "none"`);
       }
     }
   }
-  for (const [m, n] of seen) if (n === 0) bad.push(`mode ${m} is declared in SKILL.md but owns no scenario`);
-  if (bad.length) fail("INV-18 scenario coverage matches the declared modes", bad.join("\n        "));
-  else pass("INV-18 scenario coverage matches the declared modes", [...seen].map(([m, n]) => `${m}:${n}`).join(" "));
-}
-
-// ---------------------------------------------------------------------------
-// INV-19 an axis that needs an authority can reach one written outside the repo
-//
-// The first version of this skill assumed every authority lived in the tree, so
-// an organisation-wide security, network, or cost standard, and a service page
-// another team owns, silently became "undocumented", which downgrades a hard
-// violation to a judgement call. Any rule that sends the reviewer looking for a
-// standard, an owner, or a requirement must therefore name the rule that owns
-// sources outside this repository.
-// ---------------------------------------------------------------------------
-{
-  const AUTHORITY_SEEKERS = ["standards-conformance", "dependent-teams", "spec-conformance"];
-  const OWNER = "external-sources";
-  const bad = [];
-  if (!ruleNames.includes(OWNER)) bad.push(`rules/${OWNER}.md is missing; no rule owns authority outside the repository`);
-  else {
-    for (const name of AUTHORITY_SEEKERS) {
-      if (!ruleNames.includes(name)) {
-        bad.push(`INV-19 names rules/${name}.md, which no longer exists, update the seeker list`);
-        continue;
-      }
-      if (!rulePointers(ruleText.get(name)).includes(OWNER)) {
-        bad.push(`rules/${name}.md sends the reviewer looking for an authority but never names rules/${OWNER}.md`);
-      }
-    }
-    // The owner must not become a second home for in-repo convention.
-    if (!rulePointers(decisionBlock(ruleText.get(OWNER))).includes("standards-conformance")) {
-      bad.push(`rules/${OWNER}.md does not demarcate against rules/standards-conformance.md`);
-    }
-  }
-  if (bad.length) fail("INV-19 authority outside the repository is reachable from the axis that needs it", bad.join("\n        "));
-  else pass("INV-19 authority outside the repository is reachable from the axis that needs it", `${AUTHORITY_SEEKERS.length} seekers reach rules/${OWNER}.md`);
-}
-
-// ---------------------------------------------------------------------------
-// INV-20 fetched material is judged, dated, and stripped of secrets
-//
-// Anything reached outside the repository is observed content: it may contain
-// text addressed to the reader, it may be stale, and it may carry credentials.
-// All three have to be handled where the fetching is owned, or they are handled
-// nowhere.
-// ---------------------------------------------------------------------------
-{
-  const bad = [];
-  const owner = ruleText.get("external-sources") ?? "";
-  if (!owner) bad.push("rules/external-sources.md is missing");
-  else {
-    const checks = [
-      [/\b(never obey|not an order|is a finding, and|to report, never)\b/i, "does not say fetched text is judged rather than obeyed"],
-      [/\b(credential|secret|key, or personal)\b/i, "does not forbid copying a credential or personal detail into the report"],
-      [/\b(date unknown|sync date|synced)\b/i, "does not require an external citation to carry its date"],
-      [/\bempty search\b|\bnot an absence\b/i, "does not treat an empty search as a Gap rather than proof of absence"],
-    ];
-    for (const [re, why] of checks) if (!re.test(owner)) bad.push(`rules/external-sources.md ${why}`);
-  }
-  if (bad.length) fail("INV-20 fetched material is judged, dated, and stripped of secrets", bad.join("\n        "));
-  else pass("INV-20 fetched material is judged, dated, and stripped of secrets", "observed content is evidence, not instruction");
+  for (const [m, n] of seen) if (n === 0) bad.push(`declared depth ${m} owns no scenario`);
+  if (bad.length) fail("INV-18 manifest depth and scope contracts are valid", bad.join("\n        "));
+  else pass("INV-18 manifest depth and scope contracts are valid", [...seen].map(([m, n]) => `${m}:${n}`).join(" "));
 }
 
 // --- report ----------------------------------------------------------------

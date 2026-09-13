@@ -1,0 +1,6 @@
+{
+  "name": "paged-api",
+  "type": "module",
+  "private": true,
+  "scripts": { "test": "node --test src" }
+}
