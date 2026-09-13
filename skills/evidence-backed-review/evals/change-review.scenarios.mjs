@@ -24,7 +24,7 @@ const scenarios = [
       "Reads all five categories and reports applicability, findings and gaps",
     ],
     mustNot: [
-      "Uses main as the base, or reports the report helper it only appears to delete",
+      "Uses main as the base, or reports the release-only constant and the report helper that range drags in",
       "Calls future processing or download a defect solely because the parent includes them",
       "Calls the payload unvalidated, or the job identifier guessable, without reading the helper that handles each",
     ],

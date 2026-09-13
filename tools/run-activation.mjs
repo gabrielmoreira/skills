@@ -145,10 +145,10 @@ function parseArgs(argv) {
   if (!["all", "routing", "activation", "far-miss"].includes(a.kind)) throw new Error(`--kind must be all, routing, activation or far-miss`);
   if (a.only && !["positive", "negative"].includes(a.only)) throw new Error(`--only must be positive or negative`);
   if (!["with", "without", "both"].includes(a.arm)) throw new Error(`--arm must be with, without or both`);
-  if (a.armSet && (a.backend ?? (process.env.ANTHROPIC_API_KEY ? "api" : "omp")) !== "omp") {
+  a.backend ??= process.env.ANTHROPIC_API_KEY ? "api" : "omp";
+  if (a.armSet && a.backend !== "omp") {
     throw new Error(`--arm selects the with/without control, which only the omp backend runs`);
   }
-  a.backend ??= process.env.ANTHROPIC_API_KEY ? "api" : "omp";
   // Tried in order, a whole run each. Not a retry inside a run: omp already
   // does that and it is what `degraded` exists to refuse, because a run that
   // changes model halfway reports a number no model produced.
@@ -481,12 +481,15 @@ async function freshWorkspace(base, skillDir, id) {
     if (await stat(setup).then(() => true, () => false)) {
       // A setup that half-ran leaves a workspace that looks like the fixture
       // and is not one, and the run then measures a change nobody wrote.
+      let err = "";
       const code = await new Promise((ok) => {
-        const c = spawn("bash", ["setup.sh"], { cwd: dir, stdio: "ignore" });
+        const c = spawn("bash", ["setup.sh"], { cwd: dir, stdio: ["ignore", "ignore", "pipe"] });
+        c.stderr.on("data", (d) => { err += d; });
         c.on("close", ok);
-        c.on("error", () => ok(-1));
+        c.on("error", (e) => { err += e.message; ok(-1); });
       });
-      if (code !== 0) throw new Error(`fixture setup failed (exit ${code}) for ${id}`);
+      // Without the reason, a broken fixture aborts the run as a bare number.
+      if (code !== 0) throw new Error(`fixture setup failed (exit ${code}) for ${id}\n${err.trim().split("\n").slice(-5).join("\n")}`);
       await rm(setup, { force: true }).catch(() => {});
     }
   }
@@ -1277,9 +1280,13 @@ function reportObserved(results, flags) {
   // the absence of the skill did.
   const pos = all.filter((r) => !r.neg);
   const neg = all.filter((r) => r.neg);
-  const pass = pos.filter((r) => r.w?.verdict === "PASS").length;
-  const controlPass = pos.filter((r) => r.o?.verdict === "PASS").length;
-  const both = pos.filter((r) => r.w?.verdict === "PASS" && r.o?.verdict === "PASS").length;
+  // Denominated by what produced samples. A scenario that never ran is not a
+  // scenario that failed, and counting it as one reads as a worse result than
+  // the run measured.
+  const posRan = pos.filter((r) => ran(r).samples > 0);
+  const pass = posRan.filter((r) => r.w?.verdict === "PASS").length;
+  const controlPass = posRan.filter((r) => r.o?.verdict === "PASS").length;
+  const both = posRan.filter((r) => r.w?.verdict === "PASS" && r.o?.verdict === "PASS").length;
 
   // Pooled samples first, per-scenario verdicts second.
   //
@@ -1299,7 +1306,7 @@ function reportObserved(results, flags) {
   console.log("observed behaviour");
   console.log(`  with the skills    ${rate(withPool)}`);
   console.log(`  without them       ${rate(withoutPool)}`);
-  console.log(`  by scenario        ${pass}/${pos.length} pass, ${controlPass}/${pos.length} without`);
+  console.log(`  by scenario        ${pass}/${posRan.length} pass, ${controlPass}/${posRan.length} without`);
   console.log(`  passed both ways   ${both}   the agent did this anyway`);
   const negRan = neg.filter((r) => ran(r).samples > 0);
   if (negRan.length) {
