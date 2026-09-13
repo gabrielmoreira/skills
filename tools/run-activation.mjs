@@ -67,14 +67,15 @@ OPTIONS
   --thinking <lvl>    off..max                     (default high)
   --samples <n>       samples per case             (default 3)
   --backend <b>       omp | api                    (default omp unless ANTHROPIC_API_KEY)
+  --arm <a>           with | without | both        (default both)
   --concurrency <n>   parallel cases               (default 10, hard max 10)
   --stagger <s>       seconds between launches     (default 5)
   --dry-run           print what would be sent, spend nothing
   --check             compare against the committed baseline
   --write-baseline    replace evals/baseline.json with this run
   --verbose           per-case output
-  "  --record <dir>      save each raw stream, so it can be replayed later",
-  "  --replay <dir>      score recorded streams instead of calling the model",
+  --record <dir>      save each raw stream, so it can be replayed later
+  --replay <dir>      score recorded streams instead of calling the model
 
 RECIPES
   # is this one new rule reachable at all, cheaply
@@ -86,6 +87,9 @@ RECIPES
   # the number that goes in the report
   node tools/run-activation.mjs --write-baseline
 
+  # two versions of one skill, paired, sharing a single no-skill control
+  SKILL_COLLECTION_ROOT=<old>/skills node tools/run-activation.mjs --arm with --samples 1
+
 Every executable model role is pinned to the model under test, so a scenario
 that delegates cannot silently measure a second model.`;
 
@@ -95,7 +99,7 @@ function parseArgs(argv) {
     kind: "all", backend: null, rules_: [], ids: [], record: null, replay: null, profile: null, dryRun: false, check: false, writeBaseline: false,
     concurrency: 10, verbose: false,
     // omp only
-    thinking: "xhigh", maxTime: 90, rules: false, fixture: null,
+    thinking: "xhigh", maxTime: 90, rules: false, fixture: null, arm: "both",
   };
   if (argv.includes("--help") || argv.includes("-h")) { console.log(HELP); process.exit(0); }
   for (let i = 0; i < argv.length; i++) {
@@ -129,6 +133,9 @@ function parseArgs(argv) {
     // fires wrongly, and unlike a miss it needs no control arm to be visible,
     // so it is the half worth measuring when the budget will not carry both.
     else if (k === "--only") a.only = argv[++i];
+    // Which arm to run. Two versions of one skill compared against each other
+    // share the without-arm, so it is run once rather than per version.
+    else if (k === "--arm") { a.arm = argv[++i]; a.armSet = true; }
     else if (k === "--dry-run") a.dryRun = true;
     else if (k === "--check") a.check = true;
     else if (k === "--write-baseline") a.writeBaseline = true;
@@ -137,6 +144,10 @@ function parseArgs(argv) {
   }
   if (!["all", "routing", "activation", "far-miss"].includes(a.kind)) throw new Error(`--kind must be all, routing, activation or far-miss`);
   if (a.only && !["positive", "negative"].includes(a.only)) throw new Error(`--only must be positive or negative`);
+  if (!["with", "without", "both"].includes(a.arm)) throw new Error(`--arm must be with, without or both`);
+  if (a.armSet && (a.backend ?? (process.env.ANTHROPIC_API_KEY ? "api" : "omp")) !== "omp") {
+    throw new Error(`--arm selects the with/without control, which only the omp backend runs`);
+  }
   a.backend ??= process.env.ANTHROPIC_API_KEY ? "api" : "omp";
   // Tried in order, a whole run each. Not a retry inside a run: omp already
   // does that and it is what `degraded` exists to refuse, because a run that
@@ -468,11 +479,14 @@ async function freshWorkspace(base, skillDir, id) {
     // it runs once in the throwaway workspace before the agent sees it.
     const setup = join(dir, "setup.sh");
     if (await stat(setup).then(() => true, () => false)) {
-      await new Promise((ok) => {
+      // A setup that half-ran leaves a workspace that looks like the fixture
+      // and is not one, and the run then measures a change nobody wrote.
+      const code = await new Promise((ok) => {
         const c = spawn("bash", ["setup.sh"], { cwd: dir, stdio: "ignore" });
         c.on("close", ok);
-        c.on("error", ok);
+        c.on("error", () => ok(-1));
       });
+      if (code !== 0) throw new Error(`fixture setup failed (exit ${code}) for ${id}`);
       await rm(setup, { force: true }).catch(() => {});
     }
   }
@@ -820,7 +834,10 @@ function casesFor(skill, args) {
       const decidable = want.length ? want.every(gradableTarget) : s.activation?.layer === "public-skill";
       if (s.expectedPrimary && !decidable) { ungradeable.push(`${skill.name}/${s.id}`); continue; }
       if (!decidable) continue;
-      for (const arm of ["with", "without"]) {
+      // Both arms by default. `--arm` exists for a paired comparison of two
+      // skill versions, where the no-skill control is identical in both runs
+      // and paying for it twice buys nothing.
+      for (const arm of args.arm === "both" ? ["with", "without"] : [args.arm]) {
         out.push({ kind: "observed", arm, skill: skill.name, id: s.id, scenario: s, user: s.prompt });
       }
       continue;
@@ -1247,7 +1264,12 @@ function reportObserved(results, flags) {
   const key = (r) => `${r.skill}/${r.id}`;
   const withS = new Map(results.filter((r) => r.arm === "with").map((r) => [key(r), r]));
   const without = new Map(results.filter((r) => r.arm === "without").map((r) => [key(r), r]));
-  const all = [...withS.keys()].map((k) => ({ k, w: withS.get(k), o: without.get(k), neg: withS.get(k).negative }));
+  // Either arm can be the only one that ran: `--arm without` records a control
+  // once for a paired comparison of two skill versions. Keying the table off
+  // the with-arm alone reported that run as no data at all.
+  const all = [...new Set([...withS.keys(), ...without.keys()])]
+    .map((k) => ({ k, w: withS.get(k), o: without.get(k), neg: (withS.get(k) ?? without.get(k)).negative }));
+  const ran = (r) => r.w ?? r.o;
 
   // The control only means something for a scenario the skill should catch.
   // A skill that was never loaded cannot fire wrongly, so every negative passes
@@ -1255,9 +1277,9 @@ function reportObserved(results, flags) {
   // the absence of the skill did.
   const pos = all.filter((r) => !r.neg);
   const neg = all.filter((r) => r.neg);
-  const pass = pos.filter((r) => r.w.verdict === "PASS").length;
+  const pass = pos.filter((r) => r.w?.verdict === "PASS").length;
   const controlPass = pos.filter((r) => r.o?.verdict === "PASS").length;
-  const both = pos.filter((r) => r.w.verdict === "PASS" && r.o?.verdict === "PASS").length;
+  const both = pos.filter((r) => r.w?.verdict === "PASS" && r.o?.verdict === "PASS").length;
 
   // Pooled samples first, per-scenario verdicts second.
   //
@@ -1279,15 +1301,15 @@ function reportObserved(results, flags) {
   console.log(`  without them       ${rate(withoutPool)}`);
   console.log(`  by scenario        ${pass}/${pos.length} pass, ${controlPass}/${pos.length} without`);
   console.log(`  passed both ways   ${both}   the agent did this anyway`);
-  const negRan = neg.filter((r) => r.w.samples > 0);
+  const negRan = neg.filter((r) => ran(r).samples > 0);
   if (negRan.length) {
-    console.log(`  stayed shut        ${negRan.filter((r) => r.w.verdict === "PASS").length}/${negRan.length}   near misses, control not applicable`);
+    console.log(`  stayed shut        ${negRan.filter((r) => ran(r).verdict === "PASS").length}/${negRan.length}   near misses, control not applicable`);
   } else if (neg.length) {
     console.log(`  stayed shut        no data   ${neg.length} negatives produced nothing`);
   }
   console.log(`  unstable           ${results.filter((r) => r.verdict === "UNSTABLE").length}`);
   const lost = results.reduce((a, r) => a + (r.lost ?? 0), 0);
-  const norun = all.filter((r) => !r.w.samples).length;
+  const norun = all.filter((r) => !ran(r).samples).length;
   if (lost || norun) {
     console.log(`  lost samples       ${lost}   ${norun} scenarios produced nothing and carry no verdict`);
   }
@@ -1317,12 +1339,13 @@ function reportObserved(results, flags) {
   if (flags?.sawHarness) console.log(`  read the harness   ${flags.sawHarness}   the agent found the eval's own config`);
   if (flags?.foreign?.size) console.log(`  foreign skills     ${[...flags.foreign].join(", ")}   a source the overlay did not silence`);
 
-  const bad = all.filter((r) => r.w.verdict !== "PASS" && r.w.samples > 0);
+  const bad = all.filter((r) => ran(r).verdict !== "PASS" && ran(r).samples > 0);
   if (bad.length) {
-    console.log("\nnot passing with the skills loaded");
+    console.log(`\nnot passing ${withS.size ? "with the skills loaded" : "in the control arm"}`);
     for (const r of bad) {
-      console.log(`  ${r.w.verdict.padEnd(8)} ${r.k}${r.neg ? " (should stay shut)" : ""}  ${r.w.passes}/${r.w.samples}`);
-      for (const s of r.w.seq ?? []) console.log(`           ${s}`);
+      const x = ran(r);
+      console.log(`  ${x.verdict.padEnd(8)} ${r.k}${r.neg ? " (should stay shut)" : ""}  ${x.passes}/${x.samples}`);
+      for (const s of x.seq ?? []) console.log(`           ${s}`);
     }
   }
 }

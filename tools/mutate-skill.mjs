@@ -238,16 +238,16 @@ const MUTATIONS = [
       const rule = named.find((n) => entry0.some((l) => l.trimStart().startsWith("|") && l.includes(`rules/${n}.md`)));
       if (!rule) return NA;
       // The entry's own words for this rule, which an honest prompt must not
-      // repeat. That used to mean a gate row, and a rule reached by a coverage
-      // obligation instead has none, so the mutation quietly stopped applying
-      // and C-16 went unexercised while still reporting as present. A check
-      // nobody has watched fail is not a check.
+      // repeat. It has to be the gate row: C-16 measures overlap against gate
+      // rows only, and this line used to accept any bullet naming the rule.
+      // Where a prose bullet naming the rule came first, the mutation copied
+      // that instead, the prompt quoted a rule path, and C-14 caught it for the
+      // wrong reason while C-16 was never exercised. The rule above is already
+      // chosen for having a row, so a missing row here is a broken entry.
       const entry = fs.readFileSync(entryOf(dir), "utf8").split("\r\n").join("\n");
-      const line = entry.split("\n").find((l) => l.includes(`rules/${rule}.md`) && /^\s*[|-]/.test(l));
+      const line = entry.split("\n").find((l) => l.includes(`rules/${rule}.md`) && l.trimStart().startsWith("|"));
       if (!line) return false;
-      const signal = line.trimStart().startsWith("|")
-        ? (line.split("|")[1] ?? "").replace(/\*\*/g, "").trim()
-        : line.replace(/^\s*-\s*/, "").replace(/\*\*/g, "").replace(/→.*$/s, "").split("—")[0].trim();
+      const signal = (line.split("|")[1] ?? "").replace(/\*\*/g, "").trim();
       // Put the row's own words into the prompt above that expectedAll.
       const before = t.slice(0, m.index);
       const at = before.lastIndexOf("prompt:");
