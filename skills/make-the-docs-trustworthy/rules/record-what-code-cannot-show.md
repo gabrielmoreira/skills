@@ -25,7 +25,7 @@ Use when:
 Do:
 
 - **Apply the three-part worth-recording test owned by
-  `evidence-backed-review/rules/docs-and-skills-freshness.md`.** Never restate that test here.
+  `evidence-backed-review/rules/claims-and-proof.md`.** Never restate that test here.
 - **Say the test was not applied where that rule is not installed.** Never invent one.
 - **Write the record in the same change as the code it explains.**
 - **Name the rejected alternative, and the condition that would reopen it.**
