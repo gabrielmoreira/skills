@@ -1280,13 +1280,14 @@ function reportObserved(results, flags) {
   // the absence of the skill did.
   const pos = all.filter((r) => !r.neg);
   const neg = all.filter((r) => r.neg);
-  // Denominated by what produced samples. A scenario that never ran is not a
-  // scenario that failed, and counting it as one reads as a worse result than
-  // the run measured.
-  const posRan = pos.filter((r) => ran(r).samples > 0);
-  const pass = posRan.filter((r) => r.w?.verdict === "PASS").length;
-  const controlPass = posRan.filter((r) => r.o?.verdict === "PASS").length;
-  const both = posRan.filter((r) => r.w?.verdict === "PASS" && r.o?.verdict === "PASS").length;
+  // Each arm is denominated by its own samples. A scenario that never ran is
+  // not a scenario that failed, and one arm of a paired run must not be scored
+  // against cases only the other arm covered.
+  const withRan = pos.filter((r) => r.w?.samples > 0);
+  const controlRan = pos.filter((r) => r.o?.samples > 0);
+  const pass = withRan.filter((r) => r.w.verdict === "PASS").length;
+  const controlPass = controlRan.filter((r) => r.o.verdict === "PASS").length;
+  const both = pos.filter((r) => r.w?.verdict === "PASS" && r.o?.verdict === "PASS").length;
 
   // Pooled samples first, per-scenario verdicts second.
   //
@@ -1306,7 +1307,7 @@ function reportObserved(results, flags) {
   console.log("observed behaviour");
   console.log(`  with the skills    ${rate(withPool)}`);
   console.log(`  without them       ${rate(withoutPool)}`);
-  console.log(`  by scenario        ${pass}/${posRan.length} pass, ${controlPass}/${posRan.length} without`);
+  console.log(`  by scenario        ${pass}/${withRan.length} pass, ${controlPass}/${controlRan.length} without`);
   console.log(`  passed both ways   ${both}   the agent did this anyway`);
   const negRan = neg.filter((r) => ran(r).samples > 0);
   if (negRan.length) {
