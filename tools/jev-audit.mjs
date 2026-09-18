@@ -49,7 +49,17 @@ const REVIEW = 0.5;  // unsure: worth a reader, never a verdict
 // against the git history -- a one-line conflict is invisible unless the two
 // lines are the question's entire subject. The pair check separated the
 // defective from the repaired text (0.33 conflict vs 0.86 coexist, control
-// 0.78). The per-unit soft checks and the scenario battery are plausible but
+// 0.78) when first validated -- and that separation FAILED TO REPRODUCE later
+// the same day under the then-current jev-latest: the same three defect pairs
+// read 0.86-0.95 coexist on defective text, indistinguishable from repaired;
+// a direct-contradiction phrasing caught one defect weakly (0.28 vs 0.03)
+// while firing 0.65 on a benign Avoid/Verify mirror; and a mirror
+// discriminator scored the true defect 0.83. The check stays as a screen --
+// it still separates menus, contrasts and the occasional review-worthy pair --
+// but a pair-level finding is now "read both lines" advice, not a validated
+// verdict, and a finding-free run says nothing about the absence of this
+// defect class. Re-validate against the git-history pairs before trusting it
+// again. The per-unit soft checks and the scenario battery are plausible but
 // carry no defect-pair validation; they are reported as directions, marked as
 // such, never as verdicts.
 
@@ -239,7 +249,10 @@ const judged = results.filter((r) => !r.error);
 const level = (r) => (r.p >= FLAG ? "finding" : r.p >= REVIEW ? "review" : "clear");
 // A conflict needs low coexistence AND the document not branching between the
 // two; low coexistence with high branch is a menu or right-vs-wrong contrast
-// working as intended.
+// working as intended. A mirror discriminator was tried here and FAILED
+// validation: it scored the known defect pair (bound-the-unknown 47 vs 55 at
+// 3a93400c) at 0.83 mirror, indistinguishable from the false positive it was
+// meant to kill. Reverted rather than tuned against two data points.
 const isConflict = (r) => r.p <= 0.25 && (r.branch ?? 1) <= 0.5;
 const isContrast = (r) => r.p <= 0.5 && (r.branch ?? 0) > 0.5;
 const conflicts = judged.filter((r) => r.kind === "pair-conflict");
