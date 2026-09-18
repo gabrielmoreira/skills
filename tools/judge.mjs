@@ -42,6 +42,20 @@ const arg = (k, d) => { const i = argv.indexOf(k); return i < 0 ? d : argv[i + 1
 const MODEL = arg("--model", "openai-codex/gpt-5.6-terra");
 const PROFILE = arg("--profile", null);
 const CONTROLS = arg("--controls", "skills/typescript-skills/evals/workspace/controls");
+// Two graders, measured against the same 56 labelled pairs (2026-09-18): chat
+// 98% per item at ~2.6s/item, Jev 91% at ~250ms per response of ~7 questions
+// for $0.0002. Jev decides what it is sure of and hands the band between
+// --band edges to the chat model, which lifts the combination to the chat
+// grader's own accuracy at a fraction of the cost. Kind is withheld from both:
+// the judge is told the claim, never whether the scenario wants it true.
+const BACKEND = arg("--backend", "chat");
+const BAND = arg("--band", "0.25,0.75").split(",").map(Number);
+const TYPESAFE_KEY = process.env.TYPESAFE_AI_API_KEY || process.env.TYPESAFE_API_KEY;
+const CALIBRATION_FILE = new URL("./judge.calibration.json", import.meta.url);
+if (BACKEND === "jev" && !TYPESAFE_KEY) {
+  console.error("--backend jev needs TYPESAFE_AI_API_KEY (or TYPESAFE_API_KEY) in the environment");
+  process.exit(1);
+}
 
 // ---------------------------------------------------------------- the prompt
 
@@ -125,8 +139,38 @@ const saidYes = (stream) => {
  */
 async function grade(answer, must, mustNot) {
   const items = [];
-  for (const m of must) items.push({ text: m, kind: "must", verdict: saidYes(await ask(prompt(answer, m, "must"))) });
-  for (const m of mustNot) items.push({ text: m, kind: "mustNot", verdict: saidYes(await ask(prompt(answer, m, "mustNot"))) });
+  for (const m of must) items.push({ text: m, kind: "must" });
+  for (const m of mustNot) items.push({ text: m, kind: "mustNot" });
+  if (BACKEND === "jev") {
+    // One call for every criterion: Jev evaluates each question in isolation
+    // against the same state, which keeps the verdicts independent the way
+    // one-criterion-per-call does for the chat model, without a process each.
+    const questions = Object.fromEntries(items.map((it, i) => [`q${i}`, { type: "noul", instructions: `The text does this: ${it.text}` }]));
+    const res = await fetch("https://api.typesafe.ai/v1/systemone", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${TYPESAFE_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ state: answer, model: arg("--jev-model", "jev-latest"), questions }),
+    });
+    if (!res.ok) throw new Error(`typesafe ${res.status}: ${(await res.text()).slice(0, 200)}`);
+    const answers = (await res.json()).answers;
+    for (const [i, it] of items.entries()) {
+      const p = answers[`q${i}`].noul;
+      it.probability = p;
+      if (p > BAND[0] && p < BAND[1]) {
+        // Inside the band the model is not sure enough to decide, so the item
+        // is escalated to the chat grader rather than rounded.
+        it.escalated = true;
+        const stream = await ask(prompt(answer, it.text, it.kind));
+        it.verdict = saidYes(stream);
+        const t = answerText(String(stream));
+        it.evidence = t ? t.split("\n").slice(1).join(" ").slice(0, 200) : undefined;
+      } else {
+        it.verdict = p >= 0.5;
+      }
+    }
+  } else {
+    for (const it of items) it.verdict = saidYes(await ask(prompt(answer, it.text, it.kind)));
+  }
   const met = items.filter((i) => (i.kind === "must" ? i.verdict === true : i.verdict === false)).length;
   return { score: items.length ? met / items.length : 0, met, total: items.length, items, unread: items.filter((i) => i.verdict === null).length };
 }
@@ -177,6 +221,12 @@ if (argv.includes("--calibrate")) {
   // survive a judge that is wrong about half the criteria in compensating ways.
   const agr = rows.reduce((a, r) => ({ same: a.same + r.agree.same, seen: a.seen + r.agree.seen }), { same: 0, seen: 0 });
   console.log(`per-item agreement with the recorded grades: ${agr.same}/${agr.seen} = ${agr.seen ? Math.round((100 * agr.same) / agr.seen) : 0}%`);
+  // Kept where --replay can read it, so a judge's verdicts always travel with
+  // the measurement that qualifies them.
+  const { writeFileSync } = await import("node:fs");
+  const prior = existsSync(CALIBRATION_FILE) ? JSON.parse(readFileSync(CALIBRATION_FILE, "utf8")) : {};
+  prior[BACKEND] = { agree: agr.same, seen: agr.seen, sep, pairs: rows.length, date: new Date().toISOString().slice(0, 10), band: BACKEND === "jev" ? BAND.join("-") : undefined, model: BACKEND === "jev" ? arg("--jev-model", "jev-latest") : MODEL };
+  writeFileSync(CALIBRATION_FILE, JSON.stringify(prior, null, 2) + "\n");
   console.log(rows.length && sep === rows.length
     ? "usable: it ranks the known-good answer above the known-weak one every time."
     : "NOT USABLE as it stands. A judge that cannot rank a gold answer above a weak\none cannot be trusted to rank two real ones, and its verdicts would be noise\nwearing a percentage.");
@@ -253,8 +303,19 @@ if (argv.includes("--replay")) {
   }
 
   const mean = rows.length ? rows.reduce((a, r) => a + r.score, 0) / rows.length : 0;
-  console.log(`\n${rows.length} answers judged, mean ${Math.round(100 * mean)}% of criteria met`);
-  console.log(`judge agreement on its calibration set: 95% per item, 4 of 4 pairs separated`);
+  const escalated = rows.reduce((a, r) => a + r.items.filter((i) => i.escalated).length, 0);
+  const judged = rows.reduce((a, r) => a + r.total, 0);
+  console.log(`\n${rows.length} answers judged, mean ${Math.round(100 * mean)}% of criteria met, ${escalated}/${judged} items escalated into the band`);
+  // The agreement a calibration measured, not a number remembered: --calibrate
+  // writes it, --replay reads it, and a backend with none on record says so
+  // instead of printing a stale one.
+  if (existsSync(CALIBRATION_FILE)) {
+    const c = JSON.parse(readFileSync(CALIBRATION_FILE, "utf8"));
+    const mine = c[BACKEND];
+    if (mine) console.log(`judge agreement on its calibration set: ${mine.agree}/${mine.seen} = ${mine.seen ? Math.round((100 * mine.agree) / mine.seen) : 0}% per item, ${mine.sep} of ${mine.pairs} pairs separated (${mine.date}, band ${mine.band ?? "none"})`);
+    else console.log(`no calibration on record for --backend ${BACKEND}: run --calibrate first`);
+  } else console.log("no calibration on record: run --calibrate first");
+
   console.log(`A mean over ${rows.length} answers moves with the scenarios in the sample, so compare
 arms on the same scenarios or not at all.`);
 }

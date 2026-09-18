@@ -1,0 +1,19 @@
+{
+  "jev": {
+    "agree": 50,
+    "seen": 56,
+    "sep": 4,
+    "pairs": 4,
+    "date": "2026-09-18",
+    "band": "0.25-0.75",
+    "model": "jev-latest"
+  },
+  "chat": {
+    "agree": 29,
+    "seen": 56,
+    "sep": 0,
+    "pairs": 4,
+    "date": "2026-09-18",
+    "model": "openai-codex/gpt-5.6-terra"
+  }
+}
