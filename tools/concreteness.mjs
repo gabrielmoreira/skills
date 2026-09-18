@@ -27,7 +27,12 @@
  * WORSE verdict names its axis; a drift flag on an intentional change is the
  * instrument doing its job, telling the reviewer the demand changed. Run it
  * before committing a skill edit: the commit is where the judgement becomes
- * history.
+ * history. Known bias, measured on the trim commit 833b44b: the cuttable
+ * triage repeatedly points at why-clauses -- the rationale a reader needs --
+ * even when instructed not to, so treat every cuttable suggestion as a lead
+ * to argue with, and never as permission. The WORSE axes separated real
+ * degradations from benign compressions on the same run, including two
+ * over-trims the editing pass had judged harmless.
  *
  * Every judgement is asked twice with the lines swapped; a pair whose verdicts
  * disagree is reported as unstable rather than counted. Report-only: this
@@ -78,20 +83,32 @@ const BETTER = (a, b) => ({
   instructions: `Line A: ${a}\nLine B: ${b}\nLine B is an improvement over line A: clearer for a human to read and at least as actionable for an agent`,
 });
 
+const suffixed = (axes) => Object.fromEntries(Object.keys(axes).map((k) => [`ba_${k}`, axes[k]]));
+
 async function reviewPair(a, b) {
   const state = `A trimming edit to a skill rule file. The line before:\n${a}\n\nThe line after:\n${b}`;
-  const [ab, ba, imp] = await Promise.all([
-    ask(state, AXES(a, b, "ab")),
-    ask(state, AXES(a, b, "ba")),
-    ask(state, { better: BETTER(a, b) }),
-  ]);
-  const avg = (k) => (ab[k].noul + ba[k].noul) / 2;
+  const clauses = b.split(/;\s*|\s+—\s*|,\s+(?=[a-z])/).map((s) => s.trim()).filter((s) => s.split(/\s+/).length >= 6);
+  const questions = { ...AXES(a, b, "ab"), ...suffixed(AXES(a, b, "ba")), better: BETTER(a, b) };
+  if (clauses.length) {
+    const options = [...clauses, "none"];
+    questions.compress = {
+      type: "choice",
+      instructions: `Line B: ${b}\nLine B contains a clause that could be cut without changing what an agent following it does or what a human directing them recognises; pick that clause, or none if every clause is load-bearing. A clause explaining why the rule exists, or naming the concrete case it covers, is load-bearing and never the answer`,
+      options,
+      criteria: Object.fromEntries(options.map((o) => [o, o === "none" ? "every clause is load-bearing" : "this clause could be cut without changing what the line demands"])),
+    };
+  }
+  const ans = await ask(state, questions);
+  const g = (k) => (ans[`ab_${k}`] ?? ans[k]);
+  const h = (k) => (ans[`ba_${k}`] ?? ans[k]);
+  const avg = (k) => (g(k).noul + h(k).noul) / 2;
   const axes = { loss: avg("loss"), human: avg("human"), agent: avg("agent"), drift: avg("drift") };
-  const stable = Object.entries(axes).every(([k, v]) => Math.abs(ab[k].noul - ba[k].noul) < 0.3);
+  const stable = Object.entries(axes).every(([k, v]) => Math.abs(g(k).noul - h(k).noul) < 0.3);
   const worseAxis = Object.entries(axes).filter(([, v]) => v >= 0.6).map(([k]) => k);
-  const better = imp.better.noul >= 0.6 && !worseAxis.length;
+  const better = ans.better.noul >= 0.6 && !worseAxis.length;
+  const compress = ans.compress?.choice && ans.compress.choice !== "none" ? ans.compress.choice : null;
   const verdict = worseAxis.length ? "WORSE" : better ? "BETTER" : "neutral";
-  return { verdict, axes, worseAxis, stable };
+  return { verdict, axes, worseAxis, stable, better, compress };
 }
 
 async function judgePair(a, b) {
@@ -227,7 +244,8 @@ for (const p of pairs) {
     const r = await reviewPair(p.removed, p.added);
     if (r.verdict === "WORSE") flagged++;
     const det = r.worseAxis.length ? ` [${r.worseAxis.join(",")}]` : "";
-    console.log(`${r.verdict.padEnd(8)}${det}${r.stable ? "" : " UNSTABLE"}  - ${p.removed.slice(0, 84)}`);
+    const cut = r.compress ? `  cuttable: "${r.compress}"` : "";
+    console.log(`${r.verdict.padEnd(8)}${det}${r.stable ? "" : " UNSTABLE"}  - ${p.removed.slice(0, 84)}${cut}`);
     if (r.verdict !== "neutral") console.log(`${" ".repeat(20)}+ ${p.added.slice(0, 84)}`);
     if (r.verdict === "WORSE") for (const k of r.worseAxis) console.log(`${" ".repeat(20)}  ${k}=${r.axes[k].toFixed(2)}`);
   } catch (e) { console.log(`failed   ${e.message.slice(0, 80)}`); }
