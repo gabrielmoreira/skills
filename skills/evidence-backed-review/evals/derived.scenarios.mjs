@@ -23,7 +23,7 @@ const scenarios = [
     expectedPrimary: "rules/defects-in-the-change.md",
     expectedSecondary: ["rules/claims-and-proof.md"],
     skillMode: "standard",
-    activation: { layer: "public-skill", target: "evidence-backed-review", shouldActivate: true, forbiddenRoutes: [] },
+    activation: { layer: "public-skill", target: "evidence-backed-review", shouldActivate: true, forbiddenRoutes: ["rules/security-and-abuse-paths.md"] },
     must: [
       "Asks what the green run actually executed for these three files",
       "Distinguishes a suite that passed from a suite that covered the change",
