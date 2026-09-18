@@ -11,6 +11,7 @@ references: [attempt budgets, escalation criteria, known unknowns]
 Decision: **Stop or change approach when the next step cannot inform the scoped
 decision.** An investigation need not reconstruct every historical detail
 before a supported handling repair can proceed.
+Where the supported repair is the deliverable → `rules/fix-at-the-source.md`.
 
 Use when:
 - **Repeated runs leave the same decision unresolved.**

@@ -11,6 +11,7 @@ references: [regression testing, test seams, characterization tests]
 Decision: **Test the real contract at the narrowest layer that can demonstrate
 the defect.** Add adapter or integration checks for different obligations; a
 unit test need not recreate the entire incident to protect faulty handling.
+Where the repair itself is the open question → `rules/fix-at-the-source.md`.
 
 Use when:
 - **A handling defect is demonstrated and needs a lasting test.**
