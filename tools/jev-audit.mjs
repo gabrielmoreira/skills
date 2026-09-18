@@ -101,6 +101,12 @@ const SCENARIO_CHECKS = [
   { id: "negative-fair",
     q: { type: "noul", instructions: "For this prompt, declining the skill is the behavior a reasonable person could defend; the scenario is not a disguised positive" },
     decision: "negative quality, asked only of negatives" },
+  { id: "overapplication-pressure",
+    q: { type: "noul", instructions: "This scenario rewards an agent for knowing when NOT to apply a rigid principle: the state contains a case where the rule-following, thorough answer is the wrong answer, and the must items punish applying the rule blindly" },
+    decision: "counter-scenario coverage: skills never tested against over-application drift toward firing everywhere" },
+  { id: "production-relevant",
+    q: { type: "noul", instructions: "If an agent scored better on this scenario, no real user of this skill would get a better outcome; the graded behavior is not something users actually need" },
+    decision: "production relevance, inverted: scenarios measuring nothing a user needs are deletion candidates" },
 ];
 
 async function ask(state, questions) {
@@ -184,6 +190,23 @@ await Promise.all(Array.from({ length: CONC }, async () => {
             note: "validated on defect-vs-repair pairs; a finding needs low coexistence AND low branch",
           });
         }
+        // The rule battery, from the intervention-experiment framing: a rule
+        // that is absolute everywhere and names no failure mode is a deletion
+        // candidate when the collection is slimmed, because there is no
+        // evidence it prevents anything. UNVALIDATED direction -- the pair
+        // check above is the only one calibrated against defect pairs.
+        const rules = a.units.filter((u) => /\b(must|always|never|only if|forbidden|obligat)/i.test(u.text)).slice(0, 15);
+        if (rules.length && a.name.endsWith("SKILL.md")) {
+          const rq = {};
+          for (const [ri, u] of rules.entries()) {
+            rq[`w${ri}`] = { type: "noul", instructions: `Requirement: ${u.text}\nThis requirement is stated as absolute; nowhere in the document is there a situation, exception, or condition where it should not be followed` };
+            rq[`f${ri}`] = { type: "noul", instructions: `Requirement: ${u.text}\nThe document never explains what goes wrong if this requirement is ignored; its purpose is not stated anywhere` };
+          }
+          const ra = await ask(a.text, rq);
+          for (const [ri, u] of rules.entries()) {
+            results.push({ kind: "rule", skill: a.skill, name: a.name, lines: String(u.line), unit: u.text.slice(0, 100), absolute: ra[`w${ri}`].noul, purposeless: ra[`f${ri}`].noul, note: "unvalidated direction; feeds the keep/kill matrix, not a verdict" });
+          }
+        }
       } else {
         // Two checks only mean something where the answer itself is graded.
         // An activation scenario's prompt MUST name the situation -- routing
@@ -192,7 +215,7 @@ await Promise.all(Array.from({ length: CONC }, async () => {
         const answerGraded = a.sc.reviewScope != null;
         const checks = a.checks.filter((c) => {
           if (c.id === "negative-fair") return a.sc.activation?.shouldActivate === false;
-          if (c.id === "prompt-states-conclusion" || c.id === "unanswerable") return answerGraded;
+          if (c.id === "prompt-states-conclusion" || c.id === "unanswerable" || c.id === "overapplication-pressure") return answerGraded;
           return true;
         });
         const questions = Object.fromEntries(checks.map((c, i) => [`q${i}`, c.q]));
@@ -239,6 +262,21 @@ for (const r of [...pairReviews].sort((a, b) => a.p - b.p).slice(0, 15)) console
 console.log("\n-- scenario findings, worst first --");
 for (const r of scFindings.slice(0, 40)) console.log(`${r.p.toFixed(2)}  ${r.name}  ${r.check}${r.choice ? ` (${r.choice})` : ""}`);
 if (scFindings.length > 40) console.log(`  ... ${scFindings.length - 40} more in the artifact file`);
+
+// The keep/kill matrix seed: per skill, how many absolute rules carry no
+// counterweight and no stated failure mode, and how many answer-graded
+// scenarios reward restraint. A skill high on the first and zero on the
+// second is exactly the one whose removal the corpus cannot currently argue
+// against -- or argue for.
+const rules = judged.filter((r) => r.kind === "rule");
+console.log(`\n-- keep/kill matrix (unvalidated direction) --`);
+for (const skill of [...new Set(rules.map((r) => r.skill))].sort()) {
+  const rs = rules.filter((r) => r.skill === skill);
+  const bare = rs.filter((r) => r.absolute >= FLAG && r.purposeless >= FLAG);
+  const scs = judged.filter((r) => r.kind === "scenario" && r.skill === skill && r.check === "overapplication-pressure");
+  const rest = scs.filter((r) => r.p >= FLAG).length;
+  console.log(`  ${skill.padEnd(30)} absolute-bare rules: ${String(bare.length).padStart(2)}/${rules.filter((r) => r.skill === skill).length}   restraint-rewarding scenarios: ${rest}/${scs.length}`);
+}
 
 const out = join(".local", "astra", "2026-09-18-jev-audit");
 await mkdir(out, { recursive: true });
