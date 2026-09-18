@@ -43,7 +43,7 @@ const scenarios = [
       shouldActivate: true,
       // A whole-change standard review may open any applicable category.
       // The primary route is an entry point, not an exclusive scope.
-      forbiddenRoutes: [],
+      forbiddenRoutes: ["rules/defects-in-the-change.md"],
     },
     must: [
       "Reads the repository's own written standard first and cites its file plus rule for any hard violation",
@@ -74,7 +74,7 @@ const scenarios = [
       layer: "internal-route",
       target: "evidence-backed-review",
       shouldActivate: true,
-      forbiddenRoutes: [],
+      forbiddenRoutes: ["rules/defects-in-the-change.md"],
     },
     must: [
       "Resolves the named release base and the head revision and inspects the merge-base diff",
@@ -104,7 +104,7 @@ const scenarios = [
       layer: "internal-route",
       target: "evidence-backed-review",
       shouldActivate: true,
-      forbiddenRoutes: [],
+      forbiddenRoutes: ["rules/defects-in-the-change.md", "rules/runtime-and-resources.md"],
     },
     must: [
       "Distinguishes source intent, check results, deployed state and observed consumer behavior",
@@ -135,7 +135,7 @@ const scenarios = [
       layer: "internal-route",
       target: "evidence-backed-review",
       shouldActivate: true,
-      forbiddenRoutes: [],
+      forbiddenRoutes: ["rules/defects-in-the-change.md"],
     },
     must: [
       "Splits recipients into needs-to-act and needs-to-be-aware, with different content for each",
@@ -348,7 +348,7 @@ const scenarios = [
       layer: "internal-route",
       target: "evidence-backed-review",
       shouldActivate: true,
-      forbiddenRoutes: [],
+      forbiddenRoutes: ["rules/defects-in-the-change.md"],
     },
     must: [
       "Settles clean cut versus backward compatible before judging whether the change is safe",
@@ -379,7 +379,7 @@ const scenarios = [
       layer: "internal-route",
       target: "evidence-backed-review",
       shouldActivate: true,
-      forbiddenRoutes: [],
+      forbiddenRoutes: ["rules/security-and-abuse-paths.md"],
     },
     must: [
       "Searches the declared mirror rather than treating the missing in-repo document as no standard at all",
@@ -411,7 +411,7 @@ const scenarios = [
       layer: "internal-route",
       target: "evidence-backed-review",
       shouldActivate: true,
-      forbiddenRoutes: [],
+      forbiddenRoutes: ["rules/defects-in-the-change.md"],
     },
     must: [
       "Names the identity the endpoint trusts and the object it returns, then checks whether that object is scoped to that identity",
@@ -443,7 +443,7 @@ const scenarios = [
       layer: "internal-route",
       target: "evidence-backed-review",
       shouldActivate: true,
-      forbiddenRoutes: [],
+      forbiddenRoutes: ["rules/contracts-and-rollout.md"],
     },
     must: [
       "Reads every changed condition line by line and names the input or state that would make it wrong",
@@ -793,7 +793,7 @@ const scenarios = [
       layer: "public-skill",
       target: "evidence-backed-review",
       shouldActivate: true,
-      forbiddenRoutes: [],
+      forbiddenRoutes: ["rules/contracts-and-rollout.md"],
     },
     must: [
       "Names the window between the read and the write, and what a second caller entering it produces",

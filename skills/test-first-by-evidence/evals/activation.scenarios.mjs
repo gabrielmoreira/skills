@@ -48,7 +48,7 @@ const scenarios = [
     prompt: "wrote the test for the new validator and it passed straight away, guess we're good",
     expectedPrimary: "rules/watch-it-fail.md",
     expectedSecondary: ["rules/code-written-first.md"],
-    activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: true, forbiddenRoutes: [] },
+    activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: true, forbiddenRoutes: ["rules/tests-that-cannot-lie.md"] },
     must: [
       "Treats a first-run pass as a sign the test describes existing behaviour",
       "Refuses to accept it as evidence the test can catch anything",
@@ -67,7 +67,7 @@ const scenarios = [
     prompt: "i already built the whole parser this afternoon, can you just add tests for it now",
     expectedPrimary: "rules/code-written-first.md",
     expectedSecondary: ["rules/watch-it-fail.md"],
-    activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: true, forbiddenRoutes: [] },
+    activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: true, forbiddenRoutes: ["rules/smallest-green.md"] },
     must: [
       "Says that a test written against finished code passes immediately and proves nothing",
       "Offers deleting and reimplementing from red as the path that produces confidence",
@@ -90,7 +90,7 @@ const scenarios = [
     prompt: "users can sign up with an empty email, here's the trace from the handler. fix it",
     expectedPrimary: "rules/bug-fix-starts-red.md",
     expectedSecondary: ["rules/where-the-test-goes.md"],
-    activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: true, forbiddenRoutes: [] },
+    activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: true, forbiddenRoutes: ["rules/watch-it-fail.md"] },
     must: [
       "Writes a test that reproduces the defect and fails for that reason before touching the code",
       "Places the test where the defect originates rather than where it surfaced",
@@ -113,7 +113,7 @@ const scenarios = [
     prompt: "these tests all check that the mock got called with the right args, is that fine",
     expectedPrimary: "rules/tests-that-cannot-lie.md",
     expectedSecondary: [],
-    activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: true, forbiddenRoutes: [] },
+    activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: true, forbiddenRoutes: ["rules/where-the-test-goes.md"] },
     must: [
       "Asks what production change would make each test fail",
       "Moves assertions onto observable results rather than call counts",
@@ -132,7 +132,7 @@ const scenarios = [
     prompt: "not sure if this should be a unit test or one of the end to end ones, it touches the db",
     expectedPrimary: "rules/where-the-test-goes.md",
     expectedSecondary: ["rules/hard-to-test-is-a-signal.md"],
-    activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: true, forbiddenRoutes: [] },
+    activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: true, forbiddenRoutes: ["rules/tests-that-cannot-lie.md"] },
     must: [
       "Chooses the narrowest seam that can observe the behaviour",
       "Decides by what the test needs to run rather than by a label",
@@ -151,7 +151,7 @@ const scenarios = [
     prompt: "to test this i have to mock six things and freeze the clock, the setup is longer than the test",
     expectedPrimary: "rules/hard-to-test-is-a-signal.md",
     expectedSecondary: ["rules/tests-that-cannot-lie.md"],
-    activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: true, forbiddenRoutes: [] },
+    activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: true, forbiddenRoutes: ["rules/smallest-green.md"] },
     must: [
       "Reads the difficulty as a design report rather than a testing problem",
       "Maps the symptom to the specific design fix, such as passing the clock in",
@@ -173,7 +173,7 @@ const scenarios = [
     prompt: "test is failing the way we want, go ahead and make it pass",
     expectedPrimary: "rules/smallest-green.md",
     expectedSecondary: [],
-    activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: true, forbiddenRoutes: [] },
+    activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: true, forbiddenRoutes: ["rules/bug-fix-starts-red.md", "rules/watch-it-fail.md"] },
     must: [
       "Writes the least code that satisfies the assertion",
       "Runs the whole suite rather than only the new test",
@@ -345,7 +345,7 @@ const scenarios = [
     // which is what tests-that-cannot-lie asks for, reached without opening it.
     // expectedAll should name what the answer must contain, not the route.
     expectedSecondary: ["rules/watch-it-fail.md"],
-    activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: true, forbiddenRoutes: [] },
+    activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: true, forbiddenRoutes: ["rules/smallest-green.md"] },
     must: [
       "Reads the existing suite before adding anything",
       "Names what a change to the profile table would and would not make fail",

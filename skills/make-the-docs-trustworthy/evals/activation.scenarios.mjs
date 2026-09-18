@@ -45,7 +45,7 @@ const scenarios = [
       layer: "internal-route",
       target: "make-the-docs-trustworthy",
       shouldActivate: true,
-      forbiddenRoutes: [],
+      forbiddenRoutes: ["rules/record-what-code-cannot-show.md"],
     },
     must: [
       "Searches the existing written material for the fact's distinctive tokens before writing it anywhere",
@@ -106,7 +106,7 @@ const scenarios = [
       layer: "internal-route",
       target: "make-the-docs-trustworthy",
       shouldActivate: true,
-      forbiddenRoutes: [],
+      forbiddenRoutes: ["rules/staleness-without-a-diff.md"],
     },
     must: [
       "Replaces the copied table with the exact path or command that produces the same values",
@@ -166,7 +166,7 @@ const scenarios = [
       layer: "internal-route",
       target: "make-the-docs-trustworthy",
       shouldActivate: true,
-      forbiddenRoutes: [],
+      forbiddenRoutes: ["rules/unreviewed-prose.md"],
     },
     must: [
       "Checks the described flow against the system as it stands now, one sentence at a time, before editing anything",
@@ -257,7 +257,7 @@ const scenarios = [
       layer: "internal-route",
       target: "make-the-docs-trustworthy",
       shouldActivate: true,
-      forbiddenRoutes: [],
+      forbiddenRoutes: ["rules/supersede-or-delete.md"],
     },
     must: [
       "Establishes who wrote or approved the page before letting it justify anything",
@@ -287,7 +287,7 @@ const scenarios = [
       layer: "internal-route",
       target: "make-the-docs-trustworthy",
       shouldActivate: true,
-      forbiddenRoutes: [],
+      forbiddenRoutes: ["rules/one-place-for-a-fact.md"],
     },
     must: [
       "Writes the record now, alongside the code it explains, rather than deferring it to a later pass",

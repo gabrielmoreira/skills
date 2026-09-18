@@ -48,7 +48,7 @@ const scenarios = [
       layer: "internal-route",
       target: "debugging-by-evidence",
       shouldActivate: true,
-      forbiddenRoutes: [],
+      forbiddenRoutes: ["rules/probing.md"],
     },
     must: [
       "Uses the reported failure and available records to select a relevant reproduction or controlled experiment",
@@ -78,7 +78,7 @@ const scenarios = [
       layer: "internal-route",
       target: "debugging-by-evidence",
       shouldActivate: true,
-      forbiddenRoutes: [],
+      forbiddenRoutes: ["rules/probing.md"],
     },
     must: [
       "Keeps the recorded customer failures separate from the local passing runs",
@@ -138,7 +138,7 @@ const scenarios = [
       layer: "internal-route",
       target: "debugging-by-evidence",
       shouldActivate: true,
-      forbiddenRoutes: [],
+      forbiddenRoutes: ["rules/fix-at-the-source.md"],
     },
     must: [
       "Names plausible explanations that could change the decision without filling a fixed quota",
@@ -228,7 +228,7 @@ const scenarios = [
       layer: "internal-route",
       target: "debugging-by-evidence",
       shouldActivate: true,
-      forbiddenRoutes: [],
+      forbiddenRoutes: ["rules/minimising.md"],
     },
     must: [
       "Traces the zero through the relevant boundaries and checks their contracts before deciding whether it is invalid input or valid input handled incorrectly",
@@ -318,7 +318,7 @@ const scenarios = [
       layer: "internal-route",
       target: "debugging-by-evidence",
       shouldActivate: true,
-      forbiddenRoutes: [],
+      forbiddenRoutes: ["rules/regression-seam.md"],
     },
     must: [
       "Pauses unsupported patching and examines which contracts the attempts broke",

@@ -102,7 +102,10 @@ for (const skill of readdirSync("skills", { withFileTypes: true }).filter((d) =>
       if (pos && s.mode === "router" && !forb.length) add(file, s.id, "positive-unguarded", "no forbiddenRoutes, so right routing is indistinguishable from lexicon");
       if (s.expectedPrimary && forb.includes(s.expectedPrimary)) add(file, s.id, "contradictory-routes", `${s.expectedPrimary} is both the answer and forbidden`);
       if (pos && !must.length) add(file, s.id, "mustless-positive", "requires nothing");
-      if ((s.prompt ?? "").length < THIN) add(file, s.id, "prompt-too-thin", `${(s.prompt ?? "").length} chars of state`);
+      // A thin prompt is the normal shape of an activation one-liner -- "readme
+      // is out of date" is how a developer talks -- and only a defect where the
+      // answer itself is graded against the prompt's state.
+      if ((s.prompt ?? "").length < THIN && s.reviewScope != null) add(file, s.id, "prompt-too-thin", `${(s.prompt ?? "").length} chars of state`);
       if (/\/Users\/|[A-Za-z]:\\Users|\b[\w.+-]+@[\w-]+\.[A-Za-z]{2,}\b/.test(s.prompt ?? "")) add(file, s.id, "local-content", "machine path or email in the prompt");
 
       if (s.expectedPrimary) {

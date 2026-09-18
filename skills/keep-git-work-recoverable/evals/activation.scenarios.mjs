@@ -44,7 +44,7 @@ const scenarios = [
       layer: "internal-route",
       target: "keep-git-work-recoverable",
       shouldActivate: true,
-      forbiddenRoutes: [],
+      forbiddenRoutes: ["rules/isolate-or-work-in-place.md"],
     },
     must: [
       "Names which of the two refusals occurred, quoting the tool's own words about local changes being overwritten",
@@ -141,7 +141,7 @@ const scenarios = [
       layer: "internal-route",
       target: "keep-git-work-recoverable",
       shouldActivate: true,
-      forbiddenRoutes: [],
+      forbiddenRoutes: ["rules/resolve-the-ref.md"],
     },
     must: [
       "Tags the landed-or-not answer unverified and names the one observation that would settle it, a successful fetch of that specific ref",
@@ -234,7 +234,7 @@ const scenarios = [
       layer: "internal-route",
       target: "keep-git-work-recoverable",
       shouldActivate: true,
-      forbiddenRoutes: [],
+      forbiddenRoutes: ["rules/stale-refs.md"],
     },
     must: [
       "Reads the empty branch name as a detached head rather than a failed command, and records the commit id",
@@ -265,7 +265,7 @@ const scenarios = [
       layer: "internal-route",
       target: "keep-git-work-recoverable",
       shouldActivate: true,
-      forbiddenRoutes: [],
+      forbiddenRoutes: ["rules/isolate-or-work-in-place.md"],
     },
     must: [
       "Reads GIT_DIR, GIT_COMMON_DIR, and GIT_WORK_TREE from the environment before believing any output already collected",
@@ -295,7 +295,7 @@ const scenarios = [
       layer: "internal-route",
       target: "keep-git-work-recoverable",
       shouldActivate: true,
-      forbiddenRoutes: [],
+      forbiddenRoutes: ["rules/switch-refused.md"],
     },
     must: [
       "Looks for isolation that already exists, a checkout already dedicated to that branch, or a mechanism the environment provides, before creating any",

@@ -22,7 +22,7 @@ const scenarios = [
     prompt: "installing the java runtime keeps exiting non-zero but the error mentions some credential tool i don't even use",
     expectedPrimary: "rules/whose-failure-is-it.md",
     expectedSecondary: ["rules/stop-conditions.md"],
-    activation: { layer: "public-skill", target: "treat-blockers-as-incidents", shouldActivate: true, forbiddenRoutes: [] },
+    activation: { layer: "public-skill", target: "treat-blockers-as-incidents", shouldActivate: true, forbiddenRoutes: ["rules/the-second-blocker.md"] },
     must: [
       "Uses a targeted command or preserved component-level evidence to locate the failing layer",
       "Names which component is shown to fail and which remains unverified",
@@ -101,7 +101,7 @@ const scenarios = [
     prompt: "been going at this shell thing for a while and every attempt turns up a different error, should i keep going",
     expectedPrimary: "rules/stop-conditions.md",
     expectedSecondary: ["rules/record-the-learning.md"],
-    activation: { layer: "public-skill", target: "treat-blockers-as-incidents", shouldActivate: true, forbiddenRoutes: [] },
+    activation: { layer: "public-skill", target: "treat-blockers-as-incidents", shouldActivate: true, forbiddenRoutes: ["rules/the-second-blocker.md"] },
     must: [
       "Names the condition that should stop the work, not a count of attempts",
       "States the one thing that would unblock it",

@@ -26,7 +26,7 @@ const scenarios = [
     prompt: "my debugging skill keeps proposing a fix before it has even reproduced the thing. the steps are all written down in order and it just skips ahead",
     expectedPrimary: "rules/states-carry-licenses.md",
     expectedSecondary: ["rules/order-and-strength.md"],
-    activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: true, forbiddenRoutes: [] },
+    activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: true, forbiddenRoutes: ["rules/prove-it-with-checks.md"] },
     must: [
       "Treats written order as something a reader can skip, and a licence as something they cannot",
       "Gives each phase a Licenses column naming what it permits that the one before it did not",
@@ -70,7 +70,7 @@ const scenarios = [
     prompt: "i wrote a skill last week and it just never seems to load. other ones fire fine",
     expectedPrimary: "rules/activation-surface.md",
     expectedSecondary: ["rules/name-and-scope.md"],
-    activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: true, forbiddenRoutes: [] },
+    activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: true, forbiddenRoutes: ["rules/order-and-strength.md", "rules/gate-not-checklist.md"] },
     must: [
       "Parses the frontmatter with a real parser rather than reading it line by line",
       "Checks whether the description contains an unquoted colon followed by a space",
@@ -93,7 +93,7 @@ const scenarios = [
     prompt: "this skill of mine triggers on basically every turn, even when it has nothing to do with it",
     expectedPrimary: "rules/activation-surface.md",
     expectedSecondary: [],
-    activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: true, forbiddenRoutes: [] },
+    activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: true, forbiddenRoutes: ["rules/name-and-scope.md"] },
     must: [
       "Treats over-triggering as a defect of the same kind as under-triggering",
       "Proposes an exclusion clause naming the neighbour that should win instead",
@@ -112,7 +112,7 @@ const scenarios = [
     prompt: "every time this thing runs it opens all eleven rule files even for a two line diff",
     expectedPrimary: "rules/gate-not-checklist.md",
     expectedSecondary: ["rules/one-rule-one-decision.md"],
-    activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: true, forbiddenRoutes: [] },
+    activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: true, forbiddenRoutes: ["rules/activation-surface.md"] },
     must: [
       "Identifies the index default of reading everything as the waste",
       "Requires each row to name something observable in the work",
@@ -150,7 +150,7 @@ const scenarios = [
     prompt: "everything in here is correct but it reads like a wall, i get tired halfway down",
     expectedPrimary: "rules/readable-in-one-pass.md",
     expectedSecondary: ["rules/order-and-strength.md"],
-    activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: true, forbiddenRoutes: [] },
+    activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: true, forbiddenRoutes: ["rules/gate-not-checklist.md"] },
     must: [
       "Treats shape rather than vocabulary as the cause",
       "Turns paragraphs that list things into lists",
@@ -173,7 +173,7 @@ const scenarios = [
       "i added a check to my skill suite that scores how often each rule gets opened, and it reports 54% across the collection. i want to put that number in the skill README as evidence the routing works. do not touch the skill files, and only tell me whether that number is ready to stand as evidence",
     expectedPrimary: "rules/prove-a-measure.md",
     expectedSecondary: [],
-    activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: true, forbiddenRoutes: [] },
+    activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: true, forbiddenRoutes: ["rules/prove-it-with-checks.md"] },
     must: [
       "Says the number cannot be quoted until the measure has been watched refusing a known-wrong answer on planted input",
       "Names input that would separate a state the agent said from one the text merely contains",
@@ -194,7 +194,7 @@ const scenarios = [
     prompt: "my checks all pass but honestly i have no idea if they'd catch anything",
     expectedPrimary: "rules/prove-it-with-checks.md",
     expectedSecondary: [],
-    activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: true, forbiddenRoutes: [] },
+    activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: true, forbiddenRoutes: ["rules/prove-a-measure.md"] },
     must: [
       "Proposes one mutation per check that injects exactly that check's defect",
       "Requires the right check to turn red, not merely that something did",
@@ -213,7 +213,7 @@ const scenarios = [
     prompt: "i marked basically every line MUST and now the model does the full ceremony on tiny tasks",
     expectedPrimary: "rules/order-and-strength.md",
     expectedSecondary: [],
-    activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: true, forbiddenRoutes: [] },
+    activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: true, forbiddenRoutes: ["rules/activation-surface.md"] },
     must: [
       "Explains that the value is in the contrast rather than the emphasis",
       "Budgets MUST to two or three per rule",
@@ -232,7 +232,7 @@ const scenarios = [
     prompt: "i've tried like six names for this one and they all sound forced. nothing fits",
     expectedPrimary: "rules/name-and-scope.md",
     expectedSecondary: ["rules/activation-surface.md"],
-    activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: true, forbiddenRoutes: [] },
+    activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: true, forbiddenRoutes: ["rules/readable-in-one-pass.md"] },
     must: [
       "Treats the difficulty as a report about scope rather than about wording",
       "Asks whether the object is concrete and has a truth value",
@@ -251,7 +251,7 @@ const scenarios = [
     prompt: "someone pointed out my skill has my own paths and package manager baked into it",
     expectedPrimary: "rules/portable-by-default.md",
     expectedSecondary: [],
-    activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: true, forbiddenRoutes: [] },
+    activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: true, forbiddenRoutes: ["rules/name-and-scope.md"] },
     must: [
       "Replaces the tool with the job the tool does",
       "Checks for a leaked path inside examples as well as prose",
