@@ -19,11 +19,11 @@ Use when:
 
 Do:
 - **Name the production change that would break this test, before writing it.** If nothing comes to mind, the test asserts nothing.
-- **Where a coverage number is what moved, name the untested behaviour and write the test that fails for it.** The number is a consequence. Tests written to raise it execute lines and assert nothing, which is this rule's failure with a green badge on it.
+- **Where a coverage number is what moved, name the untested behaviour and write the test that fails for it.** The number is a consequence; tests written to raise it execute lines and assert nothing.
 - **Assert on results, not on interactions.** The returned value, the row written, the message published, the error raised.
 - **Prefer the real implementation; control the dependency when the question requires it.** Doubles can supply rare failures, timing or remote/destructive effects. Do not replace the handling you intend to test.
 - **Understand the dependency contract before replacing it.** Label injected outcomes and check adapter behaviour separately where uncertain. A conditional result does not show which trigger occurred in production.
-- **Repeat yourself in tests where it aids reading.** A test should be legible without opening a helper.
+- **Repeat yourself in tests where it aids reading.**
 - **Arrange, act, assert, in that order and visibly separated.**
 - **Name the test for the behaviour and its condition**, so a failure report reads as a sentence.
 

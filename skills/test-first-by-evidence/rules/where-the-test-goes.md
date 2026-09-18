@@ -8,32 +8,32 @@ references: [Test Pyramid (Cohn), Test Sizes (Google Testing Blog), Seams (Feath
 
 # Where the Test Goes
 
-Decision: **Put the test at the narrowest seam that can observe the behaviour you are adding.** What it asserts once it is there belongs to `rules/tests-that-cannot-lie.md`. A defect's seam belongs to `debugging-by-evidence/rules/regression-seam.md`.
+Decision: **Put the test at the narrowest seam that can observe the behaviour you are adding.** What it asserts belongs to `rules/tests-that-cannot-lie.md`; a defect's seam to `debugging-by-evidence/rules/regression-seam.md`.
 
 Use when:
 - **There is no obvious place** for the new test.
-- **A choice is open** between a unit, an integration, and an end-to-end test.
+- **A choice is open** between unit, integration, and end-to-end.
 - **The behaviour crosses a boundary**, so more than one seam could see it.
-- **A test needs a database, a browser, or the network** to run at all.
+- **A test needs a database, a browser, or the network.**
 - **The existing suite has no test at the level you need.**
 
 Do:
-- **Find the seam closest to the change**, and start there.
+- **Start at the seam closest to the change.**
 - **Choose by what the test needs to run, not by a label.**
-  - Nothing outside the process: keep it in memory, and run it always.
-  - One local dependency, such as a database or the filesystem: expect it to be slower and rarer.
+  - Nothing outside the process: in memory, run it always.
+  - One local dependency: slower, and rarer.
   - A browser or several services: reserve it for a journey nobody else covers.
 - **Follow the shape the repository has.** A neighbouring test shows the seam its authors chose.
-- **Test through the public surface of the unit**, so a refactor behind it does not break the test.
+- **Test through the public surface**, so a refactor behind it does not break the test.
 - **Move up a level only when the behaviour is invisible from below.** Coordination is a reason; convenience is not.
 - **Where a shared library changes, test one representative consumer.**
-- **Use layers for distinct obligations.** A unit can test handling under injected failure, an adapter can check the real dependency contract, and an integration can check consumer behaviour. A passing lower-layer check does not establish the others.
+- **Use layers for distinct obligations** — a unit for handling under injected failure, an adapter for the real dependency contract, an integration for consumer behaviour. A passing lower-layer check does not establish the others.
 
 Avoid:
 - **Reaching for the widest seam because it is easiest.** A slow suite gets skipped, and tests nothing.
 - **A unit test that needs six mocks to stand up.** That is a design report, not a placement problem.
-- **Duplicating checks without protecting a distinct risk.** Similar assertions at different layers can be useful when they defend different boundaries; state those obligations.
-- **A new seam introduced in a drive-by change**, where the local style already had one.
+- **Duplicating checks that protect no distinct obligation;** each layer must defend a boundary the others do not.
+- **A new seam introduced in a drive-by change** where the local style already had one.
 
 Exceptions:
 - **A new seam is right where the current style cannot observe the change.** Say why.
@@ -48,6 +48,6 @@ Example (one instance, not the set):
 | a checkout that spans three services | one end-to-end journey |
 
 Verify:
-- **Name what the test needs to run**, and check it is the least that could observe the behaviour.
+- **Check the chosen seam is the least that could observe the behaviour.**
 - **Check a neighbouring test uses the same seam**, or say why this one differs.
 - **Check the assertion survives an internal refactor** of the thing under test.
