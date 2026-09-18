@@ -21,18 +21,18 @@ Do:
 - **Start at the seam closest to the change.**
 - **Choose by what the test needs to run, not by a label.**
   - Nothing outside the process: in memory, run it always.
-  - One local dependency: slower, and rarer.
-  - A browser or several services: reserve it for a journey nobody else covers.
-- **Follow the shape the repository has.** A neighbouring test shows the seam its authors chose.
+  - One local dependency, a database or the filesystem: slower, and rarer.
+  - A browser or several services: reserved for a journey nobody else covers.
+- **Follow the shape the repository has**; a neighbouring test shows the seam its authors chose.
 - **Test through the public surface**, so a refactor behind it does not break the test.
-- **Move up a level only when the behaviour is invisible from below.** Coordination is a reason; convenience is not.
+- **Move up a level only when the behaviour is invisible from below**; coordination is a reason, convenience is not.
 - **Where a shared library changes, test one representative consumer.**
 - **Use layers for distinct obligations** — a unit for handling under injected failure, an adapter for the real dependency contract, an integration for consumer behaviour. A passing lower-layer check does not establish the others.
 
 Avoid:
-- **Reaching for the widest seam because it is easiest.** A slow suite gets skipped, and tests nothing.
-- **A unit test that needs six mocks to stand up.** That is a design report, not a placement problem.
-- **Duplicating checks that protect no distinct obligation;** each layer must defend a boundary the others do not.
+- **Reaching for the widest seam because it is easiest**: a slow suite gets skipped, and tests nothing.
+- **A unit test that needs six mocks** is a design report, not a placement problem.
+- **Duplicating checks that protect no distinct obligation;** each layer defends a boundary the others do not.
 - **A new seam introduced in a drive-by change** where the local style already had one.
 
 Exceptions:
@@ -48,6 +48,6 @@ Example (one instance, not the set):
 | a checkout that spans three services | one end-to-end journey |
 
 Verify:
-- **Check the chosen seam is the least that could observe the behaviour.**
+- **Name what the test needs to run**, and check it is the least that could observe the behaviour.
 - **Check a neighbouring test uses the same seam**, or say why this one differs.
-- **Check the assertion survives an internal refactor** of the thing under test.
+- **Check the assertion survives an internal refactor.**
