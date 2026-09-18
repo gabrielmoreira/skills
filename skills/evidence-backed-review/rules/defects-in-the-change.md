@@ -33,7 +33,7 @@ Avoid:
 - **Assuming a guard exists without opening it**, or accepting a type assertion as external-input validation.
 - **Treating every new abstraction, feature flag or dependency as wrong.** Judge its actual job and cost.
 - **Using test success to excuse unread changed lines**, or demanding executable code evidence for a prose-only defect.
-- **Turning a focused review into unrelated cleanup.** Follow dependencies to answer the scoped question, not to harvest old debt.
+- **Turning a focused review into unrelated cleanup.** Follow dependencies to answer the scoped question, not to harvest old debt. When answering the scoped question required reading beyond the named files, say so and name them: a review that silently exceeds its stated scope reads as if the named files alone carried the verdict.
 - **Accepting unexplained churn as part of the change.** A regenerated lockfile with no manifest change, a formatter or import pass over untouched files, or an editor re-save is its own finding once the description and commits state no reason for it. Read them first: a named security or vulnerability update is a reason, an unstated regeneration is not. Ask for the reason or the split, and do not demand a split of concerns the author already stated and you can read apart.
 
 Example (one instance, not the set):
