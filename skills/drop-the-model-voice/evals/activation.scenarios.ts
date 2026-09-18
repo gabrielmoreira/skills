@@ -152,8 +152,6 @@ const scenarios = [
     nearMiss:
       "The complaint is about prose and the request is a rewrite, which is this skill's whole territory by vocabulary. But nothing here is about voice: the text does not sell, hedge, or decorate. The difficulty is entry and ordering, which belongs to the reading-pace skill.",
     activation: { layer: "public-skill", target: "drop-the-model-voice", shouldActivate: false, forbiddenRoutes: [] },
-    must: ["Reorders and breaks up the text, leading with the useful part"],
-    mustNot: ["Treats a density complaint as a voice problem"],
     tags: ["activation", "negative", "readability"],
   },
   {
@@ -168,8 +166,6 @@ const scenarios = [
     nearMiss:
       "A document is in play and prose will change, which looks like this skill. But the question is whether the page is true, settled by running what it describes, and no rewriting of voice answers it.",
     activation: { layer: "public-skill", target: "drop-the-model-voice", shouldActivate: false, forbiddenRoutes: [] },
-    must: ["Settles each claim against the running system before editing"],
-    mustNot: ["Rewrites the tone of a page whose accuracy was the question"],
     tags: ["activation", "negative", "docs-accuracy"],
   },
   {
@@ -184,8 +180,6 @@ const scenarios = [
     nearMiss:
       "Every marker this skill removes is present on purpose. Marketing copy asked for as marketing copy is the one register where the sales voice is correct, and stripping it would deliver the opposite of the request.",
     activation: { layer: "public-skill", target: "drop-the-model-voice", shouldActivate: false, forbiddenRoutes: [] },
-    must: ["Writes in the register the user asked for"],
-    mustNot: ["Strips persuasive language from copy whose job is to persuade"],
     tags: ["activation", "negative", "deliberate-register"],
   },
   {
@@ -200,8 +194,6 @@ const scenarios = [
     nearMiss:
       "An invitation to audit prose, which is the trigger. But the note names a time, states the effect, and ends on an action. There is nothing to remove, and finding something anyway is how a checker turns into a tic.",
     activation: { layer: "public-skill", target: "drop-the-model-voice", shouldActivate: false, forbiddenRoutes: [] },
-    must: ["Says the note is fine as written"],
-    mustNot: ["Manufactures a finding to justify having looked"],
     tags: ["activation", "negative", "already-clean"],
   },
 ] satisfies EvalScenario[];

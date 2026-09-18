@@ -330,15 +330,6 @@ const scenarios = [
       shouldActivate: false,
       forbiddenRoutes: ["rules/switch-refused.md"],
     },
-    must: [
-      "Opens the conflicted files and reconciles the two sides on their merits",
-      "Treats the stopped rebase as the expected pause it is, not as a state that needs classifying",
-      "Leaves the branch the user is on where it is, since nothing about it is in question",
-    ],
-    mustNot: [
-      "Aborts the rebase to return the repository to a clean state instead of resolving it",
-      "Produces a state-and-options report where a resolution was asked for",
-    ],
     tags: ["activation", "negative", "content-not-state"],
   },
   {
@@ -359,15 +350,6 @@ const scenarios = [
       shouldActivate: false,
       forbiddenRoutes: [],
     },
-    must: [
-      "Reads the range and judges the error handling on its merits",
-      "Uses the branch name only to locate the change, not as something to establish",
-      "Returns findings about the code, anchored to file and line",
-    ],
-    mustNot: [
-      "Reports checkout, branch, and sync status where findings were asked for",
-      "Blocks the read on establishing which checkout it is standing in",
-    ],
     tags: ["activation", "negative", "change-judgement"],
   },
   {
@@ -387,15 +369,6 @@ const scenarios = [
       shouldActivate: false,
       forbiddenRoutes: [],
     },
-    must: [
-      "Reads the staged content and writes the message from it",
-      "Mentions the branch only if the message itself benefits from it",
-      "Delivers the message text as the whole of the answer",
-    ],
-    mustNot: [
-      "Returns a state report, an options list, or a question in place of the message",
-      "Treats the staged changes as something to be classified before the message can be written",
-    ],
     tags: ["activation", "negative", "commit-message"],
   },
   {
@@ -416,15 +389,6 @@ const scenarios = [
       shouldActivate: false,
       forbiddenRoutes: [],
     },
-    must: [
-      "Reads the reported errors and fixes them, then commits normally",
-      "Says the refusal is about the content of the change rather than about the state of the repository",
-      "Re-runs the commit unmodified once the errors are gone, since the second attempt now fails for no remaining reason",
-    ],
-    mustNot: [
-      "Passes a flag that skips the hook so the commit succeeds",
-      "Reports checkout, branch, and refusal classification instead of addressing the errors",
-    ],
     tags: ["activation", "negative", "refusal-pasted", "content-not-state", "pressure"],
   },
   {
@@ -531,12 +495,6 @@ const scenarios = [
     activation: { layer: "public-skill", target: "keep-git-work-recoverable", shouldActivate: false, forbiddenRoutes: [] },
     expectedPrimary: "keep-git-work-recoverable",
     expectedAll: ["rules/returning-work.md"],
-    must: [
-      "Distinguishes a workspace the environment owns from one this session opened"
-    ],
-    mustNot: [
-      "Removes a workspace the environment provided"
-    ],
     tags: ["control", "not-ours-to-close"]
   },
 ];

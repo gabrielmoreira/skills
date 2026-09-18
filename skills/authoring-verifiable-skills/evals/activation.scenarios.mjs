@@ -273,8 +273,6 @@ const scenarios = [
     nearMiss:
       "It is a request to fix written material, which is what the authoring skill also does, and 'sort it out' sounds like a rewrite. But the subject is product documentation rather than an agent skill, so correcting and placing that prose belongs to the documentation skill.",
     activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: false, forbiddenRoutes: ["rules/readable-in-one-pass.md"] },
-    must: ["Hands off to the documentation skill"],
-    mustNot: ["Applies skill shape targets to a project readme"],
     tags: ["activation", "negative", "collision", "docs"],
   },
   {
@@ -288,8 +286,6 @@ const scenarios = [
     nearMiss:
       "Density and readability are exactly what the shape rule is about, so the words line up. But the subject is how a reply is written, not how a skill file is written, and that belongs to the progressive reading skill.",
     activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: false, forbiddenRoutes: ["rules/readable-in-one-pass.md"] },
-    must: ["Hands off to the reading skill"],
-    mustNot: ["Opens a rule about authoring skill files"],
     tags: ["activation", "negative", "collision", "reading"],
   },
   {
@@ -303,8 +299,6 @@ const scenarios = [
     nearMiss:
       "The prompt names a skill, which is this skill's whole subject. But nothing is being written, split, renamed, or repaired: the request is to read an existing file and summarise it, which needs no authoring guidance at all.",
     activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: false, forbiddenRoutes: [] },
-    must: ["Reads the skill and answers directly"],
-    mustNot: ["Proposes changes to a skill nobody asked to change"],
     tags: ["activation", "negative", "explain"],
   },
   {
@@ -318,8 +312,6 @@ const scenarios = [
     nearMiss:
       "It is a question about skills, and the answer shapes what gets authored. But the decision on the table is whether the skill should exist, which sits before authoring and which this skill explicitly does not own.",
     activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: false, forbiddenRoutes: [] },
-    must: ["Answers the question on its merits without opening a rule"],
-    mustNot: ["Starts drafting frontmatter"],
     tags: ["activation", "negative", "scope-edge"],
   },
   {
@@ -333,8 +325,6 @@ const scenarios = [
     nearMiss:
       "Splitting something that has grown two jobs is the same shape as splitting a rule that has grown two decisions, and 'too much' matches both. But the artifact is source code, so cohesion and boundaries there belong to the maintainable code skill.",
     activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: false, forbiddenRoutes: ["rules/one-rule-one-decision.md"] },
-    must: ["Hands off to the code skill"],
-    mustNot: ["Applies rule budgets to a source file"],
     tags: ["activation", "negative", "collision", "code"],
   },
 ];

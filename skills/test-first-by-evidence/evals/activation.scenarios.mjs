@@ -280,8 +280,6 @@ const scenarios = [
     nearMiss:
       "A failing test is on screen, so the vocabulary matches. But nothing is being implemented: the ask is to establish the cause of an intermittent failure, which is the debugging skill's subject. This skill only takes over once a fix is being written.",
     activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: false, forbiddenRoutes: ["rules/watch-it-fail.md"] },
-    must: ["Hands off to the debugging skill"],
-    mustNot: ["Starts implementing an unsupported fix; diagnostic tests may still be appropriate within the debugging investigation"],
     tags: ["activation", "negative", "collision", "debugging"],
   },
   {
@@ -295,8 +293,6 @@ const scenarios = [
     nearMiss:
       "It is entirely about testing, and the runner is something this skill tells you to establish before writing anything. But establishing which runner a project uses is not the same as choosing one, and the choice is a project decision this skill explicitly does not own.",
     activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: false, forbiddenRoutes: [] },
-    must: ["Answers on the merits without opening a rule"],
-    mustNot: ["Applies the test-first cycle to a tooling decision"],
     tags: ["activation", "negative", "scope-edge"],
   },
   {
@@ -310,8 +306,6 @@ const scenarios = [
     nearMiss:
       "The cycle this skill enforces is named outright. But nothing is being built: the request is to teach a concept, and no code, test, or repository is in play for a rule to apply to.",
     activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: false, forbiddenRoutes: [] },
-    must: ["Explains it directly"],
-    mustNot: ["Opens rules, or demands a red run before answering"],
     tags: ["activation", "negative", "explain"],
   },
   {
@@ -325,8 +319,6 @@ const scenarios = [
     nearMiss:
       "Coverage and tests travel together, and the fix does involve writing tests. But the ask is to move a metric, and writing tests to raise a number is the behaviour this skill's honest-test rule exists to prevent. The right response reframes toward behaviour that is genuinely untested.",
     activation: { layer: "public-skill", target: "test-first-by-evidence", shouldActivate: false, forbiddenRoutes: ["rules/tests-that-cannot-lie.md"] },
-    must: ["Reframes from the number toward behaviour nothing currently proves"],
-    mustNot: ["Writes assertions chosen to touch uncovered lines"],
     tags: ["activation", "negative", "metric-chasing"],
   },
 

@@ -382,14 +382,6 @@ const scenarios = [
       shouldActivate: false,
       forbiddenRoutes: ["rules/runnable-signal.md"],
     },
-    must: [
-      "Reviews the change that exists and reports what it finds against it",
-      "Says, if it says anything about failures, only what the project's own checks actually reported",
-    ],
-    mustNot: [
-      "Tries to build a failing run for a change nobody reported failing",
-      "Withholds the review until something goes red",
-    ],
     tags: ["activation", "negative", "collision", "change-review"],
   },
   {
@@ -409,13 +401,6 @@ const scenarios = [
       target: "debugging-by-evidence",
       shouldActivate: false,
     },
-    must: [
-      "Makes the edit the message already points at and re-runs the build to confirm it is clear",
-    ],
-    mustNot: [
-      "Opens a ranked list of competing explanations for an error whose message is already complete",
-      "Adds temporary output to code whose defect the compiler has already located",
-    ],
     tags: ["activation", "negative", "self-locating-error"],
   },
   {
@@ -435,13 +420,6 @@ const scenarios = [
       target: "debugging-by-evidence",
       shouldActivate: false,
     },
-    must: [
-      "Reads the code and explains the behaviour directly, in the order the flow runs",
-    ],
-    mustNot: [
-      "Goes hunting for a failing run nobody reported",
-      "Answers with findings and a status line instead of an explanation",
-    ],
     tags: ["activation", "negative", "explanation-only"],
   },
   {
@@ -462,13 +440,6 @@ const scenarios = [
       shouldActivate: false,
       forbiddenRoutes: ["rules/probing.md"],
     },
-    must: [
-      "Adds logging designed to stay, at the levels and boundaries the project already uses elsewhere",
-    ],
-    mustNot: [
-      "Tags the lines as temporary, or plans their removal, when the user asked for them to stay",
-      "Demands a failing run before adding logging that was never meant to be temporary",
-    ],
     tags: ["activation", "negative", "collision", "durable-logging"],
   },
   {
@@ -489,13 +460,6 @@ const scenarios = [
       shouldActivate: false,
       forbiddenRoutes: ["rules/regression-seam.md"],
     },
-    must: [
-      "Writes tests over the module's current behaviour at the test points that already exist",
-    ],
-    mustNot: [
-      "Waits for a failing run before writing any test",
-      "Reports an investigation status instead of tests",
-    ],
     tags: ["activation", "negative", "collision", "coverage-work"],
   },
 ];

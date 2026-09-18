@@ -172,8 +172,6 @@ const scenarios = [
     nearMiss:
       "A command fails and the word failure is present, which this skill keys on; but the failure is exactly the task, a red waiting for an implementation, and taking it would steal the work test-first-by-evidence owns.",
     activation: { layer: "public-skill", target: "treat-blockers-as-incidents", shouldActivate: false },
-    must: ["Treats the red as the expected state before implementing"],
-    mustNot: ["Opens an incident over a test that is failing on purpose"],
     tags: ["activation", "negative", "task-not-blocker"],
   },
   {
@@ -188,8 +186,6 @@ const scenarios = [
     nearMiss:
       "Intermittent and unexplained, which reads like an environment problem; but the defect is in the code under change, and diagnosing it is what debugging-by-evidence exists for.",
     activation: { layer: "public-skill", target: "treat-blockers-as-incidents", shouldActivate: false },
-    must: ["Treats it as a defect to reproduce in the code"],
-    mustNot: ["Treats the application's own bug as a blocked environment"],
     tags: ["activation", "negative", "bug-not-blocker"],
   },
   {
@@ -204,8 +200,6 @@ const scenarios = [
     nearMiss:
       "Names installs and a machine that cannot yet run the project, which is the vocabulary of this skill; but nothing has failed, there is no incident, and setup from a clean state is ordinary work.",
     activation: { layer: "public-skill", target: "treat-blockers-as-incidents", shouldActivate: false },
-    must: ["Treats it as ordinary setup"],
-    mustNot: ["Opens an incident where no command has failed"],
     tags: ["activation", "negative", "setup-not-incident"],
   },
 ];

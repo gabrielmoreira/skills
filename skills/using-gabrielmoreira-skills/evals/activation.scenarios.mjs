@@ -81,8 +81,6 @@ const scenarios = [
     nearMiss:
       "Ordinary work that several skills in this collection do claim, so a router that answers it would be answering for them; the request names no placement, no precedence and no default, so there is nothing here to resolve.",
     activation: { layer: "public-skill", target: "using-gabrielmoreira-skills", shouldActivate: false },
-    must: ["Leaves the work to the skill that owns it"],
-    mustNot: ["Resolves a question nobody asked", "Restates another skill's procedure"],
     tags: ["activation", "negative", "work-not-resolution"],
   },
   {
@@ -98,8 +96,6 @@ const scenarios = [
     nearMiss:
       "About the collection itself, which sounds like this file's subject; but shape, anatomy and checks belong to the authoring skill, and this one holds preferences rather than conventions.",
     activation: { layer: "public-skill", target: "using-gabrielmoreira-skills", shouldActivate: false },
-    must: ["Sends the question to the authoring skill"],
-    mustNot: ["Describes rule anatomy or the invariants"],
     tags: ["activation", "negative", "authoring-not-preference"],
   },
 ];

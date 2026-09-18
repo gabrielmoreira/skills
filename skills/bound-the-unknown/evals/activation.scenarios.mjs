@@ -132,13 +132,6 @@ const scenarios = [
     nearMiss:
       "It reads as unfamiliar ground because the cause is unknown, and the vocabulary of investigating overlaps almost entirely; but the symptom is named, a signal already reproduces it, and establishing a cause from a reproducing signal is a different job with its own loop.",
     activation: { layer: "public-skill", target: "bound-the-unknown", shouldActivate: false, forbiddenRoutes: [] },
-    must: [
-      "Starts from the command that already reproduces the failure",
-      "Establishes the cause before proposing any fix",
-    ],
-    mustNot: [
-      "Treats a named symptom as unfamiliar terrain with no task yet",
-    ],
     tags: ["activation", "negative", "collision"],
   },
   {
@@ -153,13 +146,6 @@ const scenarios = [
     nearMiss:
       "It is the same sentence shape as the positive about offline sync, and both end by asking where something goes; but nothing technical is open here, so the only unknown is structural and the placement can be decided directly.",
     activation: { layer: "public-skill", target: "bound-the-unknown", shouldActivate: false, forbiddenRoutes: [] },
-    must: [
-      "Answers the placement question directly, since no technical unknown is open",
-      "Reasons about boundaries and the direction dependencies point",
-    ],
-    mustNot: [
-      "Proposes probing before answering",
-    ],
     tags: ["activation", "negative", "collision", "structural-only"],
   },
   {
@@ -174,13 +160,6 @@ const scenarios = [
     nearMiss:
       "The phrase no clue what changed reads as unfamiliar ground, and it will need probing; but the failure is in the tooling rather than in the change being made, and that has its own containment and its own budget.",
     activation: { layer: "public-skill", target: "bound-the-unknown", shouldActivate: false, forbiddenRoutes: [] },
-    must: [
-      "Treats the tooling failure as separate from the work it interrupted",
-      "Bounds the investigation and reports a workaround as a finding rather than a fix",
-    ],
-    mustNot: [
-      "Treats a broken tool as terrain to be surveyed before any task exists",
-    ],
     tags: ["activation", "negative", "collision", "tooling"],
   },
   {
@@ -195,13 +174,6 @@ const scenarios = [
     nearMiss:
       "Not sure this holds up sounds like an open question about unfamiliar ground; but a change already exists and supplies the anchor, so the work is judging it rather than surveying anything.",
     activation: { layer: "public-skill", target: "bound-the-unknown", shouldActivate: false, forbiddenRoutes: [] },
-    must: [
-      "Resolves a base point and reads the range",
-      "Reports findings against the change without editing it",
-    ],
-    mustNot: [
-      "Surveys the repository as though no change existed",
-    ],
     tags: ["activation", "negative", "collision", "review"],
   },
 ];

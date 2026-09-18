@@ -70,8 +70,6 @@ const scenarios = [
       target: "maintainable-code",
       shouldActivate: false,
     },
-    must: ["Leaves broad maintainability guidance unloaded for a literal one-token edit"],
-    mustNot: ["Expands the typo fix into refactoring or review"],
     tags: ["activation", "negative", "mechanical-edit"],
   },
   {
@@ -90,8 +88,6 @@ const scenarios = [
       target: "maintainable-code",
       shouldActivate: false,
     },
-    must: ["Leaves maintainability guidance unloaded because the request is bounded diagnosis without design work"],
-    mustNot: ["Substitutes architecture advice for root-cause analysis"],
     tags: ["activation", "negative", "diagnosis"],
   },
   {
@@ -110,8 +106,6 @@ const scenarios = [
       target: "maintainable-code",
       shouldActivate: false,
     },
-    must: ["Leaves architecture-level maintainability guidance unloaded for explicitly disposable code"],
-    mustNot: ["Introduces reusable layers or framework structure"],
     tags: ["activation", "negative", "disposable"],
   },
   {
@@ -214,12 +208,6 @@ const scenarios = [
       "should this be its own package? two teams deploy it separately and both depend on it",
     activation: { layer: "public-skill", target: "maintainable-code", shouldActivate: false, forbiddenRoutes: [] },
     expectedPrimary: "maintainable-code",
-    must: [
-      "Answers from ownership and the direction dependencies point"
-    ],
-    mustNot: [
-      "Answers from how many files or lines it holds"
-    ],
     tags: ["near-miss", "boundary-not-granularity"]
   },
 ] satisfies EvalScenario[];

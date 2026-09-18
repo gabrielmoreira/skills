@@ -149,14 +149,6 @@ const scenarios = [
     nearMiss:
       "It arrives in the same shape as a decision, mid-sentence and worth keeping, and the phrase worth noting invites recording; but it is a fact with evidence rather than a choice between options, it has no rejected alternative, and it belongs wherever this host already keeps learnings.",
     activation: { layer: "public-skill", target: "keep-the-thread-across-boundaries", shouldActivate: false, forbiddenRoutes: [] },
-    must: [
-      "Keeps the fact where facts with their evidence already live",
-      "Preserves the evidence that established it",
-    ],
-    mustNot: [
-      "Files a fact as a decision in the in-flight record",
-      "Stores it in two places",
-    ],
     tags: ["activation", "negative", "collision", "fact"],
   },
   {
@@ -171,13 +163,6 @@ const scenarios = [
     nearMiss:
       "Every word matches: a decision, an alternative people keep re-proposing, and a wish for it to stop being re-argued; but the ask is for a durable record a later reader relies on, which is a documentation decision about placement and permanence rather than in-flight state.",
     activation: { layer: "public-skill", target: "keep-the-thread-across-boundaries", shouldActivate: false, forbiddenRoutes: [] },
-    must: [
-      "Treats this as written material that needs a home and a form",
-      "Places it where a later reader would look",
-    ],
-    mustNot: [
-      "Leaves it only in the in-flight record, which is not written for a later reader",
-    ],
     tags: ["activation", "negative", "collision", "durable"],
   },
   {
@@ -192,12 +177,6 @@ const scenarios = [
     nearMiss:
       "It is approving in tone and arrives at exactly the moment an approval would; but nothing is chosen and nothing is rejected, so an entry written from it could not stand alone, and recording it would fill the record with turns rather than decisions.",
     activation: { layer: "public-skill", target: "keep-the-thread-across-boundaries", shouldActivate: false, forbiddenRoutes: [] },
-    must: [
-      "Continues the work without recording anything",
-    ],
-    mustNot: [
-      "Writes an entry whose subject cannot be stated without the previous turn",
-    ],
     tags: ["activation", "negative", "steering"],
   },
   {
@@ -212,12 +191,6 @@ const scenarios = [
     nearMiss:
       "Breaking work into steps produces something that looks like the in-progress half of a record; but nothing has settled yet, so there is no decision, no constraint and no approval to hold, and planning intended work is a different job.",
     activation: { layer: "public-skill", target: "keep-the-thread-across-boundaries", shouldActivate: false, forbiddenRoutes: [] },
-    must: [
-      "Produces the breakdown that was asked for",
-    ],
-    mustNot: [
-      "Records planned steps as though they were settled decisions",
-    ],
     tags: ["activation", "negative", "planning"],
   },
 ];

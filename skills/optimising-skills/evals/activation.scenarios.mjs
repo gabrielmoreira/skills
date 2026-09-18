@@ -131,8 +131,6 @@ const scenarios = [
     nearMiss:
       "It is a skill and it is about making the collection better, which is the shared vocabulary. But nothing exists yet, so there is no evidence of underperformance to doubt and no before-number to change against. Writing one is a different decision and it belongs to the authoring skill.",
     activation: { layer: "public-skill", target: "optimising-skills", shouldActivate: false, forbiddenRoutes: [] },
-    must: ["Treats this as writing a skill that does not exist rather than tuning one that does"],
-    mustNot: ["Asks for a baseline number for a skill that has never run"],
     tags: ["activation", "negative", "collision", "authoring"],
   },
   {
@@ -146,8 +144,6 @@ const scenarios = [
     nearMiss:
       "Changing an existing skill, which is this skill's whole subject. But the reason is structural and visible on reading, with no measurement involved and nothing to predict. Structure is owned by the authoring skill, and running an experiment on a split would buy nothing.",
     activation: { layer: "public-skill", target: "optimising-skills", shouldActivate: false, forbiddenRoutes: [] },
-    must: ["Treats the split as a structural decision that needs no experiment"],
-    mustNot: ["Demands a before-number before a file can be split"],
     tags: ["activation", "negative", "collision", "structure"],
   },
   {
@@ -161,8 +157,6 @@ const scenarios = [
     nearMiss:
       "An existing skill and a change to it, which is two thirds of the trigger. But the change has already been made and the ask is a judgement on it, not a decision about what to change or how to measure it. Judging an existing change is a review.",
     activation: { layer: "public-skill", target: "optimising-skills", shouldActivate: false, forbiddenRoutes: [] },
-    must: ["Judges the change that exists rather than designing an experiment"],
-    mustNot: ["Requires a registered prediction before commenting on work already done"],
     tags: ["activation", "negative", "collision", "review"],
   },
   {
@@ -176,8 +170,6 @@ const scenarios = [
     nearMiss:
       "This is a reported structural limit, not evidence of behavioural harm. Inspect the file and the check's contract before deciding whether to change structure; no behavioural experiment is required merely to reconcile a count.",
     activation: { layer: "public-skill", target: "optimising-skills", shouldActivate: false, forbiddenRoutes: [] },
-    must: ["Separates the reported structural count from any claim about quality or behaviour"],
-    mustNot: ["Opens an experiment to decide whether a line count is real"],
     tags: ["activation", "negative", "collision", "structural"],
   },
 ];

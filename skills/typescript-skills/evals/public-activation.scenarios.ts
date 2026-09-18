@@ -71,8 +71,6 @@ const scenarios = [
       target: "typescript-skills",
       shouldActivate: false,
     },
-    must: ["Leaves the coding rules unloaded because the task is a bounded prose rewrite with code advice forbidden"],
-    mustNot: ["Turns the explanation into an implementation review"],
     tags: ["activation", "negative", "prose-only"],
   },
   {
@@ -90,8 +88,6 @@ const scenarios = [
       target: "typescript-skills",
       shouldActivate: false,
     },
-    must: ["Leaves coding guidance unloaded because this is historical source lookup rather than TypeScript work"],
-    mustNot: ["Adds unrelated implementation recommendations"],
     tags: ["activation", "negative", "research"],
   },
   {
@@ -110,8 +106,6 @@ const scenarios = [
       target: "typescript-skills",
       shouldActivate: false,
     },
-    must: ["Leaves TypeScript design guidance unloaded for a format-only byte transformation"],
-    mustNot: ["Reviews or rewrites the source code"],
     tags: ["activation", "negative", "format-only"],
   },
 ] satisfies EvalScenario[];

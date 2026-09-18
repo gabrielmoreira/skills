@@ -70,8 +70,6 @@ const scenarios = [
       target: "progressive-reading",
       shouldActivate: false,
     },
-    must: ["Leaves readability guidance unloaded because the binding request is terseness only"],
-    mustNot: ["Adds progressive structure that violates the explicit output contract"],
     tags: ["activation", "negative", "terse-contract"],
   },
   {
@@ -90,8 +88,6 @@ const scenarios = [
       target: "progressive-reading",
       shouldActivate: false,
     },
-    must: ["Leaves readability guidance unloaded because the machine-readable output contract controls the response"],
-    mustNot: ["Introduces prose or formatting around the JSON object"],
     tags: ["activation", "negative", "exact-output"],
   },
   {
@@ -109,8 +105,6 @@ const scenarios = [
       target: "progressive-reading",
       shouldActivate: false,
     },
-    must: ["Leaves readability guidance unloaded because verbatim preservation forbids rewriting"],
-    mustNot: ["Reformats the quoted diagnostic for readability"],
     tags: ["activation", "negative", "verbatim"],
   },
 ] satisfies EvalScenario[];

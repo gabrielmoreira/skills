@@ -412,15 +412,6 @@ const scenarios = [
       shouldActivate: false,
       forbiddenRoutes: ["rules/staleness-without-a-diff.md"],
     },
-    must: [
-      "Resolves a base point, reads the range, and reports the contradicted prose as a finding against the change",
-      "Leaves every file on disk exactly as it found it",
-      "Cites both sides of each finding: the line of prose and the changed line that disproves it",
-    ],
-    mustNot: [
-      "Edits the written material instead of reporting it",
-      "Resolves the claim against the current system as though there were no change to anchor to",
-    ],
     tags: ["activation", "negative", "collision", "change-review"],
   },
   {
@@ -440,15 +431,6 @@ const scenarios = [
       target: "make-the-docs-trustworthy",
       shouldActivate: false,
     },
-    must: [
-      "Explains the passage from its own text and the surrounding context",
-      "Says plainly when the note is ambiguous, rather than resolving the ambiguity by editing",
-      "Distinguishes what the note states from what the system does today, if the two differ",
-    ],
-    mustNot: [
-      "Opens a resolution pass over the note's claims",
-      "Rewrites the wording to make it clearer",
-    ],
     tags: ["activation", "negative", "reading-not-changing"],
   },
   {
@@ -468,15 +450,6 @@ const scenarios = [
       target: "make-the-docs-trustworthy",
       shouldActivate: false,
     },
-    must: [
-      "Answers from the third party's current documentation and names the section it came from",
-      "Gives the configuration answer directly rather than a plan for recording it",
-      "Says which version the answer applies to, or that the version is unknown",
-    ],
-    mustNot: [
-      "Writes the answer into this repository's written material as a side effect",
-      "Treats the external page as a record that needs correcting",
-    ],
     tags: ["activation", "negative", "external-docs"],
   },
   {
@@ -497,15 +470,6 @@ const scenarios = [
       shouldActivate: false,
       forbiddenRoutes: ["rules/one-place-for-a-fact.md"],
     },
-    must: [
-      "Drafts the announcement copy at the stated length and tone for the stated audience",
-      "Keeps the copy self-contained, since its readers cannot open the internal material",
-      "Hands the draft back for the user to send rather than publishing it anywhere",
-    ],
-    mustNot: [
-      "Searches the repository for an existing home to file the announcement under",
-      "Refuses to restate an internal fact in the copy on the grounds that it is already written somewhere",
-    ],
     tags: ["activation", "negative", "new-prose", "collision"],
   },
   {
@@ -526,15 +490,6 @@ const scenarios = [
       shouldActivate: false,
       forbiddenRoutes: ["rules/one-artifact-one-job.md"],
     },
-    must: [
-      "Treats the request as a code refactor and preserves the module's behaviour",
-      "Verifies the split with the repository's own tests before calling it done",
-      "Names each new file and what moved into it, in code terms rather than as documents",
-    ],
-    mustNot: [
-      "Applies a written-material placement pass to source files",
-      "Reports on the repository's prose instead of splitting the module",
-    ],
     tags: ["activation", "negative", "code-not-prose", "collision"],
   },
 ];

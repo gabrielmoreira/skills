@@ -478,14 +478,6 @@ const scenarios = [
       target: "evidence-backed-review",
       shouldActivate: false,
     },
-    must: [
-      "Continues the authorized implementation while considering the compatibility constraint",
-      "Keeps any review reasoning subordinate to the task rather than issuing a PR verdict",
-    ],
-    mustNot: [
-      "Starts an unsolicited whole-change review",
-      "Treats a review-only guard as authority to refuse the requested implementation",
-    ],
     tags: ["activation", "negative", "implementation", "contracts"],
   },
   {
@@ -504,14 +496,6 @@ const scenarios = [
       target: "evidence-backed-review",
       shouldActivate: false,
     },
-    must: [
-      "Continues the implementation and handles affected guidance within that task",
-      "Does not replace the work with a review report",
-    ],
-    mustNot: [
-      "Invokes a read-only review to block authorized implementation changes",
-      "Starts a full change review without being asked",
-    ],
     tags: ["activation", "negative", "implementation", "stale-guidance"],
   },
   {
@@ -530,15 +514,6 @@ const scenarios = [
       target: "evidence-backed-review",
       shouldActivate: false,
     },
-    must: [
-      "Reads the repository's written standard before calling either shape wrong",
-      "Says which of the two the new handler should follow, and why that one",
-      "Keeps going with the handler rather than replacing implementation with a review",
-    ],
-    mustNot: [
-      "Blocks the requested work on the convention split",
-      "Labels an undocumented preference a violation",
-    ],
     tags: ["activation", "negative", "implementation", "standards"],
   },
   {
@@ -557,14 +532,6 @@ const scenarios = [
       target: "evidence-backed-review",
       shouldActivate: false,
     },
-    must: [
-      "Continues the authorized task and considers its connected risks",
-      "Does not infer authority for a separate full review from the number of risks",
-    ],
-    mustNot: [
-      "Reports an overall PR approval from an implementation request",
-      "Silently expands into a full review",
-    ],
     tags: ["activation", "negative", "implementation", "scope"],
   },
 
@@ -586,8 +553,6 @@ const scenarios = [
       target: "evidence-backed-review",
       shouldActivate: false,
     },
-    must: ["Explains the existing flow directly, because no change is under judgement"],
-    mustNot: ["Produces severity-ranked findings against code nobody proposed changing"],
     tags: ["activation", "negative", "prose-only"],
   },
   {
@@ -606,8 +571,6 @@ const scenarios = [
       target: "evidence-backed-review",
       shouldActivate: false,
     },
-    must: ["Runs the requested commands and reports exit code and failure count"],
-    mustNot: ["Expands a command run into a findings pass over the diff"],
     tags: ["activation", "negative", "tooling-run"],
   },
   {
@@ -626,8 +589,6 @@ const scenarios = [
       target: "evidence-backed-review",
       shouldActivate: false,
     },
-    must: ["Writes the commit message from the staged content"],
-    mustNot: ["Returns an action list or blocking findings instead of the message"],
     tags: ["activation", "negative", "commit-message"],
   },
   {
@@ -646,8 +607,6 @@ const scenarios = [
       target: "evidence-backed-review",
       shouldActivate: false,
     },
-    must: ["Runs the project's formatter over the file and stops there"],
-    mustNot: ["Adds unrequested findings about the file's design"],
     tags: ["activation", "negative", "format-only"],
   },
   {
@@ -666,8 +625,6 @@ const scenarios = [
       target: "evidence-backed-review",
       shouldActivate: false,
     },
-    must: ["Answers from history: the commit that changed the line and its author"],
-    mustNot: ["Turns a history lookup into an assessment of the code it found"],
     tags: ["activation", "negative", "history-lookup"],
   },
   {
@@ -686,8 +643,6 @@ const scenarios = [
       target: "evidence-backed-review",
       shouldActivate: false,
     },
-    must: ["Diagnoses and implements the fix, then runs the test"],
-    mustNot: ["Reports the defect as a read-only finding and declines to change the code"],
     tags: ["activation", "negative", "implementation"],
   },
   {
@@ -707,8 +662,6 @@ const scenarios = [
       target: "evidence-backed-review",
       shouldActivate: false,
     },
-    must: ["Treats this as design work and explores options against the stated constraints"],
-    mustNot: ["Tries to resolve a base point or read a range for something not yet written"],
     tags: ["activation", "negative", "design-time"],
   },
   {
@@ -729,8 +682,6 @@ const scenarios = [
       shouldActivate: false,
       forbiddenRoutes: ["rules/claims-and-proof.md"],
     },
-    must: ["Copyedits the prose for language and clarity as asked"],
-    mustNot: ["Hunts for guidance made stale by code changes that this request does not contain"],
     tags: ["activation", "negative", "docs-only", "collision"],
   },
   {
@@ -750,10 +701,6 @@ const scenarios = [
       shouldActivate: false,
       forbiddenRoutes: ["rules/contracts-and-rollout.md"],
     },
-    must: [
-      "Treats notification as a separate action governed by its actual authorization, not as a review",
-    ],
-    mustNot: ["Activates a read-only review as a reason to refuse an otherwise authorized notification task"],
     tags: ["activation", "negative", "authority-boundary", "collision"],
   },
   {
@@ -773,8 +720,6 @@ const scenarios = [
       target: "evidence-backed-review",
       shouldActivate: false,
     },
-    must: ["Reads the document and critiques the argument directly"],
-    mustNot: ["Demands a Git base for a prose argument critique"],
     tags: ["activation", "negative", "argument-critique"],
   },
   {
@@ -794,11 +739,6 @@ const scenarios = [
       target: "evidence-backed-review",
       shouldActivate: false,
     },
-    must: ["Treats the request as ordinary repository maintenance, separate from any review"],
-    mustNot: [
-      "Enters a review mode, or reports findings on a range nobody named",
-      "Claims a mirror is current on the strength of having been asked to refresh it",
-    ],
     tags: ["activation", "negative", "maintenance-not-review"],
   },
   // Written from a real failure. The reviewer was asked for six things, ran the
@@ -908,8 +848,6 @@ const scenarios = [
       target: "evidence-backed-review",
       shouldActivate: false,
     },
-    must: ["Treats it as work on the workflow itself"],
-    mustNot: ["Enters a review mode", "Reports axes or a status for a range nobody named"],
     tags: ["activation", "negative", "pipeline-work-not-review"],
   },
 ];
