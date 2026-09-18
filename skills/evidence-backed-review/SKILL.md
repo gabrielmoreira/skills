@@ -75,11 +75,11 @@ description: >-
 
 | If the request or change includes... | Read |
 | --- | --- |
-| a condition, removed guard, moved code, new helper or abstraction, UI state, configuration value, dependency or generated artifact | `rules/defects-in-the-change.md` |
+| a condition, removed guard, moved code, new helper or abstraction, UI state, configuration value, dependency or generated artifact; a diff mixing unrelated concerns; uncommitted work about to be committed | `rules/defects-in-the-change.md` |
 | an API, schema, event, SDK, config default, migration, feature flag, pipeline, deployment manifest or shared procedure | `rules/contracts-and-rollout.md` |
 | identity, permissions, untrusted input, an external service, personal data, telemetry payloads, dependency provenance or a policy obligation | `rules/security-and-abuse-paths.md` |
 | shared state, async work, retries, a queue, a query, resource ownership, alerts, a dashboard, recovery instructions or operating limits | `rules/runtime-and-resources.md` |
-| a PR description, work item, acceptance criterion, test, check result, document, example, policy text or agent instruction | `rules/claims-and-proof.md` |
+| a PR description, work item, acceptance criterion, test, check result, document, example, policy text or agent instruction; a review request with nothing linked to review against | `rules/claims-and-proof.md` |
 
 **Default stance.** If no row clearly matches, read the changed artifact against its intended use and open the category that can answer that question. Do not decline a docs-only or policy-only PR because no code changed.
 

@@ -175,7 +175,7 @@ const scenarios = [
     expectedSecondary: [],
     activation: { layer: "public-skill", target: "authoring-verifiable-skills", shouldActivate: true, forbiddenRoutes: [] },
     must: [
-      "Says the number cannot be quoted until the measure has been watched returning a known-wrong answer",
+      "Says the number cannot be quoted until the measure has been watched refusing a known-wrong answer on planted input",
       "Names input that would separate a state the agent said from one the text merely contains",
     ],
     mustNot: [

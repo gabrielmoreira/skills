@@ -24,6 +24,11 @@ const argv = process.argv.slice(2);
 const arg = (k, d) => { const i = argv.indexOf(k); return i < 0 ? d : argv[i + 1]; };
 const ONLY = arg("--skill", null);
 const CONC = Number(arg("--concurrency", 8));
+// Single-shot proved noisy: the same gated table measured 55, 58 and 55
+// percent across three identical runs, so one case flipping is not signal.
+// Three samples with a majority vote per case is the smallest instrument that
+// can see a one-case change.
+const SAMPLES = Number(arg("--samples", 3));
 const KEY = process.env.TYPESAFE_AI_API_KEY || process.env.TYPESAFE_API_KEY;
 if (!KEY) { console.error("needs TYPESAFE_AI_API_KEY (or TYPESAFE_API_KEY) in the environment"); process.exit(1); }
 
@@ -78,22 +83,20 @@ for (const s of skills) {
 
 let next = 0;
 const results = [];
+const majority = (arr) => [...arr.reduce((m, v) => m.set(v, (m.get(v) ?? 0) + 1), new Map()).entries()].sort((a, b) => b[1] - a[1])[0][0];
 await Promise.all(Array.from({ length: CONC }, async () => {
   while (next < cases.length) {
     const c = cases[next++];
     const { skill, sc, kind } = c;
     try {
+      let state, questions;
       if (kind === "activation") {
-        const a = await ask(
-          `<skill>\nname: ${skill.name}\ndescription: ${skill.description.trim()}\n</skill>\n\nA developer says:\n\n${sc.prompt}\n\nWould you load this skill before answering?`,
-          { load: { type: "noul", instructions: "This skill should be loaded before answering the developer" } },
-        );
-        const p = a.load.noul;
-        results.push({ skill: skill.name, id: sc.id, kind, want: sc.activation.shouldActivate !== false, p });
+        state = `<skill>\nname: ${skill.name}\ndescription: ${skill.description.trim()}\n</skill>\n\nA developer says:\n\n${sc.prompt}\n\nWould you load this skill before answering?`;
+        questions = { load: { type: "noul", instructions: "This skill should be loaded before answering the developer" } };
       } else {
         const gated = kind === "gated";
         const options = [...skill.paths, "NONE"];
-        const questions = {
+        questions = {
           open: {
             type: "choice",
             instructions: gated
@@ -102,12 +105,19 @@ await Promise.all(Array.from({ length: CONC }, async () => {
             criteria: Object.fromEntries(options.map((p) => [p, null])),
           },
         };
-        const state = gated
+        state = gated
           ? `<reference-index>\n${skill.entry.trim()}\n</reference-index>\n\nA developer says:\n\n${sc.prompt}`
           : `<reference-index>\nAvailable files:\n${skill.paths.map((p) => `- ${p}`).join("\n")}\n</reference-index>\n\nA developer says:\n\n${sc.prompt}`;
-        const a = await ask(state, questions);
-        const r = a.open;
-        results.push({ skill: skill.name, id: sc.id, kind, want: sc.expectedPrimary, got: r.choice, confidence: r.confidence, p: r.probabilities?.[sc.expectedPrimary] });
+      }
+      const rs = [];
+      for (let i = 0; i < SAMPLES; i++) rs.push(await ask(state, questions));
+      if (kind === "activation") {
+        const p = rs.reduce((s, r) => s + r.load.noul, 0) / rs.length;
+        results.push({ skill: skill.name, id: sc.id, kind, want: sc.activation.shouldActivate !== false, p });
+      } else {
+        const got = majority(rs.map((r) => r.open.choice));
+        const last = rs[rs.length - 1].open;
+        results.push({ skill: skill.name, id: sc.id, kind, want: sc.expectedPrimary, got, confidence: last.confidence, p: last.probabilities?.[sc.expectedPrimary] });
       }
     } catch (e) {
       results.push({ skill: skill.name, id: sc.id, kind, error: String(e.message).slice(0, 100) });
