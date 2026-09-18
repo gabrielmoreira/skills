@@ -59,7 +59,15 @@ const REVIEW = 0.5;  // unsure: worth a reader, never a verdict
 // but a pair-level finding is now "read both lines" advice, not a validated
 // verdict, and a finding-free run says nothing about the absence of this
 // defect class. Re-validate against the git-history pairs before trusting it
-// again. The per-unit soft checks and the scenario battery are plausible but
+// again. The vendor ships no dated snapshot ids -- /v1/models lists only
+// jev-latest and jev-preview, both dated 2026-09-10 -- so pinning cannot
+// stop this drift. The drift detector was run: jev-preview fails the same
+// way (defective pair 0.89 coexist vs 0.96 repaired), so the whole current
+// model generation lacks the discrimination the original validation
+// measured, and either the original question differed in a way the
+// compaction did not preserve or the vendor changed serving without a
+// release bump. The per-unit soft checks and the
+// scenario battery are plausible but
 // carry no defect-pair validation; they are reported as directions, marked as
 // such, never as verdicts.
 
